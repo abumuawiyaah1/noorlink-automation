@@ -1,39 +1,11 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pip install --upgrade pip && pip install -r requirements.txt"
+buildCommand = "pip install -r requirements.txt"
 
 [deploy]
-startCommand = "uvicorn src.api.main:app --host 0.0.0.0 --port $PORT"
+startCommand = "uvicorn src.api.main:app --host 0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 180
 
 [environment]
-PYTHON_VERSION = "3.11"
-EOF 
-cat > test_setup.py << 'EOF'
-#!/usr/bin/env python3
-try:
-    import fastapi
-    import uvicorn
-    import supabase
-    import stripe
-    import resend
-    import httpx
-    import pydantic
-    from python_dotenv import load_dotenv
-    
-    print("✅ All imports successful!")
-    print(f"FastAPI: {fastapi.__version__}")
-    print(f"Supabase: {supabase.__version__}")
-    print(f"Stripe: {stripe.__version__}")
-    print(f"HTTPX: {httpx.__version__}")
-    print(f"Pydantic: {pydantic.__version__}")
-    
-    # Test FastAPI app
-    from src.api.main import app
-    print("✅ FastAPI app imports correctly!")
-    
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-except Exception as e:
-    print(f"❌ Error: {e}")
+PYTHON_VERSION = "3.9"
