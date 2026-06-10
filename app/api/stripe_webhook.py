@@ -1,0 +1,65 @@
+"""Stripe webhook signature verification and event parsing."""
+
+from __future__ import annotations
+
+import logging
+from typing import Any, Dict, Optional
+
+import stripe
+
+from app.core.config import get_settings
+
+logger = logging.getLogger(__name__)
+
+
+class StripeWebhookError(Exception):
+    """Invalid or unprocessable Stripe webhook payload."""
+
+
+def construct_stripe_event(
+    payload: bytes,
+    signature_header: Optional[str],
+) -> stripe.Event:
+    if not signature_header:
+        raise StripeWebhookError("Missing Stripe-Signature header")
+
+    settings = get_settings()
+    try:
+        return stripe.Webhook.construct_event(
+            payload,
+            signature_header,
+            settings.stripe_webhook_secret,
+        )
+    except ValueError as exc:
+        raise StripeWebhookError("Invalid webhook payload") from exc
+    except stripe.SignatureVerificationError as exc:
+        raise StripeWebhookError("Invalid webhook signature") from exc
+
+
+def extract_checkout_session_completed(
+    event: stripe.Event,
+) -> Optional[Dict[str, Any]]:
+    if event.type != "checkout.session.completed":
+        return None
+
+    session = event.data.object
+    metadata = getattr(session, "metadata", None) or {}
+    if hasattr(metadata, "to_dict"):
+        metadata = metadata.to_dict()
+
+    order_number = metadata.get("order_number") if isinstance(metadata, dict) else None
+    order_id = metadata.get("order_id") if isinstance(metadata, dict) else None
+
+    payment_intent = getattr(session, "payment_intent", None)
+    if isinstance(payment_intent, dict):
+        payment_intent_id = payment_intent.get("id")
+    else:
+        payment_intent_id = payment_intent
+
+    return {
+        "session_id": getattr(session, "id", None),
+        "order_number": order_number,
+        "order_id": order_id,
+        "payment_intent_id": payment_intent_id,
+        "customer_email": getattr(session, "customer_email", None),
+    }

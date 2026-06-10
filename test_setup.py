@@ -1,170 +1,25 @@
 #!/usr/bin/env python3
-try:
-    import fastapi
-    import uvicorn
-    import supabase
-    import stripe
-    import resend
-    import httpx
-    import pydantic
-    from python_dotenv import load_dotenv
-    
-    print("✅ All imports successful!")
-    print(f"FastAPI: {fastapi.__version__}")
-    print(f"Supabase: {supabase.__version__}")
-    print(f"Stripe: {stripe.__version__}")
-    print(f"HTTPX: {httpx.__version__}")
-    print(f"Pydantic: {pydantic.__version__}")
-    
-    # Test FastAPI app
-    from src.api.main import app
-    print("✅ FastAPI app imports correctly!")
-    
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-except Exception as e:
-    print(f"❌ Error: {e}")
-EOF 
+"""Quick import and app load smoke test."""
 
-eof
+import sys
 
 
-# Create and run test in one command
-python3 -c "
-try:
-    import fastapi
-    import uvicorn
-    import supabase
-    import stripe
-    import resend
-    import httpx
-    import pydantic
-    from python_dotenv import load_dotenv
-    
-    print('✅ All imports successful!')
-    print(f'FastAPI: {fastapi.__version__}')
-    print(f'Supabase: {supabase.__version__}')
-    print(f'Stripe: {stripe.__version__}')
-    print(f'HTTPX: {httpx.__version__}')
-    print(f'Pydantic: {pydantic.__version__}')
-    
-    # Test FastAPI app
-    from src.api.main import app
-    print('✅ FastAPI app imports correctly!')
-    
-except ImportError as e:
-    print(f'❌ Import error: {e}')
-except Exception as e:
-    print(f'❌ Error: {e}')
-"
-# Create and run test in one command
-python3 -c "
-try:
-    import fastapi
-    import uvicorn
-    import supabase
-    import stripe
-    import resend
-    import httpx
-    import pydantic
-    from python_dotenv import load_dotenv
-    
-    print('✅ All imports successful!')
-    print(f'FastAPI: {fastapi.__version__}')
-    print(f'Supabase: {supabase.__version__}')
-    print(f'Stripe: {stripe.__version__}')
-    print(f'HTTPX: {httpx.__version__}')
-    print(f'Pydantic: {pydantic.__version__}')
-    
-    # Test FastAPI app
-    from src.api.main import app
-    print('✅ FastAPI app imports correctly!')
-    
-except ImportError as e:
-    print(f'❌ Import error: {e}')
-except Exception as e:
-    print(f'❌ Error: {e}')
-"
+def main() -> int:
+    try:
+        import fastapi  # noqa: F401
+        import uvicorn  # noqa: F401
+        import supabase  # noqa: F401
+        import stripe  # noqa: F401
+        import resend  # noqa: F401
+        from app.api.main import app
 
-  	 
-pwd
+        print("All imports successful.")
+        print(f"FastAPI app: {app.title}")
+        return 0
+    except Exception as exc:
+        print(f"Smoke test failed: {exc}", file=sys.stderr)
+        return 1
 
 
-
-
-
-
-
-
-
-
-# Create test_setup.py
-echo '#!/usr/bin/env python3
-try:
-    import fastapi
-    import uvicorn
-    import supabase
-    import stripe
-    import resend
-    import httpx
-    import pydantic
-    from python_dotenv import load_dotenv
-    
-    print("✅ All imports successful!")
-    print(f"FastAPI: {fastapi.__version__}")
-    print(f"Supabase: {supabase.__version__}")
-    print(f"Stripe: {stripe.__version__}")
-    print(f"HTTPX: {httpx.__version__}")
-    print(f"Pydantic: {pydantic.__version__}")
-    
-    # Test FastAPI app
-    from src.api.main import app
-    print("✅ FastAPI app imports correctly!")
-    
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-except Exception as e:
-    print(f"❌ Error: {e}")' > test_setup.py 
-
-
-
-
-
-
-
-
-
-
-# Create and run test in one command
-python3 -c "
-try:
-    import fastapi
-    import uvicorn
-    import supabase
-    import stripe
-    import resend
-    import httpx
-    import pydantic
-    from python_dotenv import load_dotenv
-    
-    print('✅ All imports successful!')
-    print(f'FastAPI: {fastapi.__version__}')
-    print(f'Supabase: {supabase.__version__}')
-    print(f'Stripe: {stripe.__version__}')
-    print(f'HTTPX: {httpx.__version__}')
-    print(f'Pydantic: {pydantic.__version__}')
-    
-    # Test FastAPI app
-    from src.api.main import app
-    print('✅ FastAPI app imports correctly!')
-    
-except ImportError as e:
-    print(f'❌ Import error: {e}')
-except Exception as e:
-    print(f'❌ Error: {e}')
-"
-pwd
-ls -la
-
-
-cat requiremen
+if __name__ == "__main__":
+    raise SystemExit(main())

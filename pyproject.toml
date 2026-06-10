@@ -1,0 +1,13 @@
+[project]
+name = "noorlink-automation"
+version = "1.0.0"
+description = "NoorLink eSIM automation backend"
+requires-python = ">=3.9"
+readme = "README.md"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
