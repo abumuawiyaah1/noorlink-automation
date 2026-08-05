@@ -847,11 +847,16 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
 
 
 def ping_database() -> bool:
-    """Lightweight connectivity check for health endpoint."""
-    try:
-        client = get_supabase_client()
-        client.table("esim_packages").select("id").limit(1).execute()
-        return True
-    except Exception:
-        logger.exception("Supabase ping failed")
-        return False
+    """Lightweight connectivity check for health endpoint.
+
+    Prefer mobile_data_plans (live catalog used by /api/v1/plans). Fall back to
+    esim_packages for older deployments that only have the checkout SKU table.
+    """
+    client = get_supabase_client()
+    for table in (MOBILE_DATA_PLANS_TABLE, "esim_packages"):
+        try:
+            client.table(table).select("id").limit(1).execute()
+            return True
+        except Exception:
+            logger.warning("Supabase ping failed for table=%s", table, exc_info=True)
+    return False
