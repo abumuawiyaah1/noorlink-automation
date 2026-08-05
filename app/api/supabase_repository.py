@@ -237,6 +237,11 @@ def _resolve_package(
         return None
 
 
+def _is_synthetic_plan_id(package_id: str) -> bool:
+    """Browse-catalog IDs from regional templates are not esim_packages rows."""
+    return package_id.startswith("tmpl-")
+
+
 def _resolve_package_unsafe(
     client: Client,
     *,
@@ -245,7 +250,7 @@ def _resolve_package_unsafe(
     price_cents: int,
     flag: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
-    if package_id:
+    if package_id and not _is_synthetic_plan_id(package_id):
         result = (
             client.table("esim_packages")
             .select("*")
@@ -259,7 +264,15 @@ def _resolve_package_unsafe(
             if row.get("is_managed") and row.get("price_cents") != price_cents:
                 return None
             return row
-        return None
+        logger.info(
+            "package_id=%s not found in esim_packages; falling back to country/price",
+            package_id,
+        )
+    elif package_id and _is_synthetic_plan_id(package_id):
+        logger.debug(
+            "Ignoring synthetic plan id %s; resolving via country/price templates",
+            package_id,
+        )
 
     result = (
         client.table("esim_packages")
@@ -389,7 +402,7 @@ def create_order(
     )
     _validate_managed_package_price(package, price_cents)
 
-    if package_id and not package:
+    if package_id and not package and not _is_synthetic_plan_id(package_id):
         try:
             managed_probe = (
                 client.table("esim_packages")
