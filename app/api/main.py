@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import logging
+from typing import Optional
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -111,8 +112,12 @@ async def health_check():
 
 
 @app.get("/api/diagnostics/email", response_model=EmailDiagnosticsResponse)
-async def email_diagnostics():
-    """Public, non-secret check of Resend from-address configuration."""
+async def email_diagnostics(probe: bool = Query(False)):
+    """Public, non-secret check of Resend from-address configuration.
+
+    Pass ?probe=1 to attempt a real send to delivered@resend.dev and return
+    the provider result (never exposes the API key).
+    """
     from_email = (settings.resend_from_email or "").strip()
     configured = bool((settings.resend_api_key or "").strip())
     domain = None
@@ -131,14 +136,38 @@ async def email_diagnostics():
             f"(e.g. NoorLink <noreply@{expected}>)."
         )
 
+    test_send_ok = None
+    test_send_id = None
+    test_send_error = None
+    if probe and configured:
+        try:
+            from app.services.email_service import send_email
+
+            test_send_id = send_email(
+                to_email="delivered@resend.dev",
+                subject="NoorLink Resend probe",
+                html_body="<p>Resend probe from api.noorlink.co diagnostics.</p>",
+            )
+            test_send_ok = True
+        except Exception as exc:
+            test_send_ok = False
+            test_send_error = str(exc)[:400]
+            hint = (
+                "Resend rejected the probe send. "
+                f"Error: {test_send_error}"
+            )
+
     return EmailDiagnosticsResponse(
-        ok=configured and matches,
+        ok=configured and matches and (test_send_ok is not False),
         resend_configured=configured,
         from_email=from_email or "(empty)",
         from_domain=domain,
         expected_domain=expected,
         domain_matches=matches,
         hint=hint,
+        test_send_ok=test_send_ok,
+        test_send_id=test_send_id,
+        test_send_error=test_send_error,
     )
 
 
@@ -284,6 +313,8 @@ async def checkout_session(body: CheckoutSessionRequest):
         raise _db_error(exc) from exc
 
     # Acknowledgment email should not block redirect to Stripe.
+    email_sent = False
+    email_error: str | None = None
     try:
         send_checkout_acknowledgment(
             to_email=str(body.email),
@@ -295,19 +326,41 @@ async def checkout_session(body: CheckoutSessionRequest):
             flag_emoji=order.flag,
             checkout_url=session.url,
         )
+        email_sent = True
     except EmailDeliveryError as exc:
+        email_error = str(exc)[:400]
         logger.error(
             "Checkout acknowledgment email failed for %s: %s",
             order.order_number,
             exc,
         )
+        try:
+            db.merge_order_metadata(
+                order.order_number,
+                {"fulfillment": {"ack_email_error": email_error}},
+            )
+        except Exception:
+            logger.warning(
+                "Could not persist ack email error for %s",
+                order.order_number,
+                exc_info=True,
+            )
 
     return CheckoutSessionResponse(
         success=True,
         session_id=session.id,
         checkout_url=session.url,
         order_id=order.order_number,
-        message="Confirmation email sent. Redirect to Stripe to complete payment.",
+        message=(
+            "Confirmation email sent. Redirect to Stripe to complete payment."
+            if email_sent
+            else (
+                "Payment session created, but confirmation email failed. "
+                "You can still complete payment on Stripe."
+            )
+        ),
+        email_sent=email_sent,
+        email_error=email_error,
     )
 
 

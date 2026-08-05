@@ -25,6 +25,11 @@ class EmailDiagnosticsResponse(BaseModel):
     expected_domain: str = "noorlink.co"
     domain_matches: bool
     hint: Optional[str] = None
+    test_send_ok: Optional[bool] = Field(None, serialization_alias="testSendOk")
+    test_send_id: Optional[str] = Field(None, serialization_alias="testSendId")
+    test_send_error: Optional[str] = Field(None, serialization_alias="testSendError")
+
+    model_config = {"populate_by_name": True}
 
 
 class ApiTestResponse(BaseModel):
@@ -124,6 +129,8 @@ class CheckoutSessionResponse(BaseModel):
     checkout_url: Optional[str] = Field(None, serialization_alias="checkoutUrl")
     order_id: Optional[str] = Field(None, serialization_alias="orderId")
     message: Optional[str] = None
+    email_sent: Optional[bool] = Field(None, serialization_alias="emailSent")
+    email_error: Optional[str] = Field(None, serialization_alias="emailError")
 
     model_config = {"populate_by_name": True}
 

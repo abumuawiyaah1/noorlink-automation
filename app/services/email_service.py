@@ -31,6 +31,11 @@ def send_email(
     """Send a transactional email via Resend. Returns provider message id."""
     settings = get_settings()
     _configure_resend()
+    if not (settings.resend_api_key or "").strip():
+        raise EmailDeliveryError("RESEND_API_KEY is not configured")
+    if not (settings.resend_from_email or "").strip():
+        raise EmailDeliveryError("RESEND_FROM_EMAIL is not configured")
+
     try:
         response = resend.Emails.send(
             {
@@ -46,9 +51,22 @@ def send_email(
 
     message_id = ""
     if isinstance(response, dict):
-        message_id = str(response.get("id") or "")
+        # Newer SDKs may return {"id": "..."} or {"data": {"id": "..."}}
+        message_id = str(
+            response.get("id")
+            or (response.get("data") or {}).get("id")
+            or ""
+        )
+        if response.get("error"):
+            raise EmailDeliveryError(str(response["error"]))
     else:
         message_id = str(getattr(response, "id", "") or response)
+
+    if not message_id:
+        raise EmailDeliveryError(
+            f"Resend returned no message id (response={response!r})"
+        )
+
     logger.info("Email sent to %s (id=%s subject=%s)", to_email, message_id, subject)
     return message_id
 
