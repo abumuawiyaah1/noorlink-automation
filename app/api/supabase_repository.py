@@ -411,8 +411,6 @@ def create_order(
         "order_number": order_number,
         "user_id": user_id,
         "package_id": pkg_id,
-        # Legacy schema compatibility (older orders tables used plan_id / country_id)
-        "plan_id": pkg_id,
         "email": email.strip().lower(),
         "country": country,
         "flag_emoji": flag,
@@ -424,10 +422,8 @@ def create_order(
         "data_total_gb": data_total_gb,
         "data_used_gb": 0,
     }
-    # Drop null optional keys that older schemas may reject as unknown,
-    # but keep plan_id even when null only if column allows null — omit when unset.
+    # Never set legacy plan_id: it FKs public.plans, not esim_packages.
     if pkg_id is None:
-        payload.pop("plan_id", None)
         payload.pop("package_id", None)
 
     try:
