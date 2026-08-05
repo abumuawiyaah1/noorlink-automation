@@ -60,9 +60,23 @@ app.include_router(plans_router)
 
 def _db_error(exc: Exception) -> HTTPException:
     logger.error("Database error: %s", exc)
-    detail = str(exc).strip()
-    if "bootstrap_checkout_minimal" in detail or "Checkout tables are missing" in detail:
-        return HTTPException(status_code=503, detail=detail)
+    detail = str(exc).strip() or "Database temporarily unavailable. Please try again."
+    # Surface actionable checkout/schema errors to the client.
+    if any(
+        token in detail
+        for token in (
+            "bootstrap_checkout_minimal",
+            "Checkout tables are missing",
+            "Could not find the table",
+            "Could not find the",
+            "PGRST",
+            "column",
+            "violates",
+            "permission denied",
+            "RLS",
+        )
+    ):
+        return HTTPException(status_code=503, detail=detail[:500])
     return HTTPException(
         status_code=503,
         detail="Database temporarily unavailable. Please try again.",
