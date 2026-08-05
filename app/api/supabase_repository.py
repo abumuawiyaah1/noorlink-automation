@@ -108,23 +108,26 @@ def _row_to_order(row: Dict[str, Any]) -> Order:
 
 def _upsert_user_by_email(client: Client, email: str) -> Optional[str]:
     normalized = email.strip().lower()
-    existing = (
-        client.table("users")
-        .select("id")
-        .eq("email", normalized)
-        .limit(1)
-        .execute()
-    )
-    if existing.data:
-        return str(existing.data[0]["id"])
+    try:
+        existing = (
+            client.table("users")
+            .select("id")
+            .eq("email", normalized)
+            .limit(1)
+            .execute()
+        )
+        if existing.data:
+            return str(existing.data[0]["id"])
 
-    inserted = (
-        client.table("users")
-        .insert({"email": normalized})
-        .execute()
-    )
-    if inserted.data:
-        return str(inserted.data[0]["id"])
+        inserted = (
+            client.table("users")
+            .insert({"email": normalized})
+            .execute()
+        )
+        if inserted.data:
+            return str(inserted.data[0]["id"])
+    except Exception:
+        logger.warning("users upsert skipped for %s", normalized, exc_info=True)
     return None
 
 
@@ -205,6 +208,32 @@ def _provision_dynamic_package(
 
 
 def _resolve_package(
+    client: Client,
+    *,
+    package_id: Optional[str],
+    country: str,
+    price_cents: int,
+    flag: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    try:
+        return _resolve_package_unsafe(
+            client,
+            package_id=package_id,
+            country=country,
+            price_cents=price_cents,
+            flag=flag,
+        )
+    except Exception:
+        logger.warning(
+            "Package resolve failed for country=%s package_id=%s",
+            country,
+            package_id,
+            exc_info=True,
+        )
+        return None
+
+
+def _resolve_package_unsafe(
     client: Client,
     *,
     package_id: Optional[str],
@@ -357,16 +386,19 @@ def create_order(
     _validate_managed_package_price(package, price_cents)
 
     if package_id and not package:
-        managed_probe = (
-            client.table("esim_packages")
-            .select("id, is_managed, price_cents, slug")
-            .eq("id", package_id)
-            .eq("is_active", True)
-            .limit(1)
-            .execute()
-        )
-        if managed_probe.data and managed_probe.data[0].get("is_managed"):
-            _validate_managed_package_price(managed_probe.data[0], price_cents)
+        try:
+            managed_probe = (
+                client.table("esim_packages")
+                .select("id, is_managed, price_cents, slug")
+                .eq("id", package_id)
+                .eq("is_active", True)
+                .limit(1)
+                .execute()
+            )
+            if managed_probe.data and managed_probe.data[0].get("is_managed"):
+                _validate_managed_package_price(managed_probe.data[0], price_cents)
+        except Exception:
+            logger.warning("Managed package probe failed for %s", package_id, exc_info=True)
 
     package_name = (
         package["name"] if package else f"{country} Travel eSIM"
@@ -395,7 +427,13 @@ def create_order(
         result = client.table("orders").insert(payload).execute()
     except Exception as exc:
         logger.exception("orders insert failed")
-        raise SupabaseRepositoryError(str(exc)) from exc
+        message = str(exc)
+        if "Could not find the table" in message or "PGRST205" in message:
+            raise SupabaseRepositoryError(
+                "Checkout tables are missing. Run supabase/bootstrap_checkout_minimal.sql "
+                "in the Supabase SQL Editor, then retry."
+            ) from exc
+        raise SupabaseRepositoryError(message) from exc
 
     if not result.data:
         raise SupabaseRepositoryError("Order insert returned no data")

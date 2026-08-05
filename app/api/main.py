@@ -60,6 +60,9 @@ app.include_router(plans_router)
 
 def _db_error(exc: Exception) -> HTTPException:
     logger.error("Database error: %s", exc)
+    detail = str(exc).strip()
+    if "bootstrap_checkout_minimal" in detail or "Checkout tables are missing" in detail:
+        return HTTPException(status_code=503, detail=detail)
     return HTTPException(
         status_code=503,
         detail="Database temporarily unavailable. Please try again.",
@@ -194,6 +197,16 @@ async def checkout_session(body: CheckoutSessionRequest):
         ) from exc
     except db.SupabaseRepositoryError as exc:
         raise _db_error(exc) from exc
+    except Exception as exc:
+        logger.exception("Unexpected checkout order failure")
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Checkout is temporarily unavailable. "
+                "Confirm Supabase commerce tables exist "
+                "(run supabase/bootstrap_checkout_minimal.sql)."
+            ),
+        ) from exc
 
     order = created.order
     amount_cents = int(round(order.price * 100))
