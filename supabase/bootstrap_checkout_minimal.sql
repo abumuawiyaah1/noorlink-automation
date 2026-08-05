@@ -1,7 +1,7 @@
 -- =============================================================================
--- Bootstrap checkout commerce tables (users, esim_packages, orders)
--- Run in Supabase → SQL Editor if /api/checkout/session returns 500.
--- Idempotent: safe to re-run.
+-- Bootstrap / repair checkout commerce tables (users, esim_packages, orders)
+-- Safe to re-run. Fixes incomplete tables (e.g. missing stripe_checkout_session_id).
+-- In Supabase SQL Editor: choose "Run and enable RLS".
 -- =============================================================================
 
 create extension if not exists "pgcrypto";
@@ -29,6 +29,11 @@ create table if not exists public.users (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.users add column if not exists full_name text;
+alter table public.users add column if not exists phone text;
+alter table public.users add column if not exists created_at timestamptz not null default now();
+alter table public.users add column if not exists updated_at timestamptz not null default now();
 
 create table if not exists public.esim_packages (
   id uuid primary key default gen_random_uuid(),
@@ -59,6 +64,28 @@ create table if not exists public.esim_packages (
   updated_at timestamptz not null default now()
 );
 
+alter table public.esim_packages add column if not exists country_code char(2);
+alter table public.esim_packages add column if not exists flag_emoji text;
+alter table public.esim_packages add column if not exists description text;
+alter table public.esim_packages add column if not exists data_label text not null default '10GB';
+alter table public.esim_packages add column if not exists data_total_gb numeric(8, 2);
+alter table public.esim_packages add column if not exists validity_days integer not null default 15;
+alter table public.esim_packages add column if not exists price_cents integer;
+alter table public.esim_packages add column if not exists currency char(3) not null default 'USD';
+alter table public.esim_packages add column if not exists stripe_product_id text;
+alter table public.esim_packages add column if not exists stripe_price_id text;
+alter table public.esim_packages add column if not exists provider_sku text;
+alter table public.esim_packages add column if not exists network_label text;
+alter table public.esim_packages add column if not exists image_url text;
+alter table public.esim_packages add column if not exists is_active boolean not null default true;
+alter table public.esim_packages add column if not exists is_featured boolean not null default false;
+alter table public.esim_packages add column if not exists is_managed boolean not null default false;
+alter table public.esim_packages add column if not exists tier text;
+alter table public.esim_packages add column if not exists sort_order integer not null default 0;
+alter table public.esim_packages add column if not exists metadata jsonb not null default '{}'::jsonb;
+alter table public.esim_packages add column if not exists created_at timestamptz not null default now();
+alter table public.esim_packages add column if not exists updated_at timestamptz not null default now();
+
 create index if not exists esim_packages_country_idx on public.esim_packages (country);
 create index if not exists esim_packages_active_idx on public.esim_packages (is_active) where is_active = true;
 
@@ -75,8 +102,8 @@ create table if not exists public.orders (
   currency char(3) not null default 'USD',
   status public.order_status not null default 'pending',
   travel_date date,
-  stripe_checkout_session_id text unique,
-  stripe_payment_intent_id text unique,
+  stripe_checkout_session_id text,
+  stripe_payment_intent_id text,
   stripe_customer_id text,
   qr_code_url text,
   activation_code text,
@@ -89,6 +116,41 @@ create table if not exists public.orders (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Repair existing orders table (common cause of the 42703 error)
+alter table public.orders add column if not exists user_id uuid references public.users (id) on delete set null;
+alter table public.orders add column if not exists package_id uuid references public.esim_packages (id) on delete set null;
+alter table public.orders add column if not exists flag_emoji text;
+alter table public.orders add column if not exists package_name text;
+alter table public.orders add column if not exists amount_cents integer;
+alter table public.orders add column if not exists currency char(3) not null default 'USD';
+alter table public.orders add column if not exists status public.order_status not null default 'pending';
+alter table public.orders add column if not exists travel_date date;
+alter table public.orders add column if not exists stripe_checkout_session_id text;
+alter table public.orders add column if not exists stripe_payment_intent_id text;
+alter table public.orders add column if not exists stripe_customer_id text;
+alter table public.orders add column if not exists qr_code_url text;
+alter table public.orders add column if not exists activation_code text;
+alter table public.orders add column if not exists data_used_gb numeric(8, 2) default 0;
+alter table public.orders add column if not exists data_total_gb numeric(8, 2);
+alter table public.orders add column if not exists paid_at timestamptz;
+alter table public.orders add column if not exists fulfilled_at timestamptz;
+alter table public.orders add column if not exists refunded_at timestamptz;
+alter table public.orders add column if not exists metadata jsonb not null default '{}'::jsonb;
+alter table public.orders add column if not exists created_at timestamptz not null default now();
+alter table public.orders add column if not exists updated_at timestamptz not null default now();
+
+do $$ begin
+  alter table public.orders add constraint orders_stripe_checkout_session_id_key unique (stripe_checkout_session_id);
+exception when duplicate_object then null;
+when others then null;
+end $$;
+
+do $$ begin
+  alter table public.orders add constraint orders_stripe_payment_intent_id_key unique (stripe_payment_intent_id);
+exception when duplicate_object then null;
+when others then null;
+end $$;
 
 create index if not exists orders_email_idx on public.orders (email);
 create index if not exists orders_status_idx on public.orders (status);
