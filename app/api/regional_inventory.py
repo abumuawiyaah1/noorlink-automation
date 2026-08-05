@@ -321,6 +321,99 @@ def build_package_slug(
     return f"{country_slug}-{plan_key}-{data_part}-{validity_days}d"
 
 
+# region_id values used by pricing_rules REGION scope (see migrations)
+TEMPLATE_KEY_TO_REGION_ID: Dict[str, str] = {
+    "europe": "europe",
+    "asia-pacific": "asia",
+    "middle-east": "middle-east",
+    "africa": "africa",
+    "north-america": "americas",
+    "south-america": "americas",
+}
+
+
+def _plan_category_for_template(plan_key: str, data_label: str) -> str:
+    if plan_key == "family":
+        return "FLEXIBLE"
+    if "UNLIMITED" in data_label.upper():
+        return "UNLIMITED"
+    return "FIXED"
+
+
+def build_template_mobile_data_rows(country_input: str) -> List[Dict[str, Any]]:
+    """
+    Synthesize mobile_data_plans-shaped rows from regional templates.
+
+    Used by /api/v1/plans when a country has no seeded catalog rows, so every
+    destination still returns browsable priced plans (checkout already
+    provisions matching esim_packages from the same templates).
+    """
+    display_name, template_key = resolve_country_identity(country_input)
+    template = get_template(template_key)
+    if not template:
+        return []
+
+    country_slug = normalize_country_key(display_name)
+    # Prefer the request slug when it's already a known hint key
+    request_slug = normalize_country_key(country_input)
+    if request_slug in COUNTRY_TEMPLATE_HINTS:
+        country_slug = request_slug
+        # Canonical aliases
+        if country_slug in {"united-states", "us"}:
+            country_slug = "usa"
+        elif country_slug in {"united-kingdom", "gb"}:
+            country_slug = "uk"
+        elif country_slug in {"united-arab-emirates"}:
+            country_slug = "uae"
+
+    region_id = TEMPLATE_KEY_TO_REGION_ID.get(template_key, template_key)
+    currency = template.get("currency") or "USD"
+    rows: List[Dict[str, Any]] = []
+
+    for sort_index, plan_key in enumerate(PLAN_KEYS_ORDER):
+        plan = template["plans"].get(plan_key)
+        if not plan:
+            continue
+
+        data_label = plan_data_label(plan)
+        validity_days = int(plan["days"])
+        data_gb = parse_data_total_gb(data_label)
+        price = float(plan["price"])
+        is_featured = bool(plan.get("popular"))
+        category = _plan_category_for_template(plan_key, data_label)
+
+        if plan_key == "family":
+            name = f"{display_name} Family · {data_label}"
+        elif category == "UNLIMITED":
+            name = f"{display_name} Unlimited · {validity_days} Days"
+        else:
+            name = f"{display_name} {data_label} · {validity_days} Days"
+
+        rows.append(
+            {
+                "id": f"tmpl-{country_slug}-{plan_key}",
+                "country_id": country_slug,
+                "country_name": display_name,
+                "name": name,
+                "data_gb": data_gb,
+                "duration_days": validity_days,
+                "price": price,
+                "override_price": price,
+                "price_cents": plan_price_cents(plan),
+                "currency": currency,
+                "pricing_strategy": "MANUAL",
+                "plan_category": category,
+                "is_featured": is_featured,
+                "is_active": True,
+                "sort_order": (sort_index + 1) * 10,
+                "region_id": region_id,
+                "is_rechargeable": plan_key == "family",
+            }
+        )
+
+    return rows
+
+
 def build_dynamic_package_payload(
     *,
     country_input: str,

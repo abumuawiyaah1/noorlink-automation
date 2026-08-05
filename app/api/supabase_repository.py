@@ -22,7 +22,11 @@ from app.services.pricing_engine import (
     resolve_plan_price,
     select_pricing_rule_hierarchy,
 )
-from .regional_inventory import build_dynamic_package_payload
+from .regional_inventory import (
+    build_dynamic_package_payload,
+    build_template_mobile_data_rows,
+    resolve_country_identity,
+)
 from .schemas import Order, OrderStatus
 
 logger = logging.getLogger(__name__)
@@ -810,6 +814,10 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
     """
     Return browsable plans for a country from public.mobile_data_plans
     (Supabase display name: "Mobile Data Plans").
+
+    When no seeded rows exist, fall back to regional pricing templates so every
+    destination still has browsable plans (same system checkout uses to
+    auto-provision esim_packages).
     """
     client = get_supabase_client()
     normalized = _normalize_country_id(country_id)
@@ -841,6 +849,18 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
         if row.get("is_active", row.get("active", True)) is not False
     ]
     source_rows = active_rows or rows
+    used_regional_template = False
+
+    if not source_rows:
+        source_rows = build_template_mobile_data_rows(normalized)
+        used_regional_template = bool(source_rows)
+        if used_regional_template:
+            logger.info(
+                "Serving regional template plans for country_id=%s (%s plans)",
+                normalized,
+                len(source_rows),
+            )
+
     source_rows.sort(
         key=lambda row: (
             row.get("sort_order") if row.get("sort_order") is not None else 999,
@@ -853,6 +873,10 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
         first = source_rows[0]
         meta["country_name"] = meta.get("country_name") or first.get("country_name")
         meta["flag"] = meta.get("flag") or first.get("flag_emoji") or first.get("flag")
+
+    if not meta.get("country_name"):
+        display_name, _ = resolve_country_identity(normalized)
+        meta["country_name"] = display_name
 
     try:
         pricing_rules = fetch_active_pricing_rules()
@@ -872,14 +896,22 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
             "No active GLOBAL pricing rule configured. Margins cannot be computed."
         )
 
+    plan_country_id = normalized
+    if used_regional_template and source_rows:
+        plan_country_id = str(source_rows[0].get("country_id") or normalized)
+
     plans = [
-        _map_mobile_data_plan_row(row, normalized, pricing_rules=pricing_rules)
+        _map_mobile_data_plan_row(
+            row,
+            str(row.get("country_id") or plan_country_id),
+            pricing_rules=pricing_rules,
+        )
         for row in source_rows
     ]
     plan_groups = _group_plans_by_category(plans)
 
     return {
-        "country_id": normalized,
+        "country_id": plan_country_id,
         "country_name": meta.get("country_name") or normalized.replace("-", " ").title(),
         "flag": meta.get("flag"),
         "plans": plans,
