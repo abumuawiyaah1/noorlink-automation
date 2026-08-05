@@ -6,6 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
+from app.services.email_service import (
+    EmailDeliveryError,
+    send_checkout_acknowledgment,
+)
 from app.services.fulfillment import FulfillmentError, process_paid_order
 
 from .analytics import router as analytics_router
@@ -203,6 +207,7 @@ async def checkout_session(body: CheckoutSessionRequest):
             flag=body.flag,
             travel_date=body.travel_date,
             package_id=body.package_id,
+            phone=body.phone,
         )
     except db.ManagedPackagePriceMismatchError as exc:
         raise HTTPException(
@@ -245,12 +250,31 @@ async def checkout_session(body: CheckoutSessionRequest):
     except db.SupabaseRepositoryError as exc:
         raise _db_error(exc) from exc
 
+    # Acknowledgment email should not block redirect to Stripe.
+    try:
+        send_checkout_acknowledgment(
+            to_email=str(body.email),
+            order_number=order.order_number,
+            country=order.country,
+            package_name=order.package_name,
+            amount=float(order.price),
+            currency=order.currency or "USD",
+            flag_emoji=order.flag,
+            checkout_url=session.url,
+        )
+    except EmailDeliveryError as exc:
+        logger.error(
+            "Checkout acknowledgment email failed for %s: %s",
+            order.order_number,
+            exc,
+        )
+
     return CheckoutSessionResponse(
         success=True,
         session_id=session.id,
         checkout_url=session.url,
         order_id=order.order_number,
-        message="Redirect to Stripe to complete payment.",
+        message="Confirmation email sent. Redirect to Stripe to complete payment.",
     )
 
 

@@ -110,8 +110,13 @@ def _row_to_order(row: Dict[str, Any]) -> Order:
     )
 
 
-def _upsert_user_by_email(client: Client, email: str) -> Optional[str]:
+def _upsert_user_by_email(
+    client: Client,
+    email: str,
+    phone: Optional[str] = None,
+) -> Optional[str]:
     normalized = email.strip().lower()
+    phone_value = phone.strip() if phone and phone.strip() else None
     try:
         existing = (
             client.table("users")
@@ -121,13 +126,22 @@ def _upsert_user_by_email(client: Client, email: str) -> Optional[str]:
             .execute()
         )
         if existing.data:
-            return str(existing.data[0]["id"])
+            user_id = str(existing.data[0]["id"])
+            if phone_value:
+                try:
+                    client.table("users").update({"phone": phone_value}).eq(
+                        "id", user_id
+                    ).execute()
+                except Exception:
+                    logger.warning(
+                        "users phone update skipped for %s", normalized, exc_info=True
+                    )
+            return user_id
 
-        inserted = (
-            client.table("users")
-            .insert({"email": normalized})
-            .execute()
-        )
+        payload: Dict[str, Any] = {"email": normalized}
+        if phone_value:
+            payload["phone"] = phone_value
+        inserted = client.table("users").insert(payload).execute()
         if inserted.data:
             return str(inserted.data[0]["id"])
     except Exception:
@@ -389,10 +403,11 @@ def create_order(
     flag: Optional[str],
     travel_date: Optional[str],
     package_id: Optional[str] = None,
+    phone: Optional[str] = None,
 ) -> CreatedOrder:
     client = get_supabase_client()
     price_cents = int(round(price * 100))
-    user_id = _upsert_user_by_email(client, email)
+    user_id = _upsert_user_by_email(client, email, phone=phone)
     package = _resolve_package(
         client,
         package_id=package_id,
@@ -422,8 +437,13 @@ def create_order(
     )
     pkg_id = str(package["id"]) if package else None
     data_total_gb = package.get("data_total_gb") if package else None
+    phone_value = phone.strip() if phone and phone.strip() else None
 
     order_number = _generate_order_number()
+    metadata: Dict[str, Any] = {}
+    if phone_value:
+        metadata["phone"] = phone_value
+
     payload: Dict[str, Any] = {
         "order_number": order_number,
         "user_id": user_id,
@@ -438,6 +458,7 @@ def create_order(
         "travel_date": _parse_travel_date(travel_date),
         "data_total_gb": data_total_gb,
         "data_used_gb": 0,
+        "metadata": metadata,
     }
     # Never set legacy plan_id: it FKs public.plans, not esim_packages.
     if pkg_id is None:

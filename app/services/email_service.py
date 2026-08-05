@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import html
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import resend
 
@@ -20,6 +20,101 @@ class EmailDeliveryError(Exception):
 def _configure_resend() -> None:
     settings = get_settings()
     resend.api_key = settings.resend_api_key
+
+
+def send_email(
+    *,
+    to_email: str,
+    subject: str,
+    html_body: str,
+) -> str:
+    """Send a transactional email via Resend. Returns provider message id."""
+    settings = get_settings()
+    _configure_resend()
+    try:
+        response = resend.Emails.send(
+            {
+                "from": settings.resend_from_email,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_body,
+            }
+        )
+    except Exception as exc:
+        logger.exception("Resend delivery failed for %s", to_email)
+        raise EmailDeliveryError(str(exc)) from exc
+
+    message_id = ""
+    if isinstance(response, dict):
+        message_id = str(response.get("id") or "")
+    else:
+        message_id = str(getattr(response, "id", "") or response)
+    logger.info("Email sent to %s (id=%s subject=%s)", to_email, message_id, subject)
+    return message_id
+
+
+def build_checkout_ack_email_html(
+    *,
+    order_number: str,
+    country: str,
+    package_name: str,
+    amount: float,
+    currency: str,
+    flag_emoji: Optional[str],
+    checkout_url: Optional[str],
+    app_url: str,
+) -> str:
+    flag = flag_emoji or ""
+    amount_label = f"{currency.upper()} {amount:.2f}"
+    pay_block = ""
+    if checkout_url:
+        pay_block = f"""
+            <p style="text-align:center;margin:24px 0;">
+              <a href="{html.escape(checkout_url)}" style="display:inline-block;background:#1a3a2f;color:#ffffff;padding:14px 32px;border-radius:6px;text-decoration:none;font-size:15px;">
+                Complete payment
+              </a>
+            </p>"""
+
+    support_url = f"{app_url.rstrip('/')}/support"
+
+    return f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/></head>
+<body style="margin:0;padding:0;background:#f6f3ed;font-family:Georgia,'Times New Roman',serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f6f3ed;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(26,58,47,0.08);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#1a3a2f 0%,#0d6b4d 100%);padding:32px 40px;">
+            <p style="margin:0;color:#c5e8d8;font-size:13px;letter-spacing:2px;text-transform:uppercase;">NoorLink</p>
+            <h1 style="margin:8px 0 0;color:#ffffff;font-size:26px;font-weight:normal;">
+              {flag} We received your order details
+            </h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px;">
+            <p style="color:#4a4540;font-size:16px;line-height:1.6;margin:0 0 16px;">
+              Thanks for choosing NoorLink. We saved your contact details for order
+              <strong style="color:#1a3a2f;">{html.escape(order_number)}</strong>
+              ({html.escape(package_name)} · {html.escape(country)} · {html.escape(amount_label)}).
+            </p>
+            <p style="color:#4a4540;font-size:16px;line-height:1.6;margin:0 0 16px;">
+              Complete payment on Stripe to activate delivery. Your eSIM QR code and
+              install instructions will arrive in a second email right after payment clears.
+            </p>
+            {pay_block}
+            <p style="color:#6b6560;font-size:13px;line-height:1.5;margin:24px 0 0;">
+              If you did not start this checkout, you can ignore this message.
+              Need help? Visit <a href="{html.escape(support_url)}" style="color:#0d6b4d;">support</a>.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
 
 
 def build_fulfillment_email_html(
@@ -134,25 +229,30 @@ def send_fulfillment_email(
     subject: str,
     html_body: str,
 ) -> str:
-    settings = get_settings()
-    _configure_resend()
-    try:
-        response = resend.Emails.send(
-            {
-                "from": settings.resend_from_email,
-                "to": [to_email],
-                "subject": subject,
-                "html": html_body,
-            }
-        )
-    except Exception as exc:
-        logger.exception("Resend delivery failed for %s", to_email)
-        raise EmailDeliveryError(str(exc)) from exc
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)
 
-    message_id = ""
-    if isinstance(response, dict):
-        message_id = str(response.get("id") or "")
-    else:
-        message_id = str(getattr(response, "id", "") or response)
-    logger.info("Fulfillment email sent to %s (id=%s)", to_email, message_id)
-    return message_id
+
+def send_checkout_acknowledgment(
+    *,
+    to_email: str,
+    order_number: str,
+    country: str,
+    package_name: str,
+    amount: float,
+    currency: str = "USD",
+    flag_emoji: Optional[str] = None,
+    checkout_url: Optional[str] = None,
+) -> str:
+    settings = get_settings()
+    subject = f"Order {order_number} received — complete payment for your {country} eSIM"
+    html_body = build_checkout_ack_email_html(
+        order_number=order_number,
+        country=country,
+        package_name=package_name,
+        amount=amount,
+        currency=currency,
+        flag_emoji=flag_emoji,
+        checkout_url=checkout_url,
+        app_url=settings.app_url,
+    )
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)

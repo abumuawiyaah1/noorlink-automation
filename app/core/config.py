@@ -41,8 +41,9 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str
 
     # —— Resend (email delivery) ——
+    # From address must use a domain verified in Resend (prefer noorlink.co).
     resend_api_key: str
-    resend_from_email: str = "noreply@noorlink.com"
+    resend_from_email: str = "NoorLink <noreply@noorlink.co>"
 
     # —— Auth (future JWT sessions) ——
     secret_key: str = "change-this-in-production"

@@ -101,6 +101,7 @@ class CheckoutSessionRequest(BaseModel):
     price: float
     flag: Optional[str] = None
     email: EmailStr
+    phone: Optional[str] = None
     travel_date: Optional[str] = Field(None, alias="travelDate")
     package_id: Optional[str] = Field(None, alias="packageId")
 
