@@ -411,7 +411,7 @@ def create_order(
         "order_number": order_number,
         "user_id": user_id,
         "package_id": pkg_id,
-        # Legacy schema compatibility (older orders tables used plan_id)
+        # Legacy schema compatibility (older orders tables used plan_id / country_id)
         "plan_id": pkg_id,
         "email": email.strip().lower(),
         "country": country,
