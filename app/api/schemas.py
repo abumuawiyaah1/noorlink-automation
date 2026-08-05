@@ -17,6 +17,16 @@ class HealthResponse(BaseModel):
     version: str
 
 
+class EmailDiagnosticsResponse(BaseModel):
+    ok: bool
+    resend_configured: bool
+    from_email: str
+    from_domain: Optional[str] = None
+    expected_domain: str = "noorlink.co"
+    domain_matches: bool
+    hint: Optional[str] = None
+
+
 class ApiTestResponse(BaseModel):
     success: bool
     message: str

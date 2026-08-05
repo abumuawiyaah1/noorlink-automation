@@ -31,6 +31,7 @@ from .schemas import (
     ContactFormResponse,
     DeviceCheckRequest,
     DeviceCheckResponse,
+    EmailDiagnosticsResponse,
     HealthResponse,
     NewsletterSubscribeRequest,
     NewsletterSubscribeResponse,
@@ -106,6 +107,38 @@ async def health_check():
         service="noorlink-automation",
         timestamp=datetime.now(timezone.utc).isoformat(),
         version=settings.app_version,
+    )
+
+
+@app.get("/api/diagnostics/email", response_model=EmailDiagnosticsResponse)
+async def email_diagnostics():
+    """Public, non-secret check of Resend from-address configuration."""
+    from_email = (settings.resend_from_email or "").strip()
+    configured = bool((settings.resend_api_key or "").strip())
+    domain = None
+    if "@" in from_email:
+        domain = from_email.rsplit("@", 1)[-1].rstrip(">").strip().lower()
+
+    expected = "noorlink.co"
+    matches = domain == expected
+    hint = None
+    if not configured:
+        hint = "Set RESEND_API_KEY in Railway."
+    elif not matches:
+        hint = (
+            f"RESEND_FROM_EMAIL is '{from_email}'. "
+            f"Update it to an address on @{expected} "
+            f"(e.g. NoorLink <noreply@{expected}>)."
+        )
+
+    return EmailDiagnosticsResponse(
+        ok=configured and matches,
+        resend_configured=configured,
+        from_email=from_email or "(empty)",
+        from_domain=domain,
+        expected_domain=expected,
+        domain_matches=matches,
+        hint=hint,
     )
 
 
