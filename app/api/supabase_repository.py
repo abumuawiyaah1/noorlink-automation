@@ -86,6 +86,7 @@ def _row_to_order(row: Dict[str, Any]) -> Order:
         "paid",
         "delivered",
         "active",
+        "suspended",
         "expired",
         "refunded",
         "failed",
@@ -665,6 +666,135 @@ def update_order_stripe_session(
             order_number,
         )
         raise SupabaseRepositoryError(str(exc)) from exc
+
+
+def get_order_row_by_iccid(iccid: str) -> Optional[Dict[str, Any]]:
+    """Fetch an order by Simbase ICCID."""
+    client = get_supabase_client()
+    normalized = (iccid or "").strip()
+    if not normalized:
+        return None
+    try:
+        result = (
+            client.table("orders")
+            .select("*")
+            .eq("iccid", normalized)
+            .limit(1)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("Order fetch by iccid failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    if not result.data:
+        return None
+    return result.data[0]
+
+
+def attach_simbase_profile(
+    order_number: str,
+    *,
+    iccid: str,
+    smdp_address: str,
+    activation_code: str,
+    lpa_string: str,
+    data_limit_bytes: Optional[int] = None,
+    plan_name: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Persist Simbase profile fields on an order after provisioning."""
+    client = get_supabase_client()
+    row = _fetch_order_row(client, order_number=order_number)
+    if not row:
+        raise SupabaseRepositoryError(f"Order not found: {order_number}")
+
+    updates: Dict[str, Any] = {
+        "iccid": iccid.strip(),
+        "smdp_address": smdp_address.strip(),
+        "activation_code": activation_code.strip(),
+        "lpa_string": lpa_string.strip(),
+    }
+    if data_limit_bytes is not None:
+        updates["data_limit_bytes"] = int(data_limit_bytes)
+    if plan_name:
+        updates["package_name"] = plan_name
+
+    try:
+        result = (
+            client.table("orders")
+            .update(updates)
+            .eq("order_number", order_number)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("attach_simbase_profile failed for %s", order_number)
+        raise SupabaseRepositoryError(str(exc)) from exc
+
+    if not result.data:
+        raise SupabaseRepositoryError("Simbase profile update returned no data")
+    return result.data[0]
+
+
+def mark_order_suspended(
+    iccid: str,
+    *,
+    usage_bytes: Optional[int] = None,
+) -> Optional[Dict[str, Any]]:
+    """
+    Set order status to suspended after Simbase disables the SIM.
+    Idempotent if already suspended/expired.
+    """
+    client = get_supabase_client()
+    row = get_order_row_by_iccid(iccid)
+    if not row:
+        return None
+
+    current = row.get("status")
+    if current in ("suspended", "expired", "refunded"):
+        return row
+
+    metadata = row.get("metadata") or {}
+    if not isinstance(metadata, dict):
+        metadata = {}
+    simbase_meta = metadata.get("simbase") or {}
+    if not isinstance(simbase_meta, dict):
+        simbase_meta = {}
+    simbase_meta = {
+        **simbase_meta,
+        "usage_guard": "suspended",
+        "suspended_at": datetime.now(timezone.utc).isoformat(),
+        "usage_bytes": usage_bytes,
+    }
+    metadata = {**metadata, "simbase": simbase_meta}
+
+    updates: Dict[str, Any] = {"status": "suspended", "metadata": metadata}
+    if usage_bytes is not None:
+        try:
+            updates["data_used_gb"] = round(float(usage_bytes) / (1024 ** 3), 4)
+        except (TypeError, ValueError):
+            pass
+
+    try:
+        result = (
+            client.table("orders")
+            .update(updates)
+            .eq("id", row["id"])
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("mark_order_suspended failed for iccid=%s", iccid)
+        raise SupabaseRepositoryError(str(exc)) from exc
+
+    if result.data:
+        return result.data[0]
+    return get_order_row_by_iccid(iccid)
+
+
+def suspend_order_by_iccid(
+    iccid: str,
+    *,
+    usage_bytes: Optional[int] = None,
+) -> Optional[Dict[str, Any]]:
+    """Alias used by the Simbase usage-guard webhook."""
+    return mark_order_suspended(iccid, usage_bytes=usage_bytes)
 
 
 def lookup_order(order_id: str, email: str) -> Optional[Order]:

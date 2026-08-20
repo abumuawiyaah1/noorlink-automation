@@ -1,0 +1,244 @@
+"""
+Inbound provider webhooks (Simbase usage / margin guard).
+"""
+
+from __future__ import annotations
+
+import hmac
+import logging
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
+
+from app.core.config import get_settings
+from app.api import supabase_repository as db
+from app.services.simbase import SimbaseClient, SimbaseError
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"])
+
+# Task names + Simbase-documented limit.* events
+USAGE_GUARD_EVENTS = {
+    "usage_limits",
+    "usage_exceeds_threshold",
+    "limit.100mb",
+    "limit.1gb",
+}
+
+
+def _extract_event_type(payload: Dict[str, Any]) -> str:
+    for key in ("event", "event_type", "type", "name"):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    data = payload.get("data")
+    if isinstance(data, dict):
+        for key in ("event", "event_type", "type"):
+            value = data.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    return ""
+
+
+def _extract_iccid(payload: Dict[str, Any]) -> Optional[str]:
+    for key in ("iccid", "ICCID"):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    data = payload.get("data")
+    if isinstance(data, dict):
+        for key in ("iccid", "ICCID"):
+            value = data.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    simcard = payload.get("simcard")
+    if isinstance(simcard, dict):
+        value = simcard.get("iccid")
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def _extract_usage_bytes(payload: Dict[str, Any]) -> Optional[int]:
+    candidates = (
+        payload.get("current_bytes"),
+        payload.get("usageBytes"),
+        payload.get("usage_bytes"),
+        payload.get("bytes"),
+        payload.get("consumed_bytes"),
+    )
+    data = payload.get("data")
+    if isinstance(data, dict):
+        candidates = candidates + (
+            data.get("current_bytes"),
+            data.get("usageBytes"),
+            data.get("usage_bytes"),
+            data.get("bytes"),
+            data.get("consumed_bytes"),
+        )
+    for value in candidates:
+        if value is None:
+            continue
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _is_usage_guard_event(event_type: str) -> bool:
+    if not event_type:
+        return False
+    if event_type in USAGE_GUARD_EVENTS:
+        return True
+    lowered = event_type.lower()
+    return lowered.startswith("limit.") or "usage" in lowered
+
+
+def _token_valid(provided: Optional[str], expected: str) -> bool:
+    if not expected:
+        return False
+    if not provided:
+        return False
+    return hmac.compare_digest(provided.strip(), expected.strip())
+
+
+@router.post("/simbase")
+async def simbase_usage_webhook(
+    request: Request,
+    x_simbase_requesttoken: Optional[str] = Header(
+        default=None, alias="x-simbase-requesttoken"
+    ),
+):
+    """
+    Margin guard: when package data is exhausted, disable the SIM and suspend the order.
+    """
+    settings = get_settings()
+    secret = (settings.simbase_webhook_secret or "").strip()
+    if not _token_valid(x_simbase_requesttoken, secret):
+        logger.warning("Simbase webhook rejected: invalid request token")
+        raise HTTPException(status_code=401, detail="Invalid Simbase webhook token")
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Webhook body must be a JSON object")
+
+    event_type = _extract_event_type(payload)
+    if not _is_usage_guard_event(event_type):
+        return JSONResponse(
+            {
+                "ok": True,
+                "handled": False,
+                "reason": "ignored_event",
+                "event": event_type or None,
+            }
+        )
+
+    iccid = _extract_iccid(payload)
+    if not iccid:
+        raise HTTPException(status_code=400, detail="Missing iccid in webhook payload")
+
+    usage_bytes = _extract_usage_bytes(payload)
+    order = db.get_order_row_by_iccid(iccid)
+    if not order:
+        logger.info("Simbase webhook: no order for iccid=%s", iccid)
+        return JSONResponse(
+            {
+                "ok": True,
+                "handled": False,
+                "reason": "order_not_found",
+                "iccid": iccid,
+                "event": event_type,
+            }
+        )
+
+    limit_bytes = order.get("data_limit_bytes")
+    try:
+        limit_bytes_int = int(limit_bytes) if limit_bytes is not None else None
+    except (TypeError, ValueError):
+        limit_bytes_int = None
+
+    # Suspend when usage meets/exceeds package cap, or when Simbase fires a limit.*
+    # event and we cannot resolve a numeric package limit (fail closed on known limits).
+    should_suspend = False
+    if usage_bytes is not None and limit_bytes_int is not None:
+        should_suspend = usage_bytes >= limit_bytes_int
+    elif event_type.lower().startswith("limit.") or event_type in {
+        "usage_limits",
+        "usage_exceeds_threshold",
+    }:
+        if limit_bytes_int is None:
+            should_suspend = True
+        elif usage_bytes is not None:
+            should_suspend = usage_bytes >= limit_bytes_int
+
+    if not should_suspend:
+        return JSONResponse(
+            {
+                "ok": True,
+                "handled": False,
+                "reason": "under_limit",
+                "iccid": iccid,
+                "usage_bytes": usage_bytes,
+                "data_limit_bytes": limit_bytes_int,
+                "event": event_type,
+            }
+        )
+
+    if (order.get("status") or "") == "suspended":
+        return JSONResponse(
+            {
+                "ok": True,
+                "handled": True,
+                "reason": "already_suspended",
+                "iccid": iccid,
+                "event": event_type,
+            }
+        )
+
+    try:
+        async with SimbaseClient() as client:
+            await client.update_sim_state(iccid, "disabled")
+    except SimbaseError as exc:
+        logger.error(
+            "Failed to disable SIM iccid=%s status=%s: %s",
+            iccid,
+            exc.status_code,
+            exc,
+        )
+        raise HTTPException(
+            status_code=502,
+            detail=f"Failed to disable SIM on Simbase: {exc}",
+        ) from exc
+
+    try:
+        updated = db.suspend_order_by_iccid(iccid, usage_bytes=usage_bytes)
+    except db.SupabaseRepositoryError as exc:
+        logger.exception("Failed to suspend order for iccid=%s", iccid)
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    logger.warning(
+        "Margin guard suspended iccid=%s usage_bytes=%s limit=%s order=%s",
+        iccid,
+        usage_bytes,
+        limit_bytes_int,
+        (updated or {}).get("order_number"),
+    )
+    return JSONResponse(
+        {
+            "ok": True,
+            "handled": True,
+            "action": "suspended",
+            "iccid": iccid,
+            "usage_bytes": usage_bytes,
+            "data_limit_bytes": limit_bytes_int,
+            "order_number": (updated or {}).get("order_number"),
+            "event": event_type,
+        }
+    )

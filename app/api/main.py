@@ -17,6 +17,7 @@ from .analytics import router as analytics_router
 from .devices import check_device
 from .devices_router import router as devices_router
 from .plans_router import router as plans_router
+from .webhooks import router as webhooks_router
 from . import supabase_repository as db
 from .stripe_checkout import StripeCheckoutError, create_stripe_checkout_session
 from .stripe_webhook import (
@@ -62,6 +63,7 @@ app.add_middleware(
 app.include_router(analytics_router)
 app.include_router(devices_router)
 app.include_router(plans_router)
+app.include_router(webhooks_router)
 
 
 def _db_error(exc: Exception) -> HTTPException:

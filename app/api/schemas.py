@@ -81,7 +81,14 @@ class DeviceCheckResponse(BaseModel):
 
 
 OrderStatus = Literal[
-    "pending", "paid", "delivered", "active", "expired", "refunded", "failed"
+    "pending",
+    "paid",
+    "delivered",
+    "active",
+    "suspended",
+    "expired",
+    "refunded",
+    "failed",
 ]
 
 

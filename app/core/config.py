@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     stripe_publishable_key: str
     stripe_webhook_secret: str
 
+    # —— Simbase (eSIM provisioning + usage guard) ——
+    simbase_api_key: str = ""
+    simbase_api_base_url: str = "https://api.simbase.com/v2"
+    simbase_webhook_secret: str = ""
+
     # —— Resend (email delivery) ——
     # From address must use a domain verified in Resend (prefer noorlink.co).
     resend_api_key: str
