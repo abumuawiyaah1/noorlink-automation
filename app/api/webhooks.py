@@ -33,7 +33,7 @@ USAGE_GUARD_EVENTS = {
 # Citrus events that mean the SIM wallet / package is exhausted
 CITRUS_SUSPEND_EVENTS = {
     "esim.balance_depleted",
-    "esim.disabled",
+    "esim.data_suspended",
     "esim.terminated",
 }
 

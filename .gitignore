@@ -41,3 +41,4 @@ Thumbs.db
 
 # Railway
 .railway/
+.citrus_webhook_secret
