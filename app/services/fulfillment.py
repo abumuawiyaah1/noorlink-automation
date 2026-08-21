@@ -43,9 +43,25 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
             "provider": esim.get("provider"),
             "lpa_string": esim.get("lpa_string"),
             "travel_assistant_included": True,
+            "iccid": esim.get("iccid"),
         },
         "travel_assistant": travel_guide,
     }
+
+    if esim.get("iccid"):
+        try:
+            db.attach_simbase_profile(
+                order_number,
+                iccid=str(esim["iccid"]),
+                smdp_address=str(esim.get("smdp_address") or ""),
+                activation_code=str(esim.get("activation_code") or ""),
+                lpa_string=str(esim.get("lpa_string") or ""),
+                plan_name=order_row.get("package_name"),
+            )
+        except db.SupabaseRepositoryError:
+            logger.exception(
+                "Failed to persist provider profile fields for %s", order_number
+            )
 
     delivered_row = db.mark_order_delivered(
         order_number,

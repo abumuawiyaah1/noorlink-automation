@@ -45,6 +45,15 @@ class Settings(BaseSettings):
     simbase_api_base_url: str = "https://api.simbase.com/v2"
     simbase_webhook_secret: str = ""
 
+    # —— Citrus Mobile (reseller eSIM API) ——
+    # Auth: Authorization: Bearer rsk_...
+    citrus_api_key: str = ""
+    citrus_api_base_url: str = "https://citrusmobile.com/api/v2/reseller"
+    # HMAC signing secret from POST /webhooks (whsec_...) — verify X-Citrus-Signature
+    citrus_webhook_secret: str = ""
+    # mock | citrus | simbase
+    esim_provider: str = "mock"
+
     # —— Resend (email delivery) ——
     # From address must use a domain verified in Resend (prefer noorlink.co).
     resend_api_key: str
