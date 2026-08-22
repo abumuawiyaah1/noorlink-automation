@@ -278,6 +278,84 @@ def send_fulfillment_email(
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
 
 
+def build_support_ticket_email_html(
+    *,
+    name: str,
+    ticket_id: str,
+    subject: Optional[str],
+    message: str,
+    app_url: str,
+) -> str:
+    safe_name = html.escape(name.strip() or "there")
+    safe_ticket = html.escape(ticket_id)
+    safe_subject = html.escape((subject or "Support request").strip())
+    safe_message = html.escape(message.strip()).replace("\n", "<br/>")
+    support_url = f"{app_url.rstrip('/')}/support"
+    return f"""<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#f6f3ed;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f6f3ed;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+        <tr>
+          <td style="padding:28px 36px;background:#1a3a2f;">
+            <p style="margin:0;color:#c5e8d8;font-size:13px;letter-spacing:0.08em;">NOORLINK SUPPORT</p>
+            <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:normal;">
+              We received your message
+            </h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px;color:#1a3a2f;font-size:15px;line-height:1.6;">
+            <p style="margin:0 0 16px;">Hi {safe_name},</p>
+            <p style="margin:0 0 16px;">
+              Your support ticket has been created. Our team typically replies within 24 hours.
+            </p>
+            <p style="margin:0 0 8px;"><strong>Ticket ID:</strong> {safe_ticket}</p>
+            <p style="margin:0 0 16px;"><strong>Subject:</strong> {safe_subject}</p>
+            <div style="margin:0 0 24px;padding:16px;background:#f6f3ed;border-radius:6px;">
+              <p style="margin:0 0 8px;font-size:12px;color:#6b6560;text-transform:uppercase;letter-spacing:0.06em;">Your message</p>
+              <p style="margin:0;">{safe_message}</p>
+            </div>
+            <p style="margin:0;">
+              You can reply to this email, or visit
+              <a href="{html.escape(support_url)}" style="color:#0d6b4d;">support</a>
+              / WhatsApp if you need faster help.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 36px;background:#f6f3ed;text-align:center;">
+            <p style="margin:0;color:#6b6560;font-size:12px;">NoorLink · Travel eSIM support</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+def send_support_ticket_confirmation(
+    *,
+    to_email: str,
+    name: str,
+    ticket_id: str,
+    subject: Optional[str],
+    message: str,
+) -> str:
+    settings = get_settings()
+    email_subject = f"Support ticket {ticket_id} created — NoorLink"
+    html_body = build_support_ticket_email_html(
+        name=name,
+        ticket_id=ticket_id,
+        subject=subject,
+        message=message,
+        app_url=settings.app_url,
+    )
+    return send_email(to_email=to_email, subject=email_subject, html_body=html_body)
+
+
 def send_checkout_acknowledgment(
     *,
     to_email: str,

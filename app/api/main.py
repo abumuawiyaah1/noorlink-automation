@@ -10,6 +10,7 @@ from app.core.config import get_settings
 from app.services.email_service import (
     EmailDeliveryError,
     send_checkout_acknowledgment,
+    send_support_ticket_confirmation,
 )
 from app.services.fulfillment import FulfillmentError, process_paid_order
 
@@ -208,10 +209,34 @@ async def contact_submit(body: ContactFormRequest):
         )
     except db.SupabaseRepositoryError as exc:
         raise _db_error(exc) from exc
+
+    try:
+        send_support_ticket_confirmation(
+            to_email=str(body.email),
+            name=body.name,
+            ticket_id=ticket_id,
+            subject=body.subject,
+            message=body.message,
+        )
+    except EmailDeliveryError as exc:
+        logger.error(
+            "Support ticket %s saved but confirmation email failed: %s",
+            ticket_id,
+            exc,
+        )
+        return ContactFormResponse(
+            success=True,
+            ticket_id=ticket_id,
+            message=(
+                "Your message has been received (ticket saved), but we could not "
+                "send the confirmation email right now. We will still reply within 24 hours."
+            ),
+        )
+
     return ContactFormResponse(
         success=True,
         ticket_id=ticket_id,
-        message="Your message has been received. We will reply within 24 hours.",
+        message="Your message has been received. We sent a confirmation email with your ticket ID.",
     )
 
 
