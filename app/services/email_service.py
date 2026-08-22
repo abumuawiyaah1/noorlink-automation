@@ -107,6 +107,34 @@ def send_email(
     return message_id
 
 
+def _regional_email_context(country: str) -> Dict[str, Any]:
+    """Build optional regional copy blocks for transactional emails."""
+    from app.api.regional_inventory import (
+        get_regional_product,
+        resolve_regional_product_by_display_name,
+    )
+
+    product_id = resolve_regional_product_by_display_name(country)
+    if not product_id:
+        return {"is_regional": False}
+
+    product = get_regional_product(product_id) or {}
+    countries = product.get("countries") or []
+    exclusions = product.get("exclusions") or []
+    countries_line = " · ".join(countries[:12])
+    if len(countries) > 12:
+        countries_line += f" · +{len(countries) - 12} more"
+
+    return {
+        "is_regional": True,
+        "display_name": product.get("display_name") or country,
+        "countries": countries,
+        "exclusions": exclusions,
+        "countries_line": countries_line,
+        "coverage_count": len(countries),
+    }
+
+
 def build_checkout_ack_email_html(
     *,
     order_number: str,
@@ -120,6 +148,28 @@ def build_checkout_ack_email_html(
 ) -> str:
     flag = flag_emoji or ""
     amount_label = f"{currency.upper()} {amount:.2f}"
+    regional = _regional_email_context(country)
+    regional_block = ""
+    if regional.get("is_regional"):
+        exclusions = regional.get("exclusions") or []
+        exclusion_line = ""
+        if exclusions:
+            exclusion_line = (
+                f"<p style=\"margin:0 0 16px;font-size:13px;color:{MUTED};\">"
+                f"Not included on this plan: {html.escape(', '.join(exclusions))}."
+                f"</p>"
+            )
+        regional_block = f"""
+      <p style="margin:0 0 16px;">
+        This is a <strong>multi-country</strong> plan covering
+        <strong>{regional.get('coverage_count', 0)} countries</strong>.
+        Install once — use data in any covered country without buying a new plan
+        at each border.
+      </p>
+      <p style="margin:0 0 16px;font-size:14px;color:{PRIMARY};">
+        {html.escape(str(regional.get('countries_line') or ''))}
+      </p>
+      {exclusion_line}"""
     pay_block = ""
     if checkout_url:
         pay_block = f"""
@@ -137,6 +187,7 @@ def build_checkout_ack_email_html(
         Complete payment on Stripe to activate delivery. Your eSIM QR code and
         install instructions will arrive in a second email right after payment clears.
       </p>
+      {regional_block}
       {pay_block}
       <p style="margin:24px 0 0;font-size:13px;color:{MUTED};">
         If you did not start this checkout, you can ignore this message.
@@ -163,6 +214,34 @@ def build_fulfillment_email_html(
     app_url: str,
 ) -> str:
     flag = flag_emoji or ""
+    regional = _regional_email_context(country)
+    regional_intro = ""
+    coverage_block = ""
+    if regional.get("is_regional"):
+        regional_intro = """
+      <p style="margin:0 0 16px;">
+        Install once — when you land in any covered country, turn on this line
+        for mobile data. You do not need a new plan when you cross borders within
+        this list.
+      </p>"""
+        exclusions = regional.get("exclusions") or []
+        exclusion_html = ""
+        if exclusions:
+            exclusion_html = (
+                f"<p style=\"margin:12px 0 0;font-size:13px;color:{MUTED};\">"
+                f"Not included: {html.escape(', '.join(exclusions))}."
+                f"</p>"
+            )
+        countries = regional.get("countries") or []
+        country_items = "".join(
+            f"<li style='margin-bottom:4px;color:{PRIMARY};'>{html.escape(c)}</li>"
+            for c in countries
+        )
+        coverage_block = f"""
+      <h3 style="color:{PRIMARY};font-size:15px;margin:24px 0 10px;">Countries covered</h3>
+      <ul style="padding-left:20px;margin:0 0 8px;columns:2;column-gap:24px;">{country_items}</ul>
+      {exclusion_html}"""
+
     itinerary_rows = ""
     for item in travel_guide.get("itinerary") or []:
         itinerary_rows += f"""
@@ -197,6 +276,7 @@ def build_fulfillment_email_html(
         Thank you for your order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong>.
         Your <em>{html.escape(package_name)}</em> plan is provisioned and ready to install.
       </p>
+      {regional_intro}
 
       <table width="100%" cellpadding="0" cellspacing="0" style="background:{BG};border-radius:12px;margin-bottom:28px;border:1px solid #E5E7EB;">
         <tr><td style="padding:24px;text-align:center;">
@@ -209,6 +289,7 @@ def build_fulfillment_email_html(
           </p>
         </td></tr>
       </table>
+      {coverage_block}
 
       <h2 style="margin:0 0 12px;color:{PRIMARY};font-size:18px;font-weight:700;border-bottom:3px solid {ACCENT};padding-bottom:8px;display:inline-block;">
         Your travel assistant
@@ -231,7 +312,9 @@ def build_fulfillment_email_html(
         title=f"{flag} Your {html.escape(country)} eSIM is ready".strip(),
         body_html=body,
         app_url=app_url,
-        tip="Install on Wi‑Fi before travel. After landing, turn on Data Roaming for the NoorLink line and set it as your Mobile Data SIM.",
+        tip="Install on Wi‑Fi before travel. After landing, turn on Data Roaming for the NoorLink line and set it as your Mobile Data SIM."
+        if not regional.get("is_regional")
+        else "Regional plan: your data allowance is shared across the whole trip. Install on Wi‑Fi before you fly.",
     )
 
 

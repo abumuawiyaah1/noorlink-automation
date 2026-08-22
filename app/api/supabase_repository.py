@@ -24,8 +24,12 @@ from app.services.pricing_engine import (
 )
 from .regional_inventory import (
     build_dynamic_package_payload,
+    build_regional_product_rows,
     build_template_mobile_data_rows,
+    get_regional_product,
     resolve_country_identity,
+    resolve_regional_product_by_display_name,
+    resolve_regional_product_slug,
 )
 from .schemas import Order, OrderStatus
 
@@ -254,7 +258,7 @@ def _resolve_package(
 
 def _is_synthetic_plan_id(package_id: str) -> bool:
     """Browse-catalog IDs from regional templates are not esim_packages rows."""
-    return package_id.startswith("tmpl-")
+    return package_id.startswith("tmpl-") or package_id.startswith("regional-")
 
 
 def _resolve_package_unsafe(
@@ -444,6 +448,15 @@ def create_order(
     metadata: Dict[str, Any] = {}
     if phone_value:
         metadata["phone"] = phone_value
+
+    regional_id = resolve_regional_product_by_display_name(country)
+    if regional_id:
+        product = get_regional_product(regional_id) or {}
+        metadata["product_type"] = "regional"
+        metadata["region_slug"] = product.get("route_slug")
+        metadata["regional_product_id"] = regional_id
+        metadata["coverage_countries"] = product.get("countries") or []
+        metadata["coverage_exclusions"] = product.get("exclusions") or []
 
     payload: Dict[str, Any] = {
         "order_number": order_number,
@@ -985,45 +998,76 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
     """
     client = get_supabase_client()
     normalized = _normalize_country_id(country_id)
-    lookup_ids = list(dict.fromkeys([country_id.strip(), normalized]))
+    regional_product_id = resolve_regional_product_slug(normalized)
 
-    rows: list[Dict[str, Any]] = []
-    try:
-        for lookup_id in lookup_ids:
-            result = (
-                client.table(MOBILE_DATA_PLANS_TABLE)
-                .select("*")
-                .eq("country_id", lookup_id)
-                .execute()
+    if regional_product_id:
+        source_rows = build_regional_product_rows(regional_product_id)
+        product = get_regional_product(regional_product_id) or {}
+        meta = {
+            "country_name": product.get("display_name"),
+            "flag": product.get("flag_emoji"),
+        }
+        plan_country_id = regional_product_id
+        product_type = "regional"
+        coverage_countries = product.get("countries") or []
+        coverage_exclusions = product.get("exclusions") or []
+        region_slug = product.get("route_slug")
+    else:
+        lookup_ids = list(dict.fromkeys([country_id.strip(), normalized]))
+        product_type = "single"
+        coverage_countries = []
+        coverage_exclusions = []
+        region_slug = None
+
+        rows: list[Dict[str, Any]] = []
+        try:
+            for lookup_id in lookup_ids:
+                result = (
+                    client.table(MOBILE_DATA_PLANS_TABLE)
+                    .select("*")
+                    .eq("country_id", lookup_id)
+                    .execute()
+                )
+                rows = result.data or []
+                if rows:
+                    break
+        except Exception as exc:
+            logger.exception(
+                "%s fetch failed for country_id=%s",
+                MOBILE_DATA_PLANS_TABLE,
+                country_id,
             )
-            rows = result.data or []
-            if rows:
-                break
-    except Exception as exc:
-        logger.exception(
-            "%s fetch failed for country_id=%s",
-            MOBILE_DATA_PLANS_TABLE,
-            country_id,
-        )
-        raise SupabaseRepositoryError(str(exc)) from exc
+            raise SupabaseRepositoryError(str(exc)) from exc
 
-    active_rows = [
-        row
-        for row in rows
-        if row.get("is_active", row.get("active", True)) is not False
-    ]
-    source_rows = active_rows or rows
-    used_regional_template = False
+        active_rows = [
+            row
+            for row in rows
+            if row.get("is_active", row.get("active", True)) is not False
+        ]
+        source_rows = active_rows or rows
 
-    if not source_rows:
-        source_rows = build_template_mobile_data_rows(normalized)
-        used_regional_template = bool(source_rows)
-        if used_regional_template:
-            logger.info(
-                "Serving regional template plans for country_id=%s (%s plans)",
-                normalized,
-                len(source_rows),
-            )
+        if not source_rows:
+            source_rows = build_template_mobile_data_rows(normalized)
+            if source_rows:
+                logger.info(
+                    "Serving regional template plans for country_id=%s (%s plans)",
+                    normalized,
+                    len(source_rows),
+                )
+
+        meta = _fetch_country_metadata(client, normalized)
+        if source_rows:
+            first = source_rows[0]
+            meta["country_name"] = meta.get("country_name") or first.get("country_name")
+            meta["flag"] = meta.get("flag") or first.get("flag_emoji") or first.get("flag")
+
+        if not meta.get("country_name"):
+            display_name, _ = resolve_country_identity(normalized)
+            meta["country_name"] = display_name
+
+        plan_country_id = normalized
+        if source_rows:
+            plan_country_id = str(source_rows[0].get("country_id") or normalized)
 
     source_rows.sort(
         key=lambda row: (
@@ -1031,16 +1075,6 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
             str(row.get("name") or ""),
         )
     )
-
-    meta = _fetch_country_metadata(client, normalized)
-    if source_rows:
-        first = source_rows[0]
-        meta["country_name"] = meta.get("country_name") or first.get("country_name")
-        meta["flag"] = meta.get("flag") or first.get("flag_emoji") or first.get("flag")
-
-    if not meta.get("country_name"):
-        display_name, _ = resolve_country_identity(normalized)
-        meta["country_name"] = display_name
 
     try:
         pricing_rules = fetch_active_pricing_rules()
@@ -1060,10 +1094,6 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
             "No active GLOBAL pricing rule configured. Margins cannot be computed."
         )
 
-    plan_country_id = normalized
-    if used_regional_template and source_rows:
-        plan_country_id = str(source_rows[0].get("country_id") or normalized)
-
     plans = [
         _map_mobile_data_plan_row(
             row,
@@ -1074,13 +1104,19 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
     ]
     plan_groups = _group_plans_by_category(plans)
 
-    return {
+    result: Dict[str, Any] = {
         "country_id": plan_country_id,
         "country_name": meta.get("country_name") or normalized.replace("-", " ").title(),
         "flag": meta.get("flag"),
         "plans": plans,
         "plan_groups": plan_groups,
+        "product_type": product_type,
     }
+    if product_type == "regional":
+        result["coverage_countries"] = coverage_countries
+        result["coverage_exclusions"] = coverage_exclusions
+        result["region_slug"] = region_slug
+    return result
 
 
 def ping_database() -> bool:

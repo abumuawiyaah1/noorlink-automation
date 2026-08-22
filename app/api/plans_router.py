@@ -37,4 +37,8 @@ async def list_plans_by_country(
             unlimited=[EsimPlanItem(**row) for row in groups.get("unlimited", [])],
             flexible=[EsimPlanItem(**row) for row in groups.get("flexible", [])],
         ),
+        product_type=payload.get("product_type"),
+        coverage_countries=payload.get("coverage_countries"),
+        coverage_exclusions=payload.get("coverage_exclusions"),
+        region_slug=payload.get("region_slug"),
     )

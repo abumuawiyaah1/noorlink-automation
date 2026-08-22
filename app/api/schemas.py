@@ -231,6 +231,14 @@ class PlansByCountryResponse(BaseModel):
         default_factory=PlanCategoryGroups,
         serialization_alias="planGroups",
     )
+    product_type: Optional[str] = Field(None, serialization_alias="productType")
+    coverage_countries: Optional[list[str]] = Field(
+        None, serialization_alias="coverageCountries"
+    )
+    coverage_exclusions: Optional[list[str]] = Field(
+        None, serialization_alias="coverageExclusions"
+    )
+    region_slug: Optional[str] = Field(None, serialization_alias="regionSlug")
 
     model_config = {"populate_by_name": True}
 
