@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html
 import logging
+import re
 from typing import Any, Dict, Optional
 
 import resend
@@ -22,11 +23,24 @@ def _configure_resend() -> None:
     resend.api_key = settings.resend_api_key
 
 
+def _html_to_text(html_body: str) -> str:
+    text = (
+        html_body.replace("<br>", "\n")
+        .replace("<br/>", "\n")
+        .replace("<br />", "\n")
+        .replace("</p>", "\n\n")
+    )
+    text = re.sub(r"<[^>]+>", "", text)
+    text = html.unescape(text)
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
 def send_email(
     *,
     to_email: str,
     subject: str,
     html_body: str,
+    text_body: Optional[str] = None,
 ) -> str:
     """Send a transactional email via Resend. Returns provider message id."""
     settings = get_settings()
@@ -36,15 +50,29 @@ def send_email(
     if not (settings.resend_from_email or "").strip():
         raise EmailDeliveryError("RESEND_FROM_EMAIL is not configured")
 
+    # Plain-text twin improves inbox placement vs HTML-only messages.
+    if text_body is None:
+        text_body = _html_to_text(html_body)
+
+    payload: Dict[str, Any] = {
+        "from": settings.resend_from_email,
+        "to": [to_email],
+        "subject": subject,
+        "html": html_body,
+        "text": text_body,
+        "reply_to": "support@noorlink.co",
+    }
+
     try:
-        response = resend.Emails.send(
-            {
-                "from": settings.resend_from_email,
-                "to": [to_email],
-                "subject": subject,
-                "html": html_body,
-            }
-        )
+        response = resend.Emails.send(payload)
+    except TypeError:
+        # Older SDK may not accept reply_to
+        payload.pop("reply_to", None)
+        try:
+            response = resend.Emails.send(payload)
+        except Exception as exc:
+            logger.exception("Resend delivery failed for %s", to_email)
+            raise EmailDeliveryError(str(exc)) from exc
     except Exception as exc:
         logger.exception("Resend delivery failed for %s", to_email)
         raise EmailDeliveryError(str(exc)) from exc
