@@ -1,0 +1,154 @@
+"""
+Shared NoorLink email brand chrome (colors, logo wordmark, support signature).
+
+Matches the live site: primary teal #0F3D3E + accent orange #FF9500.
+"""
+
+from __future__ import annotations
+
+import html
+from typing import Optional
+
+# Brand tokens (aligned with noorlink.co CSS)
+PRIMARY = "#0F3D3E"
+PRIMARY_DARK = "#05191A"
+ACCENT = "#FF9500"
+BG = "#F3F5F7"
+SURFACE = "#FFFFFF"
+TEXT = "#111827"
+MUTED = "#6B7280"
+WHATSAPP = "#25D366"
+WHATSAPP_NUMBER = "17184729390"
+
+
+def brand_wordmark(*, href: str) -> str:
+    safe_href = html.escape(href.rstrip("/"))
+    return f"""
+      <a href="{safe_href}" style="text-decoration:none;display:inline-block;">
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.02em;color:{SURFACE};">
+          Noor<span style="color:{ACCENT};">Link</span><sup style="font-size:11px;color:{ACCENT};margin-left:2px;">TM</sup>
+        </span>
+      </a>
+    """
+
+
+def cta_button(*, href: str, label: str) -> str:
+    return f"""
+      <a href="{html.escape(href)}"
+         style="display:inline-block;background:{ACCENT};color:{PRIMARY_DARK};padding:14px 28px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;">
+        {html.escape(label)}
+      </a>
+    """
+
+
+def support_signature(*, app_url: str, tip: Optional[str] = None) -> str:
+    """Professional footer: tech help + WhatsApp + support links."""
+    base = app_url.rstrip("/")
+    support = f"{base}/support"
+    wa = f"https://wa.me/{WHATSAPP_NUMBER}"
+    tip_html = ""
+    if tip:
+        tip_html = f"""
+          <tr>
+            <td style="padding:0 0 16px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF8F0;border:1px solid #FFE0B2;border-radius:10px;">
+                <tr>
+                  <td style="padding:14px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:{TEXT};">
+                    <strong style="color:{PRIMARY};">Tech tip:</strong>
+                    {html.escape(tip)}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        """
+
+    return f"""
+      <table width="100%" cellpadding="0" cellspacing="0">
+        {tip_html}
+        <tr>
+          <td style="padding:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:{TEXT};">
+            <strong style="color:{PRIMARY};">Need help installing or activating?</strong><br/>
+            Our team is online 24/7 — reply to this email or message us on WhatsApp.
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 18px;">
+            <a href="{html.escape(wa)}"
+               style="display:inline-block;background:{WHATSAPP};color:#ffffff;padding:10px 18px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;margin-right:8px;">
+              WhatsApp support
+            </a>
+            <a href="{html.escape(support)}"
+               style="display:inline-block;background:{PRIMARY};color:#ffffff;padding:10px 18px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;">
+              Support center
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-top:8px;border-top:1px solid #E5E7EB;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:{MUTED};">
+            <strong style="color:{PRIMARY};">Noor<span style="color:{ACCENT};">Link</span></strong>
+            · Travel eSIM for Umrah, Hajj &amp; journeys worldwide<br/>
+            <a href="{html.escape(base)}" style="color:{PRIMARY};text-decoration:none;">noorlink.co</a>
+            · <a href="mailto:support@noorlink.co" style="color:{PRIMARY};text-decoration:none;">support@noorlink.co</a>
+          </td>
+        </tr>
+      </table>
+    """
+
+
+def wrap_branded_email(
+    *,
+    eyebrow: str,
+    title: str,
+    body_html: str,
+    app_url: str,
+    tip: Optional[str] = None,
+) -> str:
+    """Full HTML document with NoorLink header + support signature."""
+    base = app_url.rstrip("/")
+    wordmark = brand_wordmark(href=base)
+    signature = support_signature(app_url=base, tip=tip)
+    safe_eyebrow = html.escape(eyebrow.upper())
+    # title may include emoji / already-escaped fragments — keep as provided
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>NoorLink</title>
+</head>
+<body style="margin:0;padding:0;background:{BG};">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:{BG};padding:28px 12px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:600px;background:{SURFACE};border-radius:16px;overflow:hidden;border:1px solid #E5E7EB;">
+        <tr>
+          <td style="background:{PRIMARY};padding:28px 32px 24px;">
+            {wordmark}
+            <p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:{ACCENT};font-weight:700;">
+              {safe_eyebrow}
+            </p>
+            <h1 style="margin:8px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.25;font-weight:normal;color:{SURFACE};">
+              {title}
+            </h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 32px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:{TEXT};">
+            {body_html}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 32px 28px;background:{SURFACE};">
+            {signature}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:14px 32px;background:{PRIMARY_DARK};text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;">
+            You’re receiving this because you interacted with NoorLink.
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
