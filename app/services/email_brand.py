@@ -1,7 +1,8 @@
 """
-Shared NoorLink email brand chrome (colors, logo wordmark, support signature).
+Shared NoorLink email brand chrome (colors, logo image, support signature).
 
 Matches the live site: primary teal #0F3D3E + accent orange #FF9500.
+Logo: https://noorlink.co/images/logo.png
 """
 
 from __future__ import annotations
@@ -20,15 +21,49 @@ MUTED = "#6B7280"
 WHATSAPP = "#25D366"
 WHATSAPP_NUMBER = "17184729390"
 
+# Hosted brand mark (Next.js public/images/logo.png)
+DEFAULT_LOGO_URL = "https://noorlink.co/images/logo.png"
+
+
+def brand_logo(*, href: str, logo_url: Optional[str] = None, height: int = 56) -> str:
+    """PNG logo for email clients (absolute HTTPS URL required)."""
+    safe_href = html.escape(href.rstrip("/"))
+    src = html.escape((logo_url or DEFAULT_LOGO_URL).strip())
+    return f"""
+      <a href="{safe_href}" style="text-decoration:none;display:inline-block;">
+        <img src="{src}"
+             width="{height}"
+             height="{height}"
+             alt="NoorLink"
+             style="display:block;width:{height}px;height:{height}px;border:0;border-radius:12px;background:{SURFACE};"/>
+      </a>
+    """
+
 
 def brand_wordmark(*, href: str) -> str:
     safe_href = html.escape(href.rstrip("/"))
     return f"""
-      <a href="{safe_href}" style="text-decoration:none;display:inline-block;">
-        <span style="font-family:Arial,Helvetica,sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.02em;color:{SURFACE};">
-          Noor<span style="color:{ACCENT};">Link</span><sup style="font-size:11px;color:{ACCENT};margin-left:2px;">TM</sup>
+      <a href="{safe_href}" style="text-decoration:none;display:inline-block;vertical-align:middle;">
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.02em;color:{SURFACE};">
+          Noor<span style="color:{ACCENT};">Link</span><sup style="font-size:10px;color:{ACCENT};margin-left:2px;">TM</sup>
         </span>
       </a>
+    """
+
+
+def brand_header_lockup(*, href: str, logo_url: Optional[str] = None) -> str:
+    """Logo image + wordmark side by side."""
+    return f"""
+      <table cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+          <td style="vertical-align:middle;padding-right:14px;">
+            {brand_logo(href=href, logo_url=logo_url, height=52)}
+          </td>
+          <td style="vertical-align:middle;">
+            {brand_wordmark(href=href)}
+          </td>
+        </tr>
+      </table>
     """
 
 
@@ -41,7 +76,12 @@ def cta_button(*, href: str, label: str) -> str:
     """
 
 
-def support_signature(*, app_url: str, tip: Optional[str] = None) -> str:
+def support_signature(
+    *,
+    app_url: str,
+    tip: Optional[str] = None,
+    logo_url: Optional[str] = None,
+) -> str:
     """Professional footer: tech help + WhatsApp + support links."""
     base = app_url.rstrip("/")
     support = f"{base}/support"
@@ -85,11 +125,20 @@ def support_signature(*, app_url: str, tip: Optional[str] = None) -> str:
           </td>
         </tr>
         <tr>
-          <td style="padding-top:8px;border-top:1px solid #E5E7EB;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:{MUTED};">
-            <strong style="color:{PRIMARY};">Noor<span style="color:{ACCENT};">Link</span></strong>
-            · Travel eSIM for Umrah, Hajj &amp; journeys worldwide<br/>
-            <a href="{html.escape(base)}" style="color:{PRIMARY};text-decoration:none;">noorlink.co</a>
-            · <a href="mailto:support@noorlink.co" style="color:{PRIMARY};text-decoration:none;">support@noorlink.co</a>
+          <td style="padding-top:12px;border-top:1px solid #E5E7EB;">
+            <table cellpadding="0" cellspacing="0" role="presentation">
+              <tr>
+                <td style="vertical-align:middle;padding-right:10px;">
+                  {brand_logo(href=base, logo_url=logo_url, height=36)}
+                </td>
+                <td style="vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:{MUTED};">
+                  <strong style="color:{PRIMARY};">Noor<span style="color:{ACCENT};">Link</span></strong>
+                  · Travel eSIM for Umrah, Hajj &amp; journeys worldwide<br/>
+                  <a href="{html.escape(base)}" style="color:{PRIMARY};text-decoration:none;">noorlink.co</a>
+                  · <a href="mailto:support@noorlink.co" style="color:{PRIMARY};text-decoration:none;">support@noorlink.co</a>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
       </table>
@@ -103,13 +152,17 @@ def wrap_branded_email(
     body_html: str,
     app_url: str,
     tip: Optional[str] = None,
+    logo_url: Optional[str] = None,
 ) -> str:
-    """Full HTML document with NoorLink header + support signature."""
+    """Full HTML document with NoorLink logo header + support signature."""
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    resolved_logo = (logo_url or getattr(settings, "email_logo_url", "") or DEFAULT_LOGO_URL).strip()
     base = app_url.rstrip("/")
-    wordmark = brand_wordmark(href=base)
-    signature = support_signature(app_url=base, tip=tip)
+    lockup = brand_header_lockup(href=base, logo_url=resolved_logo)
+    signature = support_signature(app_url=base, tip=tip, logo_url=resolved_logo)
     safe_eyebrow = html.escape(eyebrow.upper())
-    # title may include emoji / already-escaped fragments — keep as provided
     return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -123,7 +176,7 @@ def wrap_branded_email(
       <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:600px;background:{SURFACE};border-radius:16px;overflow:hidden;border:1px solid #E5E7EB;">
         <tr>
           <td style="background:{PRIMARY};padding:28px 32px 24px;">
-            {wordmark}
+            {lockup}
             <p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:{ACCENT};font-weight:700;">
               {safe_eyebrow}
             </p>

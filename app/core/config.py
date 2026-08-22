@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     debug: bool = False
     environment: str = "development"
 
+    # Absolute URL to logo PNG used in transactional emails
+    email_logo_url: str = "https://noorlink.co/images/logo.png"
+
     # —— Supabase (set in Supabase Dashboard → Project Settings → API) ——
     supabase_url: str = Field(
         ...,
