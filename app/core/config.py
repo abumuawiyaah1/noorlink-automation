@@ -1,7 +1,7 @@
 from functools import lru_cache
-from typing import List, Optional
+from typing import Any, List, Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     # Absolute URL to logo PNG used in transactional emails
     email_logo_url: str = "https://noorlink.co/images/logo.png"
 
-    # —— Supabase (set in Supabase Dashboard → Project Settings → API) ——
+    # —— Supabase (Dashboard → Project Settings → API) ——
     supabase_url: str = Field(
         ...,
         description="Project URL, e.g. https://xxxx.supabase.co",
@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     # Optional shared secret if Access adds webhook signing later
     esim_access_webhook_secret: str = ""
     # When true, Saudi/Umrah orders must map to esimaccess (Phase A restriction)
+    # Accepts true/false/1/0/yes/no; blank Railway vars fall back to True.
     esim_access_enforce_saudi: bool = True
 
     # —— Resend (email delivery) ——
@@ -88,6 +89,23 @@ class Settings(BaseSettings):
     railway_public_domain: Optional[str] = None
     railway_static_url: Optional[str] = None
     port: Optional[int] = None
+
+    @field_validator("esim_access_enforce_saudi", mode="before")
+    @classmethod
+    def _coerce_enforce_saudi(cls, value: Any) -> Any:
+        if value is None:
+            return True
+        if isinstance(value, str):
+            cleaned = value.strip().lower()
+            if cleaned == "":
+                return True
+            if cleaned in {"1", "true", "yes", "on", "y"}:
+                return True
+            if cleaned in {"0", "false", "no", "off", "n"}:
+                return False
+            # Mis-pasted secret / garbage must not crash boot — default on
+            return True
+        return value
 
     @property
     def supabase_admin_key(self) -> str:
