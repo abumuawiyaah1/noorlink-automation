@@ -17,6 +17,11 @@ from app.services.email_service import (
     send_fulfillment_email,
 )
 from app.services.esim_provision import provision_esim
+from app.services.fulfillment_map import (
+    FulfillmentMapError,
+    enforce_saudi_access_policy,
+    resolve_fulfillment_target,
+)
 from app.services.travel_assistant_service import enrich_order_with_travel_assistant
 
 logger = logging.getLogger(__name__)
@@ -35,7 +40,33 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
         logger.info("Order %s already delivered; skipping fulfillment", order_number)
         return order_row
 
-    esim = provision_esim(order_row)
+    # Restriction: Saudi must be mapped to eSIM Access before we spend wallet
+    try:
+        target = resolve_fulfillment_target(order_row)
+        enforce_saudi_access_policy(order_row, target)
+    except FulfillmentMapError as exc:
+        logger.error("Fulfillment map policy blocked %s: %s", order_number, exc)
+        db.merge_order_metadata(
+            order_number,
+            {"fulfillment": {"error": str(exc), "blocked": True}},
+        )
+        raise FulfillmentError(str(exc)) from exc
+
+    try:
+        esim = provision_esim(order_row)
+    except FulfillmentMapError as exc:
+        raise FulfillmentError(str(exc)) from exc
+    except Exception as exc:
+        # Surface provider wallet / API failures as fulfillment errors
+        name = type(exc).__name__
+        if "Insufficient" in name or "EsimAccess" in name or "Citrus" in name:
+            logger.error("Provider fulfillment failed for %s: %s", order_number, exc)
+            db.merge_order_metadata(
+                order_number,
+                {"fulfillment": {"error": str(exc), "provider_error": name}},
+            )
+            raise FulfillmentError(str(exc)) from exc
+        raise
     travel_guide = enrich_order_with_travel_assistant(order_row)
 
     metadata_patch = {
@@ -44,6 +75,10 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
             "lpa_string": esim.get("lpa_string"),
             "travel_assistant_included": True,
             "iccid": esim.get("iccid"),
+            "provider_order_id": esim.get("provider_order_id"),
+            "provider_sku": esim.get("provider_sku"),
+            "catalog_key": esim.get("catalog_key"),
+            "esim_tran_no": esim.get("esim_tran_no"),
         },
         "travel_assistant": travel_guide,
     }

@@ -54,8 +54,17 @@ class Settings(BaseSettings):
     citrus_api_base_url: str = "https://citrusmobile.com/api/v2/reseller"
     # HMAC signing secret from POST /webhooks (whsec_...) — verify X-Citrus-Signature
     citrus_webhook_secret: str = ""
-    # mock | citrus | simbase
+    # mock | citrus | esimaccess | simbase  (default when no plan_fulfillment_map hit)
     esim_provider: str = "mock"
+
+    # —— eSIM Access (Redtea) ——
+    # Partner portal → AccessCode. Used as RT-AccessCode + HMAC key.
+    esim_access_access_code: str = ""
+    esim_access_api_base_url: str = "https://api.esimaccess.com/api/v1/open"
+    # Optional shared secret if Access adds webhook signing later
+    esim_access_webhook_secret: str = ""
+    # When true, Saudi/Umrah orders must map to esimaccess (Phase A restriction)
+    esim_access_enforce_saudi: bool = True
 
     # —— Resend (email delivery) ——
     # From address must use a domain verified in Resend (prefer noorlink.co).

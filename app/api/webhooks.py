@@ -1,5 +1,5 @@
 """
-Inbound provider webhooks (Simbase + Citrus Mobile margin / lifecycle guards).
+Inbound provider webhooks (Simbase + Citrus Mobile + eSIM Access).
 """
 
 from __future__ import annotations
@@ -35,6 +35,16 @@ CITRUS_SUSPEND_EVENTS = {
     "esim.balance_depleted",
     "esim.data_suspended",
     "esim.terminated",
+}
+
+# eSIM Access notify types (docs)
+ESIMACCESS_KNOWN_TYPES = {
+    "ORDER_STATUS",
+    "ESIM_STATUS",
+    "SMDP_EVENT",
+    "DATA_USAGE",
+    "VALIDITY_USAGE",
+    "CHECK_HEALTH",
 }
 
 
@@ -370,5 +380,76 @@ async def citrus_lifecycle_webhook(
             "iccid": iccid,
             "order_number": (updated or {}).get("order_number"),
             "event": event_type,
+        }
+    )
+
+
+@router.post("/esimaccess")
+async def esimaccess_webhook(request: Request) -> JSONResponse:
+    """
+    Ingest eSIM Access notifications (ORDER_STATUS, SMDP_EVENT, low-balance, etc.).
+
+    Phase A: acknowledge + log. Profile details are fetched at provision time;
+    webhooks are used for ops visibility and future status sync.
+    """
+    raw = await request.body()
+    try:
+        payload = json.loads(raw.decode("utf-8") or "{}")
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail="Invalid JSON") from exc
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Webhook body must be an object")
+
+    notify_type = str(
+        payload.get("notifyType")
+        or payload.get("type")
+        or payload.get("event")
+        or ""
+    ).strip().upper()
+
+    content = payload.get("content")
+    order_no = payload.get("orderNo")
+    if not order_no and isinstance(content, dict):
+        order_no = content.get("orderNo")
+
+    iccid = _extract_iccid(payload)
+    if not iccid and isinstance(content, dict):
+        iccid = _extract_iccid(content)
+
+    logger.info(
+        "eSIM Access webhook type=%s orderNo=%s iccid=%s",
+        notify_type or "(none)",
+        order_no,
+        iccid,
+    )
+
+    if notify_type == "CHECK_HEALTH":
+        return JSONResponse({"ok": True, "handled": True, "reason": "health_check"})
+
+    # Persist lightweight breadcrumb on matching order when we already have ICCID
+    if iccid:
+        try:
+            order = db.get_order_row_by_iccid(str(iccid))
+            if order:
+                db.merge_order_metadata(
+                    order["order_number"],
+                    {
+                        "fulfillment": {
+                            "esimaccess_last_webhook": notify_type or "unknown",
+                            "esimaccess_order_no": order_no,
+                        }
+                    },
+                )
+        except Exception:
+            logger.exception("Failed to merge eSIM Access webhook metadata")
+
+    return JSONResponse(
+        {
+            "ok": True,
+            "handled": notify_type in ESIMACCESS_KNOWN_TYPES or not notify_type,
+            "notifyType": notify_type or None,
+            "orderNo": order_no,
+            "iccid": iccid,
         }
     )

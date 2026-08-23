@@ -444,10 +444,38 @@ def create_order(
     data_total_gb = package.get("data_total_gb") if package else None
     phone_value = phone.strip() if phone and phone.strip() else None
 
+    # Restriction: Saudi checkout must match a virtual catalog map entry (Phase A)
+    from app.services.fulfillment_map import (
+        FulfillmentMapError,
+        enforce_saudi_access_policy,
+        is_saudi_destination,
+        resolve_fulfillment_target,
+    )
+
+    fulfillment_target = None
+    if is_saudi_destination(country, (package or {}).get("country_code")):
+        probe_order = {
+            "package_id": pkg_id,
+            "country": country,
+            "data_total_gb": data_total_gb,
+        }
+        fulfillment_target = resolve_fulfillment_target(probe_order, package=package)
+        try:
+            enforce_saudi_access_policy(probe_order, fulfillment_target)
+        except FulfillmentMapError as exc:
+            raise SupabaseRepositoryError(str(exc)) from exc
+
     order_number = _generate_order_number()
     metadata: Dict[str, Any] = {}
     if phone_value:
         metadata["phone"] = phone_value
+
+    if fulfillment_target:
+        metadata["fulfillment_plan"] = {
+            "catalog_key": fulfillment_target.catalog_key,
+            "provider": fulfillment_target.provider,
+            "provider_sku": fulfillment_target.provider_sku,
+        }
 
     regional_id = resolve_regional_product_by_display_name(country)
     if regional_id:
