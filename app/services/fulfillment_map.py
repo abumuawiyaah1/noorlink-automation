@@ -58,6 +58,19 @@ STATIC_SA_MAP: List[Dict[str, Any]] = [
         "period_num": None,
         "is_active": True,
     },
+    {
+        "catalog_key": "sa-50gb-30",
+        "country_code": "SA",
+        "country_slug": "saudi-arabia",
+        "data_gb": 50.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "CKH801",
+        "provider_slug": "SA_50_30",
+        "wholesale_cents": 5990,
+        "period_num": None,
+        "is_active": True,
+    },
 ]
 
 
@@ -235,7 +248,7 @@ def enforce_saudi_access_policy(
     if target is None:
         raise FulfillmentMapError(
             "Saudi Arabia orders require a plan_fulfillment_map entry "
-            "(sa-5gb-30 / sa-10gb-30 / sa-20gb-30)."
+            "(sa-5gb-30 / sa-10gb-30 / sa-20gb-30 / sa-50gb-30)."
         )
     if target.provider != "esimaccess":
         raise FulfillmentMapError(
