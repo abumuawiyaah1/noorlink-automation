@@ -974,6 +974,7 @@ def _map_mobile_data_plan_row(
             plan_category=plan_category,
             is_featured=is_featured,
         ),
+        "coming_soon": bool(row.get("coming_soon")),
     }
 
 

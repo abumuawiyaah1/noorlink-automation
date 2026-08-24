@@ -74,8 +74,53 @@ STATIC_SA_MAP: List[Dict[str, Any]] = [
 ]
 
 
-@dataclass(frozen=True)
-class FulfillmentTarget:
+def _regional_fulfillment_seeds() -> List[Dict[str, Any]]:
+    """Access SKUs declared on regional template plans."""
+    try:
+        from app.api.regional_inventory import (
+            REGIONAL_PRODUCTS,
+            REGIONAL_TEMPLATES,
+            parse_data_total_gb,
+            plan_data_label,
+        )
+    except Exception:
+        return []
+
+    seeds: List[Dict[str, Any]] = []
+    for product_id, product in REGIONAL_PRODUCTS.items():
+        template = REGIONAL_TEMPLATES.get(str(product.get("template_key")))
+        if not template:
+            continue
+        for plan in (template.get("plans") or {}).values():
+            if not isinstance(plan, dict) or plan.get("coming_soon"):
+                continue
+            fulfillment = plan.get("fulfillment")
+            if not isinstance(fulfillment, dict):
+                continue
+            catalog_key = str(fulfillment.get("catalog_key") or "").strip()
+            sku = str(fulfillment.get("provider_sku") or "").strip()
+            if not catalog_key or not sku:
+                continue
+            data_label = plan_data_label(plan)
+            seeds.append(
+                {
+                    "catalog_key": catalog_key,
+                    "country_code": None,
+                    "country_slug": product_id,
+                    "data_gb": parse_data_total_gb(data_label),
+                    "validity_days": int(plan.get("days") or 0) or None,
+                    "provider": str(fulfillment.get("provider") or "esimaccess"),
+                    "provider_sku": sku,
+                    "provider_slug": fulfillment.get("provider_slug"),
+                    "wholesale_cents": fulfillment.get("wholesale_cents"),
+                    "period_num": None,
+                    "is_active": True,
+                }
+            )
+    return seeds
+
+
+STATIC_FULFILLMENT_MAP: List[Dict[str, Any]] = STATIC_SA_MAP + _regional_fulfillment_seeds()
     catalog_key: str
     provider: str
     provider_sku: str
@@ -100,6 +145,22 @@ def normalize_country_slug(value: Optional[str]) -> str:
         "sa": "saudi-arabia",
         "umrah": "saudi-arabia",
         "hajj": "saudi-arabia",
+        "middle east": "regional-middle-east",
+        "middle-east": "regional-middle-east",
+        "middle east regional": "regional-middle-east",
+        "europe": "regional-europe",
+        "europe regional": "regional-europe",
+        "asia pacific": "regional-asia-pacific",
+        "asia-pacific": "regional-asia-pacific",
+        "north america": "regional-north-america",
+        "north-america": "regional-north-america",
+        "africa": "regional-africa",
+        "africa regional": "regional-africa",
+        "south america": "regional-south-america",
+        "south-america": "regional-south-america",
+        "global": "regional-global",
+        "global regional": "regional-global",
+        "worldwide": "regional-global",
     }
     if raw in aliases:
         return aliases[raw]
@@ -141,7 +202,7 @@ def _match_static(
     validity_days: Optional[int],
 ) -> Optional[FulfillmentTarget]:
     slug = normalize_country_slug(country)
-    for row in STATIC_SA_MAP:
+    for row in STATIC_FULFILLMENT_MAP:
         if not row.get("is_active"):
             continue
         if slug and row.get("country_slug") and slug != row["country_slug"]:

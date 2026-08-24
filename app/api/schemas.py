@@ -211,6 +211,7 @@ class EsimPlanItem(BaseModel):
     display_badge: Optional[DisplayBadge] = Field(
         None, serialization_alias="displayBadge"
     )
+    coming_soon: bool = Field(False, serialization_alias="comingSoon")
 
     model_config = {"populate_by_name": True}
 

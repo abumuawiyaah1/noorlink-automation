@@ -10,28 +10,67 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-# Mirrors regionalTemplates in esim-database.js
+# Access-backed regional ladders. Plans without a real SKU set coming_soon=True.
+# Fulfillment keys map to plan_fulfillment_map / STATIC seeds (provider esimaccess).
 REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "europe": {
         "name": "Europe",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 12.99},
+            "basic": {
+                "name": "Basic",
+                "data": "1GB",
+                "days": 7,
+                "price": 12.99,
+                "fulfillment": {
+                    "catalog_key": "eu-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "CKH484",
+                    "provider_slug": "EU-42_1_7",
+                    "wholesale_cents": 290,
+                },
+            },
             "standard": {
                 "name": "Standard",
                 "data": "10GB",
-                "days": 15,
-                "price": 24.99,
+                "days": 30,
+                "price": 29.99,
                 "popular": True,
+                "fulfillment": {
+                    "catalog_key": "eu-10gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "CKH486",
+                    "provider_slug": "EU-42_10_30",
+                    "wholesale_cents": 1900,
+                },
             },
-            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 39.99},
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 59.99},
+            "plus": {
+                "name": "Plus",
+                "data": "20GB",
+                "days": 30,
+                "price": 44.99,
+                "fulfillment": {
+                    "catalog_key": "eu-20gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "CKH500",
+                    "provider_slug": "EU-42_20_30",
+                    "wholesale_cents": 3200,
+                },
+            },
+            "premium": {
+                "name": "Premium Unlimited",
+                "data": "UNLIMITED*",
+                "days": 30,
+                "price": 59.99,
+                "coming_soon": True,
+            },
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
                 "sharedData": "50GB",
                 "days": 30,
                 "price": 79.99,
+                "coming_soon": True,
             },
         },
     },
@@ -39,22 +78,60 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "Asia Pacific",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 14.99},
+            "basic": {
+                "name": "Basic",
+                "data": "1GB",
+                "days": 7,
+                "price": 14.99,
+                "fulfillment": {
+                    "catalog_key": "as20-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "JC183",
+                    "provider_slug": "AS-20_1_7",
+                    "wholesale_cents": 360,
+                },
+            },
             "standard": {
                 "name": "Standard",
                 "data": "10GB",
-                "days": 15,
-                "price": 29.99,
+                "days": 30,
+                "price": 34.99,
                 "popular": True,
+                "fulfillment": {
+                    "catalog_key": "as20-10gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "JC180",
+                    "provider_slug": "AS-20_10_30",
+                    "wholesale_cents": 2300,
+                },
             },
-            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 44.99},
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 54.99},
+            "plus": {
+                "name": "Plus",
+                "data": "20GB",
+                "days": 30,
+                "price": 54.99,
+                "fulfillment": {
+                    "catalog_key": "as20-20gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PALTQIBLC",
+                    "provider_slug": "AS-20_20_30",
+                    "wholesale_cents": 4000,
+                },
+            },
+            "premium": {
+                "name": "Premium Unlimited",
+                "data": "UNLIMITED*",
+                "days": 30,
+                "price": 54.99,
+                "coming_soon": True,
+            },
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
                 "sharedData": "40GB",
                 "days": 30,
                 "price": 79.99,
+                "coming_soon": True,
             },
         },
     },
@@ -62,22 +139,60 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "Middle East",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "5GB", "days": 7, "price": 17.99},
+            "basic": {
+                "name": "Basic",
+                "data": "1GB",
+                "days": 7,
+                "price": 17.99,
+                "fulfillment": {
+                    "catalog_key": "me-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "PSFQ1VKKN",
+                    "provider_slug": "ME-12_1_7",
+                    "wholesale_cents": 700,
+                },
+            },
             "standard": {
                 "name": "Standard",
-                "data": "10GB",
+                "data": "3GB",
                 "days": 15,
                 "price": 29.99,
                 "popular": True,
+                "fulfillment": {
+                    "catalog_key": "me-3gb-15",
+                    "provider": "esimaccess",
+                    "provider_sku": "PU9MJXGXW",
+                    "provider_slug": "ME-12_3_15",
+                    "wholesale_cents": 1750,
+                },
             },
-            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 44.99},
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 59.99},
+            "plus": {
+                "name": "Plus",
+                "data": "20GB",
+                "days": 30,
+                "price": 44.99,
+                "coming_soon": True,
+            },
+            "premium": {
+                "name": "Premium",
+                "data": "10GB",
+                "days": 30,
+                "price": 59.99,
+                "fulfillment": {
+                    "catalog_key": "me-10gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "P12PP39U9",
+                    "provider_slug": "ME-12_10_30",
+                    "wholesale_cents": 5500,
+                },
+            },
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
                 "sharedData": "60GB",
                 "days": 30,
                 "price": 94.99,
+                "coming_soon": True,
             },
         },
     },
@@ -85,22 +200,54 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "Africa",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 12.99},
+            "basic": {
+                "name": "Basic",
+                "data": "1GB",
+                "days": 7,
+                "price": 12.99,
+                "fulfillment": {
+                    "catalog_key": "af-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "CKH495",
+                    "provider_slug": "AF-29_1_7",
+                    "wholesale_cents": 570,
+                },
+            },
             "standard": {
                 "name": "Standard",
                 "data": "5GB",
-                "days": 15,
-                "price": 22.99,
+                "days": 30,
+                "price": 29.99,
                 "popular": True,
+                "fulfillment": {
+                    "catalog_key": "af-5gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "CKH497",
+                    "provider_slug": "AF-29_5_30",
+                    "wholesale_cents": 2100,
+                },
             },
-            "plus": {"name": "Plus", "data": "15GB", "days": 30, "price": 34.99},
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 44.99},
+            "plus": {
+                "name": "Plus",
+                "data": "15GB",
+                "days": 30,
+                "price": 34.99,
+                "coming_soon": True,
+            },
+            "premium": {
+                "name": "Premium Unlimited",
+                "data": "UNLIMITED*",
+                "days": 30,
+                "price": 44.99,
+                "coming_soon": True,
+            },
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
                 "sharedData": "30GB",
                 "days": 30,
                 "price": 69.99,
+                "coming_soon": True,
             },
         },
     },
@@ -108,22 +255,60 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "North America",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 14.99},
+            "basic": {
+                "name": "Basic",
+                "data": "1GB",
+                "days": 7,
+                "price": 14.99,
+                "fulfillment": {
+                    "catalog_key": "na-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "CKH491",
+                    "provider_slug": "NA-3_1_7",
+                    "wholesale_cents": 198,
+                },
+            },
             "standard": {
                 "name": "Standard",
                 "data": "10GB",
-                "days": 15,
-                "price": 24.99,
+                "days": 30,
+                "price": 29.99,
                 "popular": True,
+                "fulfillment": {
+                    "catalog_key": "na-10gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "CKH494",
+                    "provider_slug": "NA-3_10_30",
+                    "wholesale_cents": 1520,
+                },
             },
-            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 39.99},
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 54.99},
+            "plus": {
+                "name": "Plus",
+                "data": "20GB",
+                "days": 30,
+                "price": 39.99,
+                "fulfillment": {
+                    "catalog_key": "na-20gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "CKH535",
+                    "provider_slug": "NA-3_20_30",
+                    "wholesale_cents": 2550,
+                },
+            },
+            "premium": {
+                "name": "Premium Unlimited",
+                "data": "UNLIMITED*",
+                "days": 30,
+                "price": 54.99,
+                "coming_soon": True,
+            },
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
                 "sharedData": "50GB",
                 "days": 30,
                 "price": 89.99,
+                "coming_soon": True,
             },
         },
     },
@@ -131,22 +316,42 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "South America",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 13.99},
+            "basic": {
+                "name": "Basic",
+                "data": "3GB",
+                "days": 7,
+                "price": 13.99,
+                "coming_soon": True,
+            },
             "standard": {
                 "name": "Standard",
                 "data": "10GB",
                 "days": 15,
                 "price": 24.99,
                 "popular": True,
+                "coming_soon": True,
             },
-            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 39.99},
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 49.99},
+            "plus": {
+                "name": "Plus",
+                "data": "20GB",
+                "days": 30,
+                "price": 39.99,
+                "coming_soon": True,
+            },
+            "premium": {
+                "name": "Premium Unlimited",
+                "data": "UNLIMITED*",
+                "days": 30,
+                "price": 49.99,
+                "coming_soon": True,
+            },
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
                 "sharedData": "40GB",
                 "days": 30,
                 "price": 74.99,
+                "coming_soon": True,
             },
         },
     },
@@ -154,22 +359,60 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "Global",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "5GB", "days": 7, "price": 24.99},
+            "basic": {
+                "name": "Basic",
+                "data": "1GB",
+                "days": 7,
+                "price": 24.99,
+                "fulfillment": {
+                    "catalog_key": "gl-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "PHS30M6EZ",
+                    "provider_slug": "GL-120_1_7",
+                    "wholesale_cents": 460,
+                },
+            },
             "standard": {
                 "name": "Standard",
-                "data": "15GB",
-                "days": 15,
-                "price": 44.99,
+                "data": "10GB",
+                "days": 30,
+                "price": 49.99,
                 "popular": True,
+                "fulfillment": {
+                    "catalog_key": "gl-10gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "P34FHRF8J",
+                    "provider_slug": "GL-120_10_30",
+                    "wholesale_cents": 3400,
+                },
             },
-            "plus": {"name": "Plus", "data": "30GB", "days": 30, "price": 69.99},
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 89.99},
+            "plus": {
+                "name": "Plus",
+                "data": "20GB",
+                "days": 30,
+                "price": 79.99,
+                "fulfillment": {
+                    "catalog_key": "gl-20gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PR3JZMC20",
+                    "provider_slug": "GL-120_20_30",
+                    "wholesale_cents": 6000,
+                },
+            },
+            "premium": {
+                "name": "Premium Unlimited",
+                "data": "UNLIMITED*",
+                "days": 30,
+                "price": 89.99,
+                "coming_soon": True,
+            },
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
                 "sharedData": "60GB",
                 "days": 30,
                 "price": 119.99,
+                "coming_soon": True,
             },
         },
     },
@@ -318,14 +561,14 @@ def parse_data_total_gb(data_label: str) -> Optional[float]:
 def select_plan_for_price(
     template: Dict[str, Any], price_cents: int
 ) -> Tuple[str, Dict[str, Any]]:
-    """Pick plan tier by exact catalog cents, else nearest template price."""
+    """Pick plan tier by exact catalog cents, else nearest sellable template price."""
     plans: Dict[str, Dict[str, Any]] = template["plans"]
     exact: List[Tuple[str, Dict[str, Any]]] = []
     ranked: List[Tuple[int, str, Dict[str, Any]]] = []
 
     for key in PLAN_KEYS_ORDER:
         plan = plans.get(key)
-        if not plan:
+        if not plan or plan.get("coming_soon"):
             continue
         cents = plan_price_cents(plan)
         if cents == price_cents:
@@ -338,6 +581,9 @@ def select_plan_for_price(
                 if match_key == key:
                     return match_key, match_plan
         return exact[0]
+
+    if not ranked:
+        raise ValueError("No sellable plans in regional template")
 
     ranked.sort(key=lambda item: item[0])
     _, plan_key, plan = ranked[0]
@@ -420,6 +666,9 @@ def build_template_mobile_data_rows(country_input: str) -> List[Dict[str, Any]]:
         else:
             name = f"{display_name} {data_label} · {validity_days} Days"
 
+        coming_soon = bool(plan.get("coming_soon"))
+        fulfillment = plan.get("fulfillment") if isinstance(plan.get("fulfillment"), dict) else None
+
         rows.append(
             {
                 "id": f"tmpl-{country_slug}-{plan_key}",
@@ -434,11 +683,18 @@ def build_template_mobile_data_rows(country_input: str) -> List[Dict[str, Any]]:
                 "currency": currency,
                 "pricing_strategy": "MANUAL",
                 "plan_category": category,
-                "is_featured": is_featured,
+                "is_featured": is_featured and not coming_soon,
                 "is_active": True,
                 "sort_order": (sort_index + 1) * 10,
                 "region_id": region_id,
                 "is_rechargeable": plan_key == "family",
+                "coming_soon": coming_soon,
+                "fulfillment": fulfillment,
+                "wholesale_cost": (
+                    round(int(fulfillment["wholesale_cents"]) / 100, 2)
+                    if fulfillment and fulfillment.get("wholesale_cents") is not None
+                    else None
+                ),
             }
         )
 
@@ -550,11 +806,8 @@ REGIONAL_PRODUCTS: Dict[str, Dict[str, Any]] = {
             "United States",
             "Canada",
             "Mexico",
-            "Panama",
-            "Costa Rica",
-            "Bahamas",
         ],
-        "exclusions": [],
+        "exclusions": ["Panama", "Costa Rica", "Bahamas"],
         "single_country_slug": "usa",
     },
     "regional-asia-pacific": {
@@ -576,10 +829,8 @@ REGIONAL_PRODUCTS: Dict[str, Dict[str, Any]] = {
             "Malaysia",
             "Philippines",
             "Vietnam",
-            "Fiji",
-            "Maldives",
         ],
-        "exclusions": [],
+        "exclusions": ["Fiji", "Maldives"],
         "single_country_slug": "japan",
     },
     "regional-middle-east": {
@@ -588,7 +839,7 @@ REGIONAL_PRODUCTS: Dict[str, Dict[str, Any]] = {
         "short_name": "Middle East",
         "flag_emoji": "🕌",
         "template_key": "middle-east",
-        "hero_tagline": "Gulf, Turkey, and more — one plan for multi-stop Middle East trips.",
+        "hero_tagline": "Saudi, Gulf, Turkey, Egypt and more — one Access MENA pack for multi-stop trips.",
         "countries": [
             "Saudi Arabia",
             "United Arab Emirates",
@@ -599,9 +850,11 @@ REGIONAL_PRODUCTS: Dict[str, Dict[str, Any]] = {
             "Turkey",
             "Egypt",
             "Jordan",
-            "Lebanon",
+            "Israel",
+            "Morocco",
+            "Tunisia",
         ],
-        "exclusions": [],
+        "exclusions": ["Lebanon"],
         "single_country_slug": "turkey",
     },
     "regional-africa": {
@@ -630,7 +883,7 @@ REGIONAL_PRODUCTS: Dict[str, Dict[str, Any]] = {
         "short_name": "South America",
         "flag_emoji": "🌎",
         "template_key": "south-america",
-        "hero_tagline": "Brazil to Patagonia — one eSIM for multi-country South America trips.",
+        "hero_tagline": "South America regional packs are coming soon while we lock Access LatAm SKUs.",
         "countries": [
             "Brazil",
             "Argentina",
@@ -759,6 +1012,9 @@ def build_regional_product_rows(product_id: str) -> List[Dict[str, Any]]:
         else:
             name = f"{display_name} {data_label} · {validity_days} Days"
 
+        coming_soon = bool(plan.get("coming_soon"))
+        fulfillment = plan.get("fulfillment") if isinstance(plan.get("fulfillment"), dict) else None
+
         rows.append(
             {
                 "id": f"regional-{product_id.replace('regional-', '')}-{plan_key}",
@@ -773,13 +1029,20 @@ def build_regional_product_rows(product_id: str) -> List[Dict[str, Any]]:
                 "currency": currency,
                 "pricing_strategy": "MANUAL",
                 "plan_category": category,
-                "is_featured": is_featured,
+                "is_featured": is_featured and not coming_soon,
                 "is_active": True,
                 "sort_order": (sort_index + 1) * 10,
                 "region_id": region_id,
                 "is_rechargeable": plan_key == "family",
                 "flag_emoji": product.get("flag_emoji"),
                 "product_type": "regional",
+                "coming_soon": coming_soon,
+                "fulfillment": fulfillment,
+                "wholesale_cost": (
+                    round(int(fulfillment["wholesale_cents"]) / 100, 2)
+                    if fulfillment and fulfillment.get("wholesale_cents") is not None
+                    else None
+                ),
             }
         )
 
