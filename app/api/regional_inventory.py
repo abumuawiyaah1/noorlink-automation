@@ -16,21 +16,22 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "Europe",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "5GB", "days": 7, "price": 19.99},
+            "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 12.99},
             "standard": {
                 "name": "Standard",
                 "data": "10GB",
                 "days": 15,
-                "price": 34.99,
+                "price": 24.99,
                 "popular": True,
             },
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 69.99},
+            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 39.99},
+            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 59.99},
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
                 "sharedData": "50GB",
                 "days": 30,
-                "price": 89.99,
+                "price": 79.99,
             },
         },
     },
@@ -41,16 +42,17 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
             "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 14.99},
             "standard": {
                 "name": "Standard",
-                "data": "7GB",
+                "data": "10GB",
                 "days": 15,
-                "price": 24.99,
+                "price": 29.99,
                 "popular": True,
             },
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 49.99},
+            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 44.99},
+            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 54.99},
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
-                "sharedData": "35GB",
+                "sharedData": "40GB",
                 "days": 30,
                 "price": 79.99,
             },
@@ -68,6 +70,7 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "price": 29.99,
                 "popular": True,
             },
+            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 44.99},
             "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 59.99},
             "family": {
                 "name": "Family Bundle",
@@ -90,6 +93,7 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "price": 22.99,
                 "popular": True,
             },
+            "plus": {"name": "Plus", "data": "15GB", "days": 30, "price": 34.99},
             "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 44.99},
             "family": {
                 "name": "Family Bundle",
@@ -104,21 +108,22 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "North America",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 16.99},
+            "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 14.99},
             "standard": {
                 "name": "Standard",
                 "data": "10GB",
                 "days": 15,
-                "price": 29.99,
+                "price": 24.99,
                 "popular": True,
             },
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 64.99},
+            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 39.99},
+            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 54.99},
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
-                "sharedData": "80GB",
+                "sharedData": "50GB",
                 "days": 30,
-                "price": 109.99,
+                "price": 89.99,
             },
         },
     },
@@ -129,12 +134,13 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
             "basic": {"name": "Basic", "data": "3GB", "days": 7, "price": 13.99},
             "standard": {
                 "name": "Standard",
-                "data": "7GB",
+                "data": "10GB",
                 "days": 15,
-                "price": 23.99,
+                "price": 24.99,
                 "popular": True,
             },
-            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 44.99},
+            "plus": {"name": "Plus", "data": "20GB", "days": 30, "price": 39.99},
+            "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 49.99},
             "family": {
                 "name": "Family Bundle",
                 "lines": 4,
@@ -148,14 +154,15 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "name": "Global",
         "currency": "USD",
         "plans": {
-            "basic": {"name": "Basic", "data": "5GB", "days": 7, "price": 29.99},
+            "basic": {"name": "Basic", "data": "5GB", "days": 7, "price": 24.99},
             "standard": {
                 "name": "Standard",
                 "data": "15GB",
                 "days": 15,
-                "price": 49.99,
+                "price": 44.99,
                 "popular": True,
             },
+            "plus": {"name": "Plus", "data": "30GB", "days": 30, "price": 69.99},
             "premium": {"name": "Premium", "data": "UNLIMITED*", "days": 30, "price": 89.99},
             "family": {
                 "name": "Family Bundle",
@@ -252,7 +259,7 @@ COUNTRY_TEMPLATE_HINTS: Dict[str, Tuple[str, str]] = {
 
 DEFAULT_TEMPLATE_KEY = "europe"
 
-PLAN_KEYS_ORDER: Tuple[str, ...] = ("basic", "standard", "premium", "family")
+PLAN_KEYS_ORDER: Tuple[str, ...] = ("basic", "standard", "plus", "premium", "family")
 
 
 def _slugify(value: str) -> str:

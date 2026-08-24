@@ -1074,14 +1074,27 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
         ]
         source_rows = active_rows or rows
 
-        if not source_rows:
-            source_rows = build_template_mobile_data_rows(normalized)
-            if source_rows:
+        # Sparse DB seeds (e.g. one France plan) should not hide the full
+        # regional catalog — travelers always see a complete 5-plan lineup.
+        min_catalog_plans = 4
+        if len(source_rows) < min_catalog_plans:
+            template_rows = build_template_mobile_data_rows(normalized)
+            if template_rows and len(template_rows) > len(source_rows):
+                logger.info(
+                    "Sparse catalog for country_id=%s (%s plans); "
+                    "using regional template (%s plans)",
+                    normalized,
+                    len(source_rows),
+                    len(template_rows),
+                )
+                source_rows = template_rows
+            elif not source_rows and template_rows:
                 logger.info(
                     "Serving regional template plans for country_id=%s (%s plans)",
                     normalized,
-                    len(source_rows),
+                    len(template_rows),
                 )
+                source_rows = template_rows
 
         meta = _fetch_country_metadata(client, normalized)
         if source_rows:

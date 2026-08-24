@@ -14,7 +14,7 @@ from app.api.regional_inventory import (
 def test_all_regional_products_have_plans():
     for product_id in REGIONAL_PRODUCTS:
         rows = build_regional_product_rows(product_id)
-        assert len(rows) == 4, product_id
+        assert len(rows) == 5, product_id
         assert rows[0]["country_id"] == product_id
         assert str(rows[0]["id"]).startswith("regional-")
 
