@@ -121,6 +121,10 @@ def _regional_fulfillment_seeds() -> List[Dict[str, Any]]:
 
 
 STATIC_FULFILLMENT_MAP: List[Dict[str, Any]] = STATIC_SA_MAP + _regional_fulfillment_seeds()
+
+
+@dataclass(frozen=True)
+class FulfillmentTarget:
     catalog_key: str
     provider: str
     provider_sku: str
