@@ -170,6 +170,11 @@ def process_paid_order(
         )
         return None
 
+    metadata = paid_row.get("metadata") or {}
+    promo = metadata.get("promo") if isinstance(metadata, dict) else None
+    if isinstance(promo, dict) and promo.get("code"):
+        db.increment_promo_redemption(str(promo["code"]))
+
     try:
         return fulfill_paid_order(paid_row)
     except FulfillmentError:

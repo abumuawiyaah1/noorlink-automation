@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     citrus_api_base_url: str = "https://citrusmobile.com/api/v2/reseller"
     # HMAC signing secret from POST /webhooks (whsec_...) — verify X-Citrus-Signature
     citrus_webhook_secret: str = ""
-    # mock | citrus | esimaccess | simbase  (default when no plan_fulfillment_map hit)
+    # mock | citrus | esimaccess | telna | simbase  (default when no plan_fulfillment_map hit)
     esim_provider: str = "mock"
 
     # —— eSIM Access (Redtea) ——
@@ -67,10 +67,22 @@ class Settings(BaseSettings):
     # Accepts true/false/1/0/yes/no; blank Railway vars fall back to True.
     esim_access_enforce_saudi: bool = True
 
+    # —— Telna Connect Flex ——
+    # Raw API token from support@telna.com / Flex developer onboarding.
+    # Send as Authorization: <token> — no "Bearer" prefix (Telna requirement).
+    telna_api_token: str = ""
+    telna_ordering_base_url: str = "https://ppo-api.telna.com/v1/ordering"
+    telna_diagnostic_base_url: str = "https://ppo-api.telna.com/v1/diagnostic"
+    # Optional account id required by some Flex tenants on /products and work-orders
+    telna_account_id: str = ""
+
     # —— Resend (email delivery) ——
     # From address must use a domain verified in Resend (prefer noorlink.co).
     resend_api_key: str
     resend_from_email: str = "NoorLink <noreply@noorlink.co>"
+
+    # Protected bearer token for scheduled cron hits (Insider release + promo expiry)
+    cron_secret: str = ""
 
     # —— Auth (future JWT sessions) ——
     secret_key: str = "change-this-in-production"

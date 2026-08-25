@@ -13,6 +13,8 @@ from app.services.email_service import (
     send_support_ticket_confirmation,
 )
 from app.services.fulfillment import FulfillmentError, process_paid_order
+from app.services.insider_release import expire_finished_promos, release_due_insider_issues
+from app.services.promo_codes import PromoCodeError, normalize_code, validate_promo_row
 
 from .analytics import router as analytics_router
 from .devices import check_device
@@ -32,6 +34,7 @@ from .schemas import (
     CheckoutSessionResponse,
     ContactFormRequest,
     ContactFormResponse,
+    CronRunResponse,
     DeviceCheckRequest,
     DeviceCheckResponse,
     EmailDiagnosticsResponse,
@@ -39,6 +42,8 @@ from .schemas import (
     NewsletterSubscribeRequest,
     NewsletterSubscribeResponse,
     OrderLookupResponse,
+    PromoValidateRequest,
+    PromoValidateResponse,
     RootResponse,
 )
 
@@ -198,6 +203,68 @@ async def newsletter_subscribe(body: NewsletterSubscribeRequest):
     )
 
 
+@app.post("/api/promo/validate", response_model=PromoValidateResponse)
+async def promo_validate(body: PromoValidateRequest):
+    try:
+        db.expire_promo_codes()
+    except db.SupabaseRepositoryError:
+        pass
+
+    subtotal_cents = int(round(body.price * 100))
+    code = normalize_code(body.code)
+    try:
+        row = db.get_promo_code(code)
+        discount = validate_promo_row(row, subtotal_cents=subtotal_cents)
+    except PromoCodeError as exc:
+        return PromoValidateResponse(valid=False, message=str(exc))
+
+    return PromoValidateResponse(
+        valid=True,
+        code=discount.code,
+        percent_off=discount.percent_off,
+        discount_amount=round(discount.discount_cents / 100.0, 2),
+        final_price=round(discount.final_cents / 100.0, 2),
+        ends_at=discount.ends_at,
+        message="Promo applied.",
+    )
+
+
+def _require_cron_secret(authorization: Optional[str]) -> None:
+    secret = (settings.cron_secret or "").strip()
+    if not secret:
+        raise HTTPException(status_code=503, detail="Cron is not configured.")
+    expected = f"Bearer {secret}"
+    if authorization != expected:
+        raise HTTPException(status_code=401, detail="Unauthorized.")
+
+
+@app.post("/api/cron/run", response_model=CronRunResponse)
+async def cron_run(authorization: Optional[str] = Header(None)):
+    """Expire finished promos and send due Insider issues. Requires CRON_SECRET."""
+    _require_cron_secret(authorization)
+
+    expired = 0
+    insider_result = None
+    try:
+        expired = expire_finished_promos()
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    try:
+        insider_result = release_due_insider_issues()
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    except EmailDeliveryError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return CronRunResponse(
+        success=True,
+        expired_promos=expired,
+        insider=insider_result,
+        message="Cron tasks completed.",
+    )
+
+
 @app.post("/api/contact", response_model=ContactFormResponse)
 async def contact_submit(body: ContactFormRequest):
     try:
@@ -288,6 +355,22 @@ async def orders_lookup(
 
 @app.post("/api/checkout/session", response_model=CheckoutSessionResponse)
 async def checkout_session(body: CheckoutSessionRequest):
+    subtotal_cents = int(round(body.price * 100))
+    promo_discount = None
+    promo_code_value = None
+
+    if body.promo_code and body.promo_code.strip():
+        try:
+            db.expire_promo_codes()
+        except db.SupabaseRepositoryError:
+            pass
+        promo_code_value = normalize_code(body.promo_code)
+        try:
+            row = db.get_promo_code(promo_code_value)
+            promo_discount = validate_promo_row(row, subtotal_cents=subtotal_cents)
+        except PromoCodeError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     try:
         created = db.create_order(
             email=str(body.email),
@@ -297,6 +380,9 @@ async def checkout_session(body: CheckoutSessionRequest):
             travel_date=body.travel_date,
             package_id=body.package_id,
             phone=body.phone,
+            promo_code=promo_discount.code if promo_discount else None,
+            promo_discount_cents=promo_discount.discount_cents if promo_discount else None,
+            promo_subtotal_cents=subtotal_cents if promo_discount else None,
         )
     except db.ManagedPackagePriceMismatchError as exc:
         raise HTTPException(
@@ -328,6 +414,7 @@ async def checkout_session(body: CheckoutSessionRequest):
             package_name=order.package_name,
             amount_cents=amount_cents,
             currency=order.currency,
+            force_custom_price=bool(promo_discount),
         )
         db.update_order_stripe_session(order.order_number, session.id)
     except StripeCheckoutError as exc:
@@ -388,6 +475,11 @@ async def checkout_session(body: CheckoutSessionRequest):
         ),
         email_sent=email_sent,
         email_error=email_error,
+        discount_amount=(
+            round(promo_discount.discount_cents / 100.0, 2) if promo_discount else None
+        ),
+        final_price=float(order.price),
+        promo_code=promo_code_value,
     )
 
 

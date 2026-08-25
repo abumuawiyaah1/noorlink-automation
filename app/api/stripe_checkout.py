@@ -22,9 +22,10 @@ def _line_items(
     package_name: str,
     amount_cents: int,
     currency: str,
+    force_custom_price: bool = False,
 ) -> List[Dict[str, Any]]:
     stripe_price_id = (package or {}).get("stripe_price_id")
-    if stripe_price_id:
+    if stripe_price_id and not force_custom_price:
         return [{"price": stripe_price_id, "quantity": 1}]
 
     return [
@@ -48,6 +49,7 @@ def create_stripe_checkout_session(
     package_name: str,
     amount_cents: int,
     currency: str,
+    force_custom_price: bool = False,
 ) -> stripe.checkout.Session:
     settings = get_settings()
     stripe.api_key = settings.stripe_secret_key
@@ -66,6 +68,7 @@ def create_stripe_checkout_session(
                 package_name=package_name,
                 amount_cents=amount_cents,
                 currency=currency,
+                force_custom_price=force_custom_price,
             ),
             success_url=success_url,
             cancel_url=settings.stripe_cancel_url,

@@ -5,6 +5,7 @@ Providers:
   - mock (default / development)
   - citrus (Citrus Mobile reseller API)
   - esimaccess (eSIM Access / Redtea — Saudi Phase A)
+  - telna (Telna Connect Flex)
   - simbase (reserved; not wired for auto-provision yet)
 
 Routing:
@@ -257,6 +258,101 @@ def _esimaccess_provision(
     return _run_async(_esimaccess_provision_async(order_row, target))
 
 
+async def _telna_provision_async(
+    order_row: Dict[str, Any],
+    target: FulfillmentTarget,
+) -> Dict[str, Any]:
+    from app.services.telna import TelnaClient, TelnaError
+
+    order_number = str(order_row["order_number"])
+    product_id = (target.provider_sku or target.provider_slug or "").strip()
+    if not product_id:
+        raise RuntimeError("Telna map missing provider_sku (product id)")
+
+    async with TelnaClient() as client:
+        work_order = await client.create_work_order(
+            product_id=product_id,
+            customer_ref=order_number,
+        )
+        status = str(work_order.get("status") or "").upper()
+        work_order_id = str(work_order.get("id") or "")
+
+        # Poll briefly if profile is still preparing
+        if status in {"PREPARING", "PENDING"} and work_order_id:
+            for _ in range(8):
+                await asyncio.sleep(1.5)
+                work_order = await client.get_work_order(work_order_id)
+                status = str(work_order.get("status") or "").upper()
+                if status in {"SHIPPED", "FAILED", "REFUNDED"}:
+                    break
+
+        if status == "FAILED":
+            raise TelnaError(
+                f"Telna work order failed: {work_order.get('failure_msg') or status}"
+            )
+        if status == "REFUNDED":
+            raise TelnaError("Telna work order was refunded")
+
+        euicc = work_order.get("euicc_profile")
+        if not isinstance(euicc, dict):
+            euicc = {}
+        sim_registry = work_order.get("sim_registry")
+        if not isinstance(sim_registry, dict):
+            sim_registry = {}
+        iccid = str(euicc.get("iccid") or sim_registry.get("iccid") or "").strip()
+        lpa_string = str(euicc.get("activation_code") or "").strip()
+
+        if (not lpa_string or not iccid) and iccid:
+            try:
+                refreshed = await client.get_euicc_profile(iccid)
+                if isinstance(refreshed, dict):
+                    lpa_string = str(
+                        refreshed.get("activation_code") or lpa_string
+                    ).strip()
+                    iccid = str(refreshed.get("iccid") or iccid).strip()
+                    euicc = refreshed
+            except TelnaError as exc:
+                logger.warning(
+                    "Telna euicc refresh failed for %s: %s", order_number, exc
+                )
+
+    if not lpa_string:
+        raise RuntimeError("Telna work order missing activation_code / LPA")
+
+    qr_code = (
+        "https://api.qrserver.com/v1/create-qr-code/"
+        f"?size=320x320&data={quote(lpa_string)}"
+    )
+    activation_code = _activation_code_from_lpa(lpa_string)
+    smdp = _smdp_from_lpa(lpa_string)
+
+    logger.info(
+        "Provisioned Telna eSIM for order %s work_order=%s iccid=%s sku=%s",
+        order_number,
+        work_order_id or "(none)",
+        iccid or "(none)",
+        product_id,
+    )
+    return {
+        "activation_code": activation_code,
+        "qr_code_url": qr_code,
+        "lpa_string": lpa_string,
+        "provider": "telna",
+        "iccid": iccid,
+        "smdp_address": smdp,
+        "provider_order_id": work_order_id,
+        "provider_sku": product_id,
+        "catalog_key": target.catalog_key,
+        "raw": {"work_order": work_order, "euicc_profile": euicc},
+    }
+
+
+def _telna_provision(
+    order_row: Dict[str, Any], target: FulfillmentTarget
+) -> Dict[str, Any]:
+    return _run_async(_telna_provision_async(order_row, target))
+
+
 def resolve_provider(explicit: Optional[str] = None) -> str:
     settings = get_settings()
     provider = (explicit or settings.esim_provider or "mock").strip().lower()
@@ -267,6 +363,9 @@ def resolve_provider(explicit: Optional[str] = None) -> str:
         logger.warning(
             "ESIM_PROVIDER=esimaccess but ESIM_ACCESS_ACCESS_CODE empty; using mock"
         )
+        return "mock"
+    if provider == "telna" and not settings.telna_api_token.strip():
+        logger.warning("ESIM_PROVIDER=telna but TELNA_API_TOKEN empty; using mock")
         return "mock"
     if provider == "simbase" and not settings.simbase_api_key.strip():
         logger.warning("ESIM_PROVIDER=simbase but SIMBASE_API_KEY empty; using mock")
@@ -328,6 +427,12 @@ def provision_esim(order_row: Dict[str, Any]) -> Dict[str, Any]:
                 "esimaccess selected but no fulfillment map target on order"
             )
         return _esimaccess_provision(order_row, target)
+    if provider == "telna":
+        if target is None:
+            raise FulfillmentMapError(
+                "telna selected but no fulfillment map target on order"
+            )
+        return _telna_provision(order_row, target)
     if provider == "citrus":
         return _citrus_provision(order_row)
     if provider == "simbase":

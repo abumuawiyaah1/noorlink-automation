@@ -405,3 +405,82 @@ def send_checkout_acknowledgment(
         app_url=settings.app_url,
     )
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
+
+
+def build_insider_issue_email_html(
+    *,
+    subject: str,
+    preview: str,
+    hero_image_url: str,
+    web_path: str,
+    promo_code: Optional[str],
+    promo_percent: Optional[int],
+    promo_ends: Optional[str],
+    app_url: str,
+) -> str:
+    issue_url = f"{app_url.rstrip('/')}{web_path}"
+    promo_block = ""
+    if promo_code and promo_percent:
+        ends_line = ""
+        if promo_ends:
+            ends_line = f"<p style=\"margin:8px 0 0;font-size:13px;color:rgba(255,255,255,0.75);\">Ends {html.escape(promo_ends[:10])} — code turns off automatically after.</p>"
+        promo_block = f"""
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#05191A;border-radius:12px;">
+        <tr><td style="padding:20px 22px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:{ACCENT};font-weight:700;">Insider deal</p>
+          <p style="margin:0;font-family:ui-monospace,Menlo,monospace;font-size:24px;font-weight:800;color:{ACCENT};">{html.escape(promo_code)}</p>
+          <p style="margin:8px 0 0;font-size:15px;color:#fff;">{promo_percent}% off at checkout</p>
+          {ends_line}
+        </td></tr>
+      </table>"""
+
+    hero_block = ""
+    if hero_image_url:
+        hero_block = f"""
+      <img src="{html.escape(hero_image_url)}" alt="" width="536" style="display:block;width:100%;max-width:536px;height:auto;border-radius:12px;margin:0 0 20px;"/>
+    """
+
+    body = f"""
+      {hero_block}
+      <p style="margin:0 0 16px;font-size:16px;line-height:1.65;">{html.escape(preview)}</p>
+      {promo_block}
+      <p style="text-align:center;margin:28px 0 0;">
+        {cta_button(href=issue_url, label="Read this issue")}
+      </p>
+      <p style="margin:20px 0 0;font-size:13px;color:{MUTED};text-align:center;">
+        Travel tips, destination guides, and calm connectivity advice — once a month.
+      </p>
+    """
+    return wrap_branded_email(
+        eyebrow="NoorLink Insider",
+        title=html.escape(subject),
+        body_html=body,
+        app_url=app_url,
+        tip="Install your eSIM on Wi‑Fi before you fly — it saves stress at the airport.",
+    )
+
+
+def send_insider_issue_email(
+    *,
+    to_email: str,
+    subject: str,
+    preview: str,
+    hero_image_url: str,
+    web_path: str,
+    promo_code: Optional[str] = None,
+    promo_percent: Optional[int] = None,
+    promo_ends: Optional[str] = None,
+) -> str:
+    settings = get_settings()
+    html_body = build_insider_issue_email_html(
+        subject=subject,
+        preview=preview,
+        hero_image_url=hero_image_url,
+        web_path=web_path,
+        promo_code=promo_code,
+        promo_percent=promo_percent,
+        promo_ends=promo_ends,
+        app_url=settings.app_url,
+    )
+    email_subject = f"NoorLink Insider — {subject}"
+    return send_email(to_email=to_email, subject=email_subject, html_body=html_body)

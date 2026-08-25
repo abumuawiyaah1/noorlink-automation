@@ -126,6 +126,36 @@ class CheckoutSessionRequest(BaseModel):
     phone: Optional[str] = None
     travel_date: Optional[str] = Field(None, alias="travelDate")
     package_id: Optional[str] = Field(None, alias="packageId")
+    promo_code: Optional[str] = Field(None, alias="promoCode")
+
+    model_config = {"populate_by_name": True}
+
+
+class PromoValidateRequest(BaseModel):
+    code: str = Field(..., min_length=2, max_length=40)
+    price: float = Field(..., gt=0)
+    package_id: Optional[str] = Field(None, alias="packageId")
+
+    model_config = {"populate_by_name": True}
+
+
+class PromoValidateResponse(BaseModel):
+    valid: bool
+    code: Optional[str] = None
+    percent_off: Optional[int] = Field(None, serialization_alias="percentOff")
+    discount_amount: Optional[float] = Field(None, serialization_alias="discountAmount")
+    final_price: Optional[float] = Field(None, serialization_alias="finalPrice")
+    message: Optional[str] = None
+    ends_at: Optional[str] = Field(None, serialization_alias="endsAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class CronRunResponse(BaseModel):
+    success: bool
+    expired_promos: int = Field(0, serialization_alias="expiredPromos")
+    insider: Optional[dict] = None
+    message: Optional[str] = None
 
     model_config = {"populate_by_name": True}
 
@@ -138,6 +168,9 @@ class CheckoutSessionResponse(BaseModel):
     message: Optional[str] = None
     email_sent: Optional[bool] = Field(None, serialization_alias="emailSent")
     email_error: Optional[str] = Field(None, serialization_alias="emailError")
+    discount_amount: Optional[float] = Field(None, serialization_alias="discountAmount")
+    final_price: Optional[float] = Field(None, serialization_alias="finalPrice")
+    promo_code: Optional[str] = Field(None, serialization_alias="promoCode")
 
     model_config = {"populate_by_name": True}
 

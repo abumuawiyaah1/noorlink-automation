@@ -9,7 +9,7 @@ import logging
 from datetime import date, datetime, timezone
 from functools import lru_cache
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from supabase import Client, create_client
@@ -361,7 +361,10 @@ def _validate_managed_package_price(
 
 def save_newsletter_subscriber(email: str, dream_destination: Optional[str] = None) -> None:
     client = get_supabase_client()
-    payload: Dict[str, Any] = {"email": email.strip().lower()}
+    payload: Dict[str, Any] = {
+        "email": email.strip().lower(),
+        "unsubscribed_at": None,
+    }
     if dream_destination:
         payload["dream_destination"] = dream_destination
 
@@ -372,6 +375,114 @@ def save_newsletter_subscriber(email: str, dream_destination: Optional[str] = No
         ).execute()
     except Exception as exc:
         logger.exception("newsletter_subscribers upsert failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+
+
+def list_newsletter_subscribers(*, active_only: bool = True) -> List[str]:
+    client = get_supabase_client()
+    try:
+        query = client.table("newsletter_subscribers").select("email, unsubscribed_at")
+        if active_only:
+            query = query.is_("unsubscribed_at", "null")
+        result = query.execute()
+    except Exception as exc:
+        logger.exception("newsletter_subscribers list failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+
+    emails: List[str] = []
+    for row in result.data or []:
+        email = str(row.get("email") or "").strip().lower()
+        if email:
+            emails.append(email)
+    return emails
+
+
+def get_promo_code(code: str) -> Optional[Dict[str, Any]]:
+    client = get_supabase_client()
+    normalized = code.strip().upper().replace(" ", "")
+    try:
+        result = (
+            client.table("promo_codes")
+            .select("*")
+            .eq("code", normalized)
+            .limit(1)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("promo_codes lookup failed for %s", normalized)
+        raise SupabaseRepositoryError(str(exc)) from exc
+    if not result.data:
+        return None
+    return result.data[0]
+
+
+def expire_promo_codes() -> int:
+    client = get_supabase_client()
+    now = datetime.now(timezone.utc).isoformat()
+    try:
+        result = (
+            client.table("promo_codes")
+            .update({"is_active": False})
+            .eq("is_active", True)
+            .lt("ends_at", now)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("promo_codes expiry sweep failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    return len(result.data or [])
+
+
+def increment_promo_redemption(code: str) -> None:
+    client = get_supabase_client()
+    normalized = code.strip().upper().replace(" ", "")
+    row = get_promo_code(normalized)
+    if not row:
+        return
+    count = int(row.get("redemption_count") or 0) + 1
+    try:
+        client.table("promo_codes").update({"redemption_count": count}).eq(
+            "code", normalized
+        ).execute()
+    except Exception as exc:
+        logger.warning("promo redemption increment failed for %s", normalized, exc_info=True)
+
+
+def list_due_insider_issues() -> List[Dict[str, Any]]:
+    client = get_supabase_client()
+    now = datetime.now(timezone.utc).isoformat()
+    try:
+        result = (
+            client.table("insider_issues")
+            .select("*")
+            .eq("status", "scheduled")
+            .lte("send_at", now)
+            .order("send_at")
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("insider_issues due lookup failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    return result.data or []
+
+
+def mark_insider_issue_status(
+    slug: str,
+    status: str,
+    *,
+    error: Optional[str] = None,
+) -> None:
+    client = get_supabase_client()
+    payload: Dict[str, Any] = {"status": status}
+    if status == "sent":
+        payload["sent_at"] = datetime.now(timezone.utc).isoformat()
+        payload["send_error"] = None
+    if error:
+        payload["send_error"] = error[:500]
+    try:
+        client.table("insider_issues").update(payload).eq("slug", slug).execute()
+    except Exception as exc:
+        logger.exception("insider_issues status update failed for %s", slug)
         raise SupabaseRepositoryError(str(exc)) from exc
 
 
@@ -409,6 +520,9 @@ def create_order(
     travel_date: Optional[str],
     package_id: Optional[str] = None,
     phone: Optional[str] = None,
+    promo_code: Optional[str] = None,
+    promo_discount_cents: Optional[int] = None,
+    promo_subtotal_cents: Optional[int] = None,
 ) -> CreatedOrder:
     client = get_supabase_client()
     price_cents = int(round(price * 100))
@@ -485,6 +599,14 @@ def create_order(
         metadata["regional_product_id"] = regional_id
         metadata["coverage_countries"] = product.get("countries") or []
         metadata["coverage_exclusions"] = product.get("exclusions") or []
+
+    if promo_code and promo_discount_cents is not None:
+        metadata["promo"] = {
+            "code": promo_code.strip().upper(),
+            "discount_cents": int(promo_discount_cents),
+            "subtotal_cents": int(promo_subtotal_cents or price_cents),
+        }
+        price_cents = max(1, price_cents - int(promo_discount_cents))
 
     payload: Dict[str, Any] = {
         "order_number": order_number,
