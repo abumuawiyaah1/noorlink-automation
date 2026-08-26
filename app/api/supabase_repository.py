@@ -554,6 +554,7 @@ def create_order(
     promo_code: Optional[str] = None,
     promo_discount_cents: Optional[int] = None,
     promo_subtotal_cents: Optional[int] = None,
+    wants_topup: bool = False,
 ) -> CreatedOrder:
     client = get_supabase_client()
     price_cents = int(round(price * 100))
@@ -589,37 +590,51 @@ def create_order(
     data_total_gb = package.get("data_total_gb") if package else None
     phone_value = phone.strip() if phone and phone.strip() else None
 
-    # Restriction: Saudi checkout must match a virtual catalog map entry (Phase A)
+    # Resolve fulfillment for all destinations (map + country→region→global cascade).
+    # Saudi still enforced when ESIM_ACCESS_ENFORCE_SAUDI is on.
     from app.services.fulfillment_map import (
         FulfillmentMapError,
         enforce_saudi_access_policy,
-        is_saudi_destination,
         resolve_fulfillment_target,
     )
 
-    fulfillment_target = None
-    if is_saudi_destination(country, (package or {}).get("country_code")):
-        probe_order = {
-            "package_id": pkg_id,
-            "country": country,
-            "data_total_gb": data_total_gb,
-        }
-        fulfillment_target = resolve_fulfillment_target(probe_order, package=package)
+    validity_days = None
+    if package and package.get("validity_days") is not None:
         try:
-            enforce_saudi_access_policy(probe_order, fulfillment_target)
-        except FulfillmentMapError as exc:
-            raise SupabaseRepositoryError(str(exc)) from exc
+            validity_days = int(package["validity_days"])
+        except (TypeError, ValueError):
+            validity_days = None
+
+    probe_order = {
+        "package_id": pkg_id,
+        "country": country,
+        "data_total_gb": data_total_gb,
+        "validity_days": validity_days,
+        "metadata": {"wants_topup": bool(wants_topup)},
+    }
+    fulfillment_target = resolve_fulfillment_target(probe_order, package=package)
+    try:
+        enforce_saudi_access_policy(probe_order, fulfillment_target)
+    except FulfillmentMapError as exc:
+        raise SupabaseRepositoryError(str(exc)) from exc
 
     order_number = _generate_order_number()
     metadata: Dict[str, Any] = {}
     if phone_value:
         metadata["phone"] = phone_value
+    if wants_topup:
+        metadata["wants_topup"] = True
 
     if fulfillment_target:
         metadata["fulfillment_plan"] = {
             "catalog_key": fulfillment_target.catalog_key,
             "provider": fulfillment_target.provider,
             "provider_sku": fulfillment_target.provider_sku,
+            "provider_slug": fulfillment_target.provider_slug,
+            "wholesale_cents": fulfillment_target.wholesale_cents,
+            "source": fulfillment_target.source,
+            "data_gb": fulfillment_target.data_gb,
+            "validity_days": fulfillment_target.validity_days,
         }
 
     regional_id = resolve_regional_product_by_display_name(country)

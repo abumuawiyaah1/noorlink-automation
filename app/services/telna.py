@@ -239,10 +239,17 @@ class TelnaClient:
             raise TelnaError(f"Unable to reach Telna: {exc}") from exc
 
         if response.status_code in (401, 403):
-            raise TelnaAuthError(
-                f"Telna rejected credentials ({response.status_code})",
-                status_code=response.status_code,
-            )
+            detail = ""
+            try:
+                payload = response.json()
+                if isinstance(payload, dict) and payload.get("error"):
+                    detail = str(payload["error"])
+            except ValueError:
+                detail = response.text[:200].strip()
+            message = f"Telna rejected credentials ({response.status_code})"
+            if detail:
+                message = f"{message}: {detail}"
+            raise TelnaAuthError(message, status_code=response.status_code)
         if response.status_code == 404:
             raise TelnaNotFoundError(
                 f"Telna resource not found: {url}",

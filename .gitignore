@@ -23,6 +23,7 @@ dist/
 # Environment variables
 .env
 .env.local
+.cron_secret.local
 
 # IDE
 .vscode/

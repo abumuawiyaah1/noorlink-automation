@@ -38,6 +38,7 @@ from .schemas import (
     DeviceCheckRequest,
     DeviceCheckResponse,
     EmailDiagnosticsResponse,
+    FulfillmentResolveResponse,
     HealthResponse,
     NewsletterSubscribeRequest,
     NewsletterSubscribeResponse,
@@ -261,11 +262,12 @@ def _require_cron_secret(authorization: Optional[str]) -> None:
 
 @app.post("/api/cron/run", response_model=CronRunResponse)
 async def cron_run(authorization: Optional[str] = Header(None)):
-    """Expire finished promos and send due Insider issues. Requires CRON_SECRET."""
+    """Expire promos, send Insider issues, sync provider catalog. Requires CRON_SECRET."""
     _require_cron_secret(authorization)
 
     expired = 0
     insider_result = None
+    catalog_sync = None
     try:
         expired = expire_finished_promos()
     except db.SupabaseRepositoryError as exc:
@@ -278,12 +280,43 @@ async def cron_run(authorization: Optional[str] = Header(None)):
     except EmailDeliveryError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
+    try:
+        from app.services.provider_catalog import sync_telna_catalog
+
+        catalog_sync = await sync_telna_catalog(use_builtin_on_failure=True)
+    except Exception as exc:
+        logger.warning("Provider catalog sync failed during cron: %s", exc)
+        catalog_sync = {"success": False, "error": str(exc)[:240]}
+
     return CronRunResponse(
         success=True,
         expired_promos=expired,
         insider=insider_result,
+        catalog_sync=catalog_sync,
         message="Cron tasks completed.",
     )
+
+
+@app.get("/api/fulfillment/resolve", response_model=FulfillmentResolveResponse)
+async def fulfillment_resolve(
+    country: str = Query(..., min_length=2),
+    data_gb: float = Query(..., alias="dataGb", gt=0),
+    validity_days: int = Query(..., alias="days", gt=0),
+    wants_topup: bool = Query(False, alias="wantsTopUp"),
+):
+    """
+    Debug/admin: show map vs smart cascade choice for a sellable ladder step.
+    Does not call upstream provider APIs — catalog cache / builtin seed only.
+    """
+    from app.services.fulfillment_resolver import explain_fulfillment
+
+    result = explain_fulfillment(
+        country=country,
+        data_gb=data_gb,
+        validity_days=validity_days,
+        wants_topup=wants_topup,
+    )
+    return FulfillmentResolveResponse(success=True, **result)
 
 
 @app.post("/api/contact", response_model=ContactFormResponse)
@@ -404,6 +437,7 @@ async def checkout_session(body: CheckoutSessionRequest):
             promo_code=promo_discount.code if promo_discount else None,
             promo_discount_cents=promo_discount.discount_cents if promo_discount else None,
             promo_subtotal_cents=subtotal_cents if promo_discount else None,
+            wants_topup=bool(body.wants_topup),
         )
     except db.ManagedPackagePriceMismatchError as exc:
         raise HTTPException(

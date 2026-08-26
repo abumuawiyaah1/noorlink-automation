@@ -244,10 +244,15 @@ def resolve_fulfillment_target(
     order_row: Dict[str, Any],
     *,
     package: Optional[Dict[str, Any]] = None,
+    use_smart_cascade: bool = True,
 ) -> Optional[FulfillmentTarget]:
     """
     Resolve provider target for an order.
     Returns None when no map applies (caller uses global ESIM_PROVIDER).
+
+    When use_smart_cascade is True (default), after the hand-wired map lookup we
+    apply country → region → global matching from the provider catalog cache.
+    Browse paths never call providers — cache only.
     """
     package_id = order_row.get("package_id") or (package or {}).get("id")
     country = order_row.get("country") or (package or {}).get("country")
@@ -260,44 +265,80 @@ def resolve_fulfillment_target(
             validity_days = int(package["validity_days"])
         except (TypeError, ValueError):
             validity_days = None
+    if validity_days is None and order_row.get("validity_days") is not None:
+        try:
+            validity_days = int(order_row["validity_days"])
+        except (TypeError, ValueError):
+            validity_days = None
+
+    metadata = order_row.get("metadata") or {}
+    if not isinstance(metadata, dict):
+        metadata = {}
+    wants_topup = bool(
+        metadata.get("wants_topup")
+        or metadata.get("wantsTopUp")
+        or order_row.get("wants_topup")
+    )
 
     rows = _fetch_db_maps()
+    mapped: Optional[FulfillmentTarget] = None
     if rows:
         if package_id:
             for row in rows:
                 if str(row.get("package_id") or "") == str(package_id):
-                    return _row_to_target(row, source="db:package_id")
+                    mapped = _row_to_target(row, source="db:package_id")
+                    break
 
-        slug = normalize_country_slug(country)
-        for row in rows:
-            row_slug = normalize_country_slug(row.get("country_slug"))
-            row_code = (row.get("country_code") or "").upper()
-            country_ok = False
-            if slug and row_slug and slug == row_slug:
-                country_ok = True
-            if is_saudi_destination(country) and row_code == "SA":
-                country_ok = True
-            if not country_ok:
-                continue
-            if data_gb is not None and row.get("data_gb") is not None:
-                if not _gb_close(float(data_gb), float(row["data_gb"])):
+        if mapped is None:
+            slug = normalize_country_slug(country)
+            for row in rows:
+                row_slug = normalize_country_slug(row.get("country_slug"))
+                row_code = (row.get("country_code") or "").upper()
+                country_ok = False
+                if slug and row_slug and slug == row_slug:
+                    country_ok = True
+                if is_saudi_destination(country) and row_code == "SA":
+                    country_ok = True
+                if not country_ok:
                     continue
-            elif data_gb is None:
-                continue
-            if (
-                validity_days is not None
-                and row.get("validity_days") is not None
-                and int(validity_days) != int(row["validity_days"])
-            ):
-                continue
-            return _row_to_target(row, source="db:country_data")
+                if data_gb is not None and row.get("data_gb") is not None:
+                    if not _gb_close(float(data_gb), float(row["data_gb"])):
+                        continue
+                elif data_gb is None:
+                    continue
+                if (
+                    validity_days is not None
+                    and row.get("validity_days") is not None
+                    and int(validity_days) != int(row["validity_days"])
+                ):
+                    continue
+                mapped = _row_to_target(row, source="db:country_data")
+                break
 
-    return _match_static(
-        package_id=str(package_id) if package_id else None,
-        country=country,
-        data_gb=float(data_gb) if data_gb is not None else None,
-        validity_days=validity_days,
-    )
+    if mapped is None:
+        mapped = _match_static(
+            package_id=str(package_id) if package_id else None,
+            country=country,
+            data_gb=float(data_gb) if data_gb is not None else None,
+            validity_days=validity_days,
+        )
+
+    if not use_smart_cascade:
+        return mapped
+
+    try:
+        from app.services.fulfillment_resolver import choose_fulfillment_target
+
+        return choose_fulfillment_target(
+            country=str(country or ""),
+            data_gb=float(data_gb) if data_gb is not None else None,
+            validity_days=validity_days,
+            mapped=mapped,
+            wants_topup=wants_topup,
+        )
+    except Exception as exc:
+        logger.warning("Smart fulfillment cascade failed (%s); using map only", exc)
+        return mapped
 
 
 def enforce_saudi_access_policy(

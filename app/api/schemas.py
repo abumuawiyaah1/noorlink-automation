@@ -136,6 +136,7 @@ class CheckoutSessionRequest(BaseModel):
     travel_date: Optional[str] = Field(None, alias="travelDate")
     package_id: Optional[str] = Field(None, alias="packageId")
     promo_code: Optional[str] = Field(None, alias="promoCode")
+    wants_topup: bool = Field(False, alias="wantsTopUp")
 
     model_config = {"populate_by_name": True}
 
@@ -164,6 +165,21 @@ class CronRunResponse(BaseModel):
     success: bool
     expired_promos: int = Field(0, serialization_alias="expiredPromos")
     insider: Optional[dict] = None
+    catalog_sync: Optional[dict] = Field(None, serialization_alias="catalogSync")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class FulfillmentResolveResponse(BaseModel):
+    success: bool
+    country: Optional[str] = None
+    data_gb: Optional[float] = Field(None, serialization_alias="dataGb")
+    validity_days: Optional[int] = Field(None, serialization_alias="validityDays")
+    wants_topup: bool = Field(False, serialization_alias="wantsTopUp")
+    mapped: Optional[dict] = None
+    chosen: Optional[dict] = None
+    ladder: Optional[str] = None
     message: Optional[str] = None
 
     model_config = {"populate_by_name": True}

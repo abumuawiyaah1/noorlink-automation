@@ -89,12 +89,40 @@ async def _citrus_provision_async(order_row: Dict[str, Any]) -> Dict[str, Any]:
     email = str(order_row.get("email") or "")
     country = str(order_row.get("country") or "")
     label = f"{email} — {country}".strip(" —")
+    metadata = order_row.get("metadata") or {}
+    if not isinstance(metadata, dict):
+        metadata = {}
+    wants_topup = bool(metadata.get("wants_topup") or metadata.get("wantsTopUp"))
+    plan_meta = metadata.get("fulfillment_plan") or {}
+    if not isinstance(plan_meta, dict):
+        plan_meta = {}
 
     async with CitrusClient() as client:
         payload = await client.provision_esim(
             end_user_reference=order_number,
             label=label[:120] if label else order_number,
         )
+
+        iccid = str(payload.get("iccid") or "").strip()
+        # Optional fund when customer asked for top-up-capable SIM.
+        if wants_topup and iccid:
+            fund_usd = None
+            if plan_meta.get("wholesale_cents") is not None:
+                fund_usd = float(plan_meta["wholesale_cents"]) / 100.0
+            elif order_row.get("price") is not None:
+                # Conservative starter fund: 50% of retail, min $5
+                fund_usd = max(5.0, round(float(order_row["price"]) * 0.5, 2))
+            if fund_usd and fund_usd > 0:
+                try:
+                    fund_result = await client.fund_esim(iccid, fund_usd)
+                    payload = {**payload, "fund": fund_result, "funded_usd": fund_usd}
+                except Exception as exc:
+                    logger.warning(
+                        "Citrus fund_esim failed for %s iccid=%s: %s",
+                        order_number,
+                        iccid,
+                        exc,
+                    )
 
     lpa_string = str(payload.get("lpa_string") or "").strip()
     if not lpa_string:
@@ -112,9 +140,10 @@ async def _citrus_provision_async(order_row: Dict[str, Any]) -> Dict[str, Any]:
     iccid = str(payload.get("iccid") or "").strip()
 
     logger.info(
-        "Provisioned Citrus eSIM for order %s iccid=%s",
+        "Provisioned Citrus eSIM for order %s iccid=%s topup=%s",
         order_number,
         iccid or "(none)",
+        wants_topup,
     )
     return {
         "activation_code": activation_code,
