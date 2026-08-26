@@ -378,6 +378,37 @@ def save_newsletter_subscriber(email: str, dream_destination: Optional[str] = No
         raise SupabaseRepositoryError(str(exc)) from exc
 
 
+def unsubscribe_newsletter_subscriber(email: str) -> bool:
+    """Mark a subscriber as unsubscribed. Returns True if a row was updated."""
+    client = get_supabase_client()
+    normalized = email.strip().lower()
+    if not normalized:
+        return False
+
+    try:
+        existing = (
+            client.table("newsletter_subscribers")
+            .select("email, unsubscribed_at")
+            .eq("email", normalized)
+            .limit(1)
+            .execute()
+        )
+        rows = existing.data or []
+        if not rows:
+            return False
+
+        if rows[0].get("unsubscribed_at"):
+            return True
+
+        client.table("newsletter_subscribers").update(
+            {"unsubscribed_at": datetime.now(timezone.utc).isoformat()}
+        ).eq("email", normalized).execute()
+        return True
+    except Exception as exc:
+        logger.exception("newsletter_subscribers unsubscribe failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+
+
 def list_newsletter_subscribers(*, active_only: bool = True) -> List[str]:
     client = get_supabase_client()
     try:

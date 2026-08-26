@@ -41,6 +41,8 @@ from .schemas import (
     HealthResponse,
     NewsletterSubscribeRequest,
     NewsletterSubscribeResponse,
+    NewsletterUnsubscribeRequest,
+    NewsletterUnsubscribeResponse,
     OrderLookupResponse,
     PromoValidateRequest,
     PromoValidateResponse,
@@ -200,6 +202,25 @@ async def newsletter_subscribe(body: NewsletterSubscribeRequest):
     return NewsletterSubscribeResponse(
         success=True,
         message="You are subscribed to NoorLink Insider.",
+    )
+
+
+@app.post("/api/newsletter/unsubscribe", response_model=NewsletterUnsubscribeResponse)
+async def newsletter_unsubscribe(body: NewsletterUnsubscribeRequest):
+    try:
+        found = db.unsubscribe_newsletter_subscriber(str(body.email))
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    if not found:
+        return NewsletterUnsubscribeResponse(
+            success=True,
+            message="That email is not on the Insider list.",
+        )
+
+    return NewsletterUnsubscribeResponse(
+        success=True,
+        message="You’re unsubscribed from NoorLink Insider.",
     )
 
 

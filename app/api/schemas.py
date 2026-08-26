@@ -50,6 +50,15 @@ class NewsletterSubscribeResponse(BaseModel):
     message: Optional[str] = None
 
 
+class NewsletterUnsubscribeRequest(BaseModel):
+    email: EmailStr
+
+
+class NewsletterUnsubscribeResponse(BaseModel):
+    success: bool
+    message: Optional[str] = None
+
+
 class ContactFormRequest(BaseModel):
     name: str
     email: EmailStr

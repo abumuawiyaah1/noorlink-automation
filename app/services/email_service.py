@@ -417,6 +417,7 @@ def build_insider_issue_email_html(
     promo_percent: Optional[int],
     promo_ends: Optional[str],
     app_url: str,
+    unsubscribe_url: Optional[str] = None,
 ) -> str:
     issue_url = f"{app_url.rstrip('/')}{web_path}"
     promo_block = ""
@@ -424,6 +425,7 @@ def build_insider_issue_email_html(
         ends_line = ""
         if promo_ends:
             ends_line = f"<p style=\"margin:8px 0 0;font-size:13px;color:rgba(255,255,255,0.75);\">Ends {html.escape(promo_ends[:10])} — code turns off automatically after.</p>"
+        deal_href = f"{app_url.rstrip('/')}/destinations?promo={html.escape(promo_code)}"
         promo_block = f"""
       <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#05191A;border-radius:12px;">
         <tr><td style="padding:20px 22px;text-align:center;">
@@ -431,6 +433,7 @@ def build_insider_issue_email_html(
           <p style="margin:0;font-family:ui-monospace,Menlo,monospace;font-size:24px;font-weight:800;color:{ACCENT};">{html.escape(promo_code)}</p>
           <p style="margin:8px 0 0;font-size:15px;color:#fff;">{promo_percent}% off at checkout</p>
           {ends_line}
+          <p style="margin:16px 0 0;">{cta_button(href=deal_href, label=f"Use {promo_code}")}</p>
         </td></tr>
       </table>"""
 
@@ -438,6 +441,15 @@ def build_insider_issue_email_html(
     if hero_image_url:
         hero_block = f"""
       <img src="{html.escape(hero_image_url)}" alt="" width="536" style="display:block;width:100%;max-width:536px;height:auto;border-radius:12px;margin:0 0 20px;"/>
+    """
+
+    unsub_block = ""
+    if unsubscribe_url:
+        unsub_block = f"""
+      <p style="margin:28px 0 0;font-size:12px;color:{MUTED};text-align:center;">
+        <a href="{html.escape(unsubscribe_url)}" style="color:{MUTED};text-decoration:underline;">Unsubscribe</a>
+        from NoorLink Insider anytime.
+      </p>
     """
 
     body = f"""
@@ -450,6 +462,7 @@ def build_insider_issue_email_html(
       <p style="margin:20px 0 0;font-size:13px;color:{MUTED};text-align:center;">
         Travel tips, destination guides, and calm connectivity advice — once a month.
       </p>
+      {unsub_block}
     """
     return wrap_branded_email(
         eyebrow="NoorLink Insider",
@@ -471,7 +484,12 @@ def send_insider_issue_email(
     promo_percent: Optional[int] = None,
     promo_ends: Optional[str] = None,
 ) -> str:
+    from urllib.parse import quote
+
     settings = get_settings()
+    unsubscribe_url = (
+        f"{settings.app_url.rstrip('/')}/unsubscribe?email={quote(to_email.strip().lower())}"
+    )
     html_body = build_insider_issue_email_html(
         subject=subject,
         preview=preview,
@@ -481,6 +499,7 @@ def send_insider_issue_email(
         promo_percent=promo_percent,
         promo_ends=promo_ends,
         app_url=settings.app_url,
+        unsubscribe_url=unsubscribe_url,
     )
     email_subject = f"NoorLink Insider — {subject}"
     return send_email(to_email=to_email, subject=email_subject, html_body=html_body)
