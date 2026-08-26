@@ -1343,3 +1343,106 @@ def ping_database() -> bool:
         except Exception:
             logger.warning("Supabase ping failed for table=%s", table, exc_info=True)
     return False
+
+
+# —— Breakage allowance ledger ——
+
+
+def create_breakage_allowance(payload: Dict[str, Any]) -> Dict[str, Any]:
+    client = get_supabase_client()
+    try:
+        result = client.table("breakage_allowances").insert(payload).execute()
+    except Exception as exc:
+        logger.exception("breakage_allowances insert failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    if not result.data:
+        raise SupabaseRepositoryError("breakage_allowances insert returned no data")
+    return result.data[0]
+
+
+def get_breakage_allowance_by_order_id(order_id: str) -> Optional[Dict[str, Any]]:
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("breakage_allowances")
+            .select("*")
+            .eq("order_id", order_id)
+            .limit(1)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("breakage_allowances fetch failed for order_id=%s", order_id)
+        raise SupabaseRepositoryError(str(exc)) from exc
+    if not result.data:
+        return None
+    return result.data[0]
+
+
+def get_breakage_allowance_by_order_number(order_number: str) -> Optional[Dict[str, Any]]:
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("breakage_allowances")
+            .select("*")
+            .eq("order_number", order_number)
+            .limit(1)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception(
+            "breakage_allowances fetch failed for order_number=%s", order_number
+        )
+        raise SupabaseRepositoryError(str(exc)) from exc
+    if not result.data:
+        return None
+    return result.data[0]
+
+
+def update_breakage_allowance(
+    allowance_id: str,
+    updates: Dict[str, Any],
+) -> Dict[str, Any]:
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("breakage_allowances")
+            .update(updates)
+            .eq("id", allowance_id)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("breakage_allowances update failed for id=%s", allowance_id)
+        raise SupabaseRepositoryError(str(exc)) from exc
+    if not result.data:
+        raise SupabaseRepositoryError("breakage_allowances update returned no data")
+    return result.data[0]
+
+
+def list_breakage_allowances_for_sync(*, limit: int = 200) -> list[Dict[str, Any]]:
+    """Active/pending allowances that may need provider usage sync or expiry enforcement."""
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("breakage_allowances")
+            .select("*")
+            .in_("status", ["pending", "active"])
+            .order("valid_until")
+            .limit(limit)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("breakage_allowances sync list failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    return list(result.data or [])
+
+
+def record_breakage_usage_event(payload: Dict[str, Any]) -> Dict[str, Any]:
+    client = get_supabase_client()
+    try:
+        result = client.table("breakage_usage_events").insert(payload).execute()
+    except Exception as exc:
+        logger.exception("breakage_usage_events insert failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    if not result.data:
+        raise SupabaseRepositoryError("breakage_usage_events insert returned no data")
+    return result.data[0]

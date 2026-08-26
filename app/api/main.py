@@ -39,6 +39,9 @@ from .schemas import (
     DeviceCheckResponse,
     EmailDiagnosticsResponse,
     FulfillmentResolveResponse,
+    BreakageStrategySummaryResponse,
+    BreakageCountryPolicyResponse,
+    BreakageAllowanceResponse,
     HealthResponse,
     NewsletterSubscribeRequest,
     NewsletterSubscribeResponse,
@@ -317,6 +320,70 @@ async def fulfillment_resolve(
         wants_topup=wants_topup,
     )
     return FulfillmentResolveResponse(success=True, **result)
+
+
+@app.get("/api/fulfillment/strategy/summary", response_model=BreakageStrategySummaryResponse)
+async def breakage_strategy_summary():
+    """Breakage-fulfillment strategy counts and pilot countries (from WeConnect P1 pricelist)."""
+    from app.services.breakage_strategy import strategy_summary
+
+    return BreakageStrategySummaryResponse(success=True, summary=strategy_summary())
+
+
+@app.get("/api/fulfillment/strategy/country", response_model=BreakageCountryPolicyResponse)
+async def breakage_strategy_country(
+    country: str = Query(..., min_length=2),
+    data_gb: Optional[float] = Query(None, alias="dataGb"),
+    validity_days: Optional[int] = Query(None, alias="days"),
+):
+    from app.services.breakage_strategy import (
+        bundles_for_country,
+        fulfillment_mode_for_order,
+        resolve_country_policy,
+    )
+
+    policy = resolve_country_policy(country)
+    mode = fulfillment_mode_for_order(
+        country=country,
+        data_gb=data_gb,
+        validity_days=validity_days,
+    )
+    return BreakageCountryPolicyResponse(
+        success=True,
+        country=policy.country_slug,
+        policy={
+            "country": policy.country,
+            "mode": policy.policy,
+            "reason": policy.policy_reason,
+            "price_mb_usd": policy.price_mb_usd,
+            "price_gb_usd": policy.price_gb_usd,
+            "margin_10gb_100pct": policy.margin_10gb_100pct,
+            "margin_10gb_50pct": policy.margin_10gb_50pct,
+            "breakage_score": policy.breakage_score,
+            "region_hint": policy.region_hint,
+        },
+        fulfillment_mode=mode,
+        bundles=bundles_for_country(country),
+    )
+
+
+@app.get("/api/fulfillment/allowance", response_model=BreakageAllowanceResponse)
+async def breakage_allowance_lookup(
+    order_number: str = Query(..., alias="orderNumber", min_length=4),
+):
+    from app.services.breakage_allowance import breakage_profit_estimate
+
+    row = db.get_breakage_allowance_by_order_number(order_number)
+    if not row:
+        return BreakageAllowanceResponse(
+            success=False,
+            message="No breakage allowance for this order.",
+        )
+    return BreakageAllowanceResponse(
+        success=True,
+        allowance=row,
+        profit_estimate=breakage_profit_estimate(row),
+    )
 
 
 @app.post("/api/contact", response_model=ContactFormResponse)

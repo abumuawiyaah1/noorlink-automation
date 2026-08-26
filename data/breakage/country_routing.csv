@@ -1,0 +1,181 @@
+country,country_slug,operator,price_mb_usd,price_gb_usd,policy,policy_reason,margin_10gb_100pct,margin_10gb_50pct,margin_3gb_100pct,breakage_score,region_hint
+Afghanistan,afghanistan,Roshan Afghanistan,0.0056025,5.737,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-28.98,-0.29,1.18,0,global
+Albania,albania,One Albania,0.0008505,0.8709,weconnect_breakage,10GB full-usage margin $19.68 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,19.68,24.04,15.78,80,europe-tier
+Algeria,algeria,Orascom Algeria,0.00108,1.1059,weconnect_breakage,10GB full-usage margin $17.33 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,17.33,22.86,15.07,76,europe-tier
+Andorra,andorra,Andorra Telecom,0.00243,2.4883,weconnect_breakage,10GB gate tight but 3GB full-usage margin $10.93; breakage on smaller plans only.,3.51,15.95,10.93,53,standard
+Angola,angola,Unitel Angola,0.121095,124.0013,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-1211.62,-591.62,-353.61,0,global
+Anguilla,anguilla,Cable and Wireless Anguilla,0.006426,6.5802,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-37.41,-4.51,-1.35,5,caribbean
+Antigua and Barbuda,antigua-and-barbuda,C & W Antigua and Barbuda,0.006534,6.6908,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-38.52,-5.06,-1.68,5,caribbean
+Argentina,argentina,Movistar Argentina,0.002781,2.8477,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-0.09,14.15,9.85,5,south-america
+Armenia,armenia,Vivacell Armenia,0.0012285,1.258,weconnect_breakage,10GB full-usage margin $15.81 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,15.81,22.1,14.62,73,europe-tier
+Australia,australia,Optus Australia,0.001215,1.2442,weconnect_breakage,10GB full-usage margin $15.95 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,15.95,22.17,14.66,73,europe-tier
+Austria,austria,A1 Austria,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Azerbaijan,azerbaijan,Azercell Azerbaijan,0.002187,2.2395,weconnect_breakage,10GB gate tight but 3GB full-usage margin $11.67; breakage on smaller plans only.,6.0,17.19,11.67,57,standard
+Bahamas,bahamas,BTC (Bahamas Telecommunications Company),0.008532,8.7368,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-58.98,-15.29,-7.82,5,caribbean
+Bahrain,bahrain,STC Bahrain,0.001404,1.4377,weconnect_breakage,10GB full-usage margin $14.01 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,14.01,21.2,14.08,70,europe-tier
+Bangladesh,bangladesh,Banglalink Digital Communications,0.0010125,1.0368,weconnect_breakage,10GB full-usage margin $18.02 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,18.02,23.21,15.28,77,europe-tier
+Barbados,barbados,C & W Barbados,0.0061425,6.2899,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-34.51,-3.06,-0.48,5,caribbean
+Belarus,belarus,Unitary velcom Belarus,0.0017145,1.7556,weconnect_breakage,10GB full-usage margin $10.83 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,10.83,19.61,13.12,65,standard
+Belgium,belgium,Telenet Belgium,0.0006885,0.705,weconnect_breakage,10GB full-usage margin $21.34 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.34,24.86,16.27,82,europe-tier
+Belize,belize,Belize Telemedia,0.011367,11.6398,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-88.01,-29.81,-16.53,0,global
+Benin,benin,Celtiis,0.0049545,5.0734,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-22.34,3.02,3.17,0,global
+Bermuda,bermuda,Bermuda Digital Communication,0.019656,20.1277,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-172.89,-72.25,-41.99,5,caribbean
+Bhutan,bhutan,TashiCell Bhutan,0.1833975,187.799,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-1849.6,-910.61,-545.01,0,global
+Bolivia,bolivia,Tigo Bolivia,0.0068175,6.9811,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-41.42,-6.52,-2.55,5,south-america
+Bosnia and Herzegovina,bosnia-and-herzegovina,BH Telecom Bosnia & Herzegov,0.001755,1.7971,weconnect_breakage,10GB full-usage margin $10.42 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,10.42,19.4,13.0,64,standard
+Brazil,brazil,TIM Brazil,0.002241,2.2948,telna_fixed,LatAm: prefer Telna fixed bundles until usage telemetry confirms breakage.,5.44,16.92,11.51,5,south-america
+British Virgin Islands,british-virgin-islands,C&W LIME British Virgin Islands,0.0063045,6.4558,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-36.17,-3.89,-0.98,5,caribbean
+Bulgaria,bulgaria,A1 Bulgeria,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Cambodia,cambodia,Metfone Cambodia,0.002322,2.3777,weconnect_breakage,10GB gate tight but 3GB full-usage margin $11.26; breakage on smaller plans only.,4.61,16.5,11.26,55,standard
+Cameroon,cameroon,MTN Cameroon,0.096525,98.8416,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-960.03,-465.82,-278.13,0,global
+Canada,canada,Freedom Mobile Canada,0.001998,2.046,weconnect_breakage,10GB full-usage margin $7.93 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,7.93,18.16,12.25,60,standard
+Cape Verde,cape-verde,Alou Cape Verde,0.0110025,11.2666,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-84.28,-27.94,-15.41,0,global
+Cayman Islands,cayman-islands,"LIME / Cable & Wirel,",0.006426,6.5802,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-37.41,-4.51,-1.35,5,caribbean
+Chad,chad,Zain/Airtel/Celtel Chad,0.005481,5.6125,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-27.74,0.33,1.55,0,global
+Chile,chile,WOM Chile,0.002322,2.3777,telna_fixed,LatAm: prefer Telna fixed bundles until usage telemetry confirms breakage.,4.61,16.5,11.26,5,south-america
+China,china,China Telecom,0.0020655,2.1151,weconnect_breakage,10GB gate tight but 3GB full-usage margin $12.04; breakage on smaller plans only.,7.24,17.81,12.04,59,standard
+Colombia,colombia,TIGO/Colombia Movil,0.0056835,5.8199,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-29.81,-0.71,0.93,5,south-america
+"Congo Dem, Rep",congo-dem-rep,ZAIN Congo RDC,0.005481,5.6125,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-27.74,0.33,1.55,0,global
+Congo Republic,congo-republic,Airtel Congo Rep,0.005562,5.6955,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-28.56,-0.09,1.3,0,global
+Costa Rica,costa-rica,Telefonica Costa Rica,0.002781,2.8477,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-0.09,14.15,9.85,5,south-america
+Croatia,croatia,VIPnet Croatia,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Cuba,cuba,Cubacel Cuba,0.0187785,19.2292,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-163.9,-67.76,-39.3,5,caribbean
+Curacao,curacao,Polycom/Digicel Curacao,0.0187785,19.2292,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-163.9,-67.76,-39.3,5,caribbean
+Cyprus,cyprus,Epic Cyprus,0.000702,0.7188,weconnect_breakage,10GB full-usage margin $21.20 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.2,24.8,16.23,82,europe-tier
+Czech Republic,czech-republic,O2 Czech Republic,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Denmark,denmark,TDC/nuuday Denmark,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Dominica,dominica,C&W  Dominica,0.006534,6.6908,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-38.52,-5.06,-1.68,5,caribbean
+Dominican Republic,dominican-republic,Claro Dominican Republic,0.007938,8.1285,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-52.9,-12.25,-6.0,5,caribbean
+Ecuador,ecuador,Movistar Ecuador,0.002754,2.8201,telna_fixed,LatAm: prefer Telna fixed bundles until usage telemetry confirms breakage.,0.19,14.29,9.93,5,south-america
+Egypt,egypt,Orange Egypt,0.001188,1.2165,weconnect_breakage,10GB full-usage margin $16.22 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,16.22,22.31,14.74,74,europe-tier
+El Salvador,el-salvador,Telef El Salvador,0.0029025,2.9722,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-1.33,13.53,9.47,5,south-america
+Estonia,estonia,Elisa Estonia,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Eswatini,eswatini,Swazi MTN Limited,0.09828,100.6387,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-978.0,-474.8,-283.53,0,global
+Ethiopia,ethiopia,Safaricom,0.0060615,6.207,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-33.68,-2.64,-0.23,0,global
+Faroe Islands,faroe-islands,Vodafone Faroe Islands,0.0018495,1.8939,weconnect_breakage,10GB full-usage margin $9.45 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,9.45,18.92,12.71,63,standard
+Fiji,fiji,Vodafone Fiji,0.001998,2.046,weconnect_breakage,10GB full-usage margin $7.93 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,7.93,18.16,12.25,60,standard
+Finland,finland,Elisa Finland,0.0006615,0.6774,weconnect_breakage,10GB full-usage margin $21.62 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.62,25.0,16.36,83,europe-tier
+France,france,Bouygues France,0.0006885,0.705,weconnect_breakage,10GB full-usage margin $21.34 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.34,24.86,16.27,82,europe-tier
+French Guiana,french-guiana,Bouygues/DigiCel French Guiana,0.00243,2.4883,weconnect_breakage,10GB gate tight but 3GB full-usage margin $10.93; breakage on smaller plans only.,3.51,15.95,10.93,53,standard
+French Polynesia,french-polynesia,Vini S A S,0.0191295,19.5886,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-167.5,-69.55,-40.38,0,global
+Gabon,gabon,ZAIN/Celtel Gabon,0.0051975,5.3222,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-24.83,1.78,2.42,0,global
+Georgia,georgia,Mobitel Georgia,0.0011205,1.1474,weconnect_breakage,10GB full-usage margin $16.92 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,16.92,22.65,14.95,75,europe-tier
+Germany,germany,O2 Germany,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Ghana,ghana,Airtel Ghana Limited,0.0021735,2.2257,weconnect_breakage,10GB gate tight but 3GB full-usage margin $11.71; breakage on smaller plans only.,6.13,17.26,11.71,57,standard
+Gibraltar,gibraltar,Gibtelecom Gibraltar,0.0028755,2.9445,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-1.06,13.67,9.56,0,standard
+Greece,greece,Vodafone Greece,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Greenland,greenland,Tele Greenland A/S,0.020466,20.9572,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-181.18,-76.4,-44.48,0,global
+Grenada,grenada,Cable & Wireless Grenada,0.006534,6.6908,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-38.52,-5.06,-1.68,5,caribbean
+Guadeloupe,guadeloupe,Dauphin,0.0043605,4.4652,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-16.26,6.06,4.99,5,caribbean
+Guam,guam,Docomo,0.0123795,12.6766,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-98.38,-34.99,-19.64,0,global
+Guatemala,guatemala,TIGO/COMCEL,0.0059535,6.0964,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-32.57,-2.09,0.1,5,south-america
+Guyana,guyana,U Mobile Cellular Inc,0.019305,19.7683,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-169.29,-70.45,-40.91,0,global
+Honduras,honduras,Tigo Honduras,0.006885,7.0502,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-42.11,-6.86,-2.76,5,south-america
+Hong Kong,hong-kong,H3G Hong Kong,0.0010395,1.0644,weconnect_breakage,10GB full-usage margin $17.75 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,17.75,23.07,15.2,76,europe-tier
+Hungary,hungary,One Hungary,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Iceland,iceland,Fjarskipti (VF) Iceland,0.001134,1.1612,weconnect_breakage,10GB full-usage margin $16.78 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,16.78,22.58,14.91,75,europe-tier
+India,india,Idea Cellular-EU India,0.0017145,1.7556,weconnect_breakage,10GB full-usage margin $10.83 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,10.83,19.61,13.12,65,standard
+Indonesia,indonesia,Telkomsel indonesia,0.001296,1.3271,weconnect_breakage,10GB full-usage margin $15.12 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,15.12,21.75,14.41,72,europe-tier
+Iran,iran,MCI Iran,0.007722,7.9073,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-50.68,-11.15,-5.33,0,global
+Iraq,iraq,Korek Telecom Company,0.00297,3.0413,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-2.02,13.18,9.27,0,global
+Ireland,ireland,Meteor Mobile Ireland,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Israel,israel,Hot Mobile Israel,0.000918,0.94,weconnect_breakage,10GB full-usage margin $18.99 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,18.99,23.69,15.57,78,europe-tier
+Italy,italy,Vodafone Italy,0.0006885,0.705,weconnect_breakage,10GB full-usage margin $21.34 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.34,24.86,16.27,82,europe-tier
+Ivory Coast,ivory-coast,MTN Ivory Coast,0.0974025,99.7402,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-969.01,-470.31,-280.83,0,global
+Jamaica,jamaica,Cable & Wireless Jamaica,0.0060885,6.2346,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-33.96,-2.78,-0.31,5,caribbean
+Japan,japan,NTT Docomo Japan,0.0026595,2.7233,weconnect_breakage,10GB gate tight but 3GB full-usage margin $10.22; breakage on smaller plans only.,1.16,14.77,10.22,49,standard
+Jordan,jordan,ZAIN Jordan,0.0059265,6.0687,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-32.3,-1.95,0.18,0,global
+Kazakhstan,kazakhstan,Kar-Tel (Beeline) Kazakhstan,0.0008505,0.8709,weconnect_breakage,10GB full-usage margin $19.68 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,19.68,24.04,15.78,80,europe-tier
+Kenya,kenya,Airtel Kenya,0.0047385,4.8522,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-20.13,4.13,3.83,0,global
+Kuwait,kuwait,STC Kuwait,0.0017685,1.8109,weconnect_breakage,10GB full-usage margin $10.28 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,10.28,19.34,12.96,64,standard
+Kyrgyzstan,kyrgyzstan,Sky Mobile Kyrgyzstan (Beeline),0.000837,0.8571,weconnect_breakage,10GB full-usage margin $19.82 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,19.82,24.1,15.82,80,europe-tier
+Laos,laos,ETL Mobile,0.0028485,2.9169,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-0.78,13.81,9.64,0,standard
+Latvia,latvia,Tele2 Latvia,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Lesotho,lesotho,Vodacom Lesotho,0.0219375,22.464,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-196.25,-83.93,-49.0,0,global
+Liberia,liberia,Lonestar Communications Corporation,0.09828,100.6387,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-978.0,-474.8,-283.53,0,global
+Liechtenstein,liechtenstein,Telecom Liechtenstein AG,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Lithuania,lithuania,Tele2 Lithuania,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Luxembourg,luxembourg,Tango Luxembourg,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Macao China,macao-china,Hutchison Telephone Macau Company Limited,0.001053,1.0783,weconnect_breakage,10GB full-usage margin $17.61 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,17.61,23.0,15.16,76,europe-tier
+Macedonia,macedonia,T-Mobile Macedonia,0.001188,1.2165,weconnect_breakage,10GB full-usage margin $16.22 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,16.22,22.31,14.74,74,europe-tier
+Madagascar,madagascar,Airtel Madagascar,0.0050085,5.1287,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-22.9,2.75,3.0,0,global
+Malawi,malawi,Airtel Malawi Limited,0.005481,5.6125,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-27.74,0.33,1.55,0,global
+Malaysia,malaysia,Digi Malaysia,0.001161,1.1889,weconnect_breakage,10GB full-usage margin $16.50 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,16.5,22.45,14.82,74,europe-tier
+Maldives,maldives,Dhiraagu Maldives,0.008451,8.6538,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-58.15,-14.88,-7.57,0,global
+Malta,malta,Melita Malta,0.0006885,0.705,weconnect_breakage,10GB full-usage margin $21.34 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.34,24.86,16.27,82,europe-tier
+Mauritania,mauritania,Mattel,0.0088425,9.0547,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-62.16,-16.88,-8.77,0,global
+Mauritius,mauritius,Chili Mauritius,0.0049275,5.0458,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-22.07,3.16,3.25,0,global
+Mexico,mexico,Movistar Mexico,0.0030375,3.1104,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-2.71,12.84,9.06,5,south-america
+Moldova,moldova,Orange Moldova,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Monaco,monaco,Monaco Telecom,0.0184275,18.8698,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-160.31,-65.96,-38.22,0,global
+Mongolia,mongolia,MobiCom Corporation,0.0057915,5.9305,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-30.91,-1.26,0.6,0,global
+Montenegro,montenegro,MTEL Montenegro,0.000891,0.9124,weconnect_breakage,10GB full-usage margin $19.27 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,19.27,23.83,15.65,79,europe-tier
+Montserrat,montserrat,Cable & Wireless Montserrat,0.0061425,6.2899,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-34.51,-3.06,-0.48,5,caribbean
+Morocco,morocco,Inwi Morocco,0.0021195,2.1704,weconnect_breakage,10GB gate tight but 3GB full-usage margin $11.88; breakage on smaller plans only.,6.69,17.54,11.88,58,standard
+Mozambique,mozambique,VM Mozambique,0.020007,20.4872,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-176.48,-74.05,-43.07,0,global
+Nepal,nepal,Ncell Nepal,0.0049275,5.0458,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-22.07,3.16,3.25,0,global
+Netherlands,netherlands,KPN Netherlands,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Netherlands Antilles,netherlands-antilles,Setel Netherlands Antilles,0.0060345,6.1793,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-33.4,-2.51,-0.15,0,global
+New Zealand,new-zealand,Vodafone New Zealand,0.0010935,1.1197,weconnect_breakage,10GB full-usage margin $17.19 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,17.19,22.79,15.03,75,europe-tier
+Nicaragua,nicaragua,Claro Nicaragua (EN),0.0076005,7.7829,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-49.44,-10.52,-4.96,5,south-america
+Niger,niger,Zain/CelTel Niger,0.0052515,5.3775,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-25.39,1.5,2.26,0,global
+Nigeria,nigeria,Glo Nigeria,0.0039285,4.0228,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-11.84,8.28,6.32,0,global
+Norway,norway,ICE Norway,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Oman,oman,Vodafone Oman,0.0017955,1.8386,weconnect_breakage,10GB full-usage margin $10.00 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,10.0,19.2,12.87,64,standard
+Pakistan,pakistan,Jazz Mobile Pakistan,0.0009045,0.9262,weconnect_breakage,10GB full-usage margin $19.13 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,19.13,23.76,15.61,79,europe-tier
+Palestinian Territory,palestinian-territory,Jawwal,0.010098,10.3404,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-75.01,-23.31,-12.63,0,global
+Panama,panama,Cable & Wireless Panama,0.0056835,5.8199,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-29.81,-0.71,0.93,5,south-america
+Papua New Guinea,papua-new-guinea,Digitec Papua New Guinea,0.007074,7.2438,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-44.05,-7.83,-3.34,0,global
+Paraguay,paraguay,N cleo S A,0.0049275,5.0458,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-22.07,3.16,3.25,5,south-america
+Peru,peru,Movistar Peru,0.0031185,3.1933,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-3.54,12.42,8.81,5,south-america
+Philippines,philippines,Globe Philippines,0.001647,1.6865,weconnect_breakage,10GB full-usage margin $11.52 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,11.52,19.96,13.33,66,standard
+Poland,poland,Plus Poland,0.0006885,0.705,weconnect_breakage,10GB full-usage margin $21.34 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.34,24.86,16.27,82,europe-tier
+Portugal,portugal,Vodafone Portugal,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Puerto Rico,puerto-rico,Liberty,0.0057375,5.8752,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-30.36,-0.99,0.76,5,caribbean
+Qatar,qatar,Ooredoo Qatar,0.001755,1.7971,weconnect_breakage,10GB full-usage margin $10.42 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,10.42,19.4,13.0,64,standard
+Reunion,reunion,Orange,0.000918,0.94,weconnect_breakage,10GB full-usage margin $18.99 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,18.99,23.69,15.57,78,europe-tier
+Romania,romania,DIGI Romania,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Russian Federation,russian-federation,Tele2 Russia,0.0009855,1.0092,weconnect_breakage,10GB full-usage margin $18.30 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,18.3,23.34,15.36,77,europe-tier
+Rwanda,rwanda,Tigo Rwanda,0.0051975,5.3222,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-24.83,1.78,2.42,0,global
+Saint Kitts and Nevis,saint-kitts-and-nevis,Cable & Wireless Saint Kitts and Nevis,0.006534,6.6908,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-38.52,-5.06,-1.68,5,caribbean
+Saint Lucia,saint-lucia,Cable & Wireless Saint Lucia,0.006534,6.6908,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-38.52,-5.06,-1.68,5,caribbean
+Saint Vincent and Grenadines,saint-vincent-and-grenadines,C & W Saint Vincent and Grenadines,0.006534,6.6908,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-38.52,-5.06,-1.68,0,global
+Samoa,samoa,Digicell Samoa,0.0194805,19.948,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-171.09,-71.35,-41.45,0,global
+Satellite Networks,satellite-networks,AeroMobile AS (Satellite Networks),0.085293,87.34,exclude,Non-terrestrial or non-viable destination.,-845.01,-408.31,-243.63,0,global
+Saudi Arabia,saudi-arabia,Mobily Saudi Arabia,0.0023355,2.3916,access_fixed,Saudi/Umrah policy: eSIM Access fixed bundles only.,4.47,16.43,11.22,0,middle-east
+Senegal,senegal,Orange/Sonatel Senegal,0.011313,11.5845,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-87.46,-29.53,-16.36,0,global
+Serbia,serbia,Yettel Serbia,0.000999,1.023,weconnect_breakage,10GB full-usage margin $18.16 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,18.16,23.28,15.32,77,europe-tier
+Seychelles,seychelles,Airtel Seychelles,0.194805,199.4803,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-1966.41,-969.01,-580.05,0,global
+Singapore,singapore,Singtel Singapore,0.001107,1.1336,weconnect_breakage,10GB full-usage margin $17.05 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,17.05,22.72,14.99,75,europe-tier
+Slovakia,slovakia,O2 Slovakia,0.0006885,0.705,weconnect_breakage,10GB full-usage margin $21.34 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.34,24.86,16.27,82,europe-tier
+Slovenia,slovenia,A1 Slovenia,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+South Africa,south-africa,Telkom SA,0.002052,2.1012,weconnect_breakage,10GB gate tight but 3GB full-usage margin $12.09; breakage on smaller plans only.,7.38,17.88,12.09,59,standard
+South Korea,south-korea,SK Telecom South Korea,0.0022005,2.2533,weconnect_breakage,10GB gate tight but 3GB full-usage margin $11.63; breakage on smaller plans only.,5.86,17.12,11.63,57,standard
+South Sudan,south-sudan,MTN,0.131625,134.784,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-1319.45,-645.53,-385.96,0,global
+Spain,spain,Movistar Spain,0.0006885,0.705,weconnect_breakage,10GB full-usage margin $21.34 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.34,24.86,16.27,82,europe-tier
+Sri Lanka,sri-lanka,Mobitel Sri Lanka,0.0013635,1.3962,weconnect_breakage,10GB full-usage margin $14.43 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,14.43,21.41,14.2,71,europe-tier
+Sudan,sudan,Zain Sudan,0.014742,15.0958,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-122.57,-47.09,-26.9,0,global
+Suriname,suriname,Digicel Suriname,0.019305,19.7683,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-169.29,-70.45,-40.91,0,global
+Sweden,sweden,Tele2 Sweden,0.000675,0.6912,weconnect_breakage,10GB full-usage margin $21.48 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.48,24.93,16.32,83,europe-tier
+Switzerland,switzerland,Salt Switzerland,0.0007425,0.7603,weconnect_breakage,10GB full-usage margin $20.79 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,20.79,24.59,16.11,81,europe-tier
+Taiwan,taiwan,Chunghwa Telecom Taiwan,0.002025,2.0736,weconnect_breakage,10GB full-usage margin $7.65 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,7.65,18.02,12.17,60,standard
+Tajikistan,tajikistan,Tacom LLC,0.001431,1.4653,weconnect_breakage,10GB full-usage margin $13.74 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,13.74,21.06,13.99,70,europe-tier
+Tanzania,tanzania,ZAIN/Celtel Tanzania,0.0050085,5.1287,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-22.9,2.75,3.0,0,global
+Thailand,thailand,DTAC Thailand,0.001026,1.0506,weconnect_breakage,10GB full-usage margin $17.88 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,17.88,23.14,15.24,77,europe-tier
+Tonga,tonga,Digicel Tonga,0.086346,88.4183,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-855.79,-413.7,-246.86,0,global
+Trinidad and Tobago,trinidad-and-tobago,Digicel Trinidad & Tobago,0.019305,19.7683,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-169.29,-70.45,-40.91,5,caribbean
+Tunisia,tunisia,Ooredoo Tunisie,0.0011475,1.175,weconnect_breakage,10GB full-usage margin $16.64 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,16.64,22.51,14.86,75,europe-tier
+Turkey,turkey,Turk Telekom Turkey,0.0006075,0.6221,weconnect_breakage,10GB full-usage margin $22.17 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,22.17,25.28,16.52,84,europe-tier
+Turks and Caicos Islands,turks-and-caicos-islands,Cable & Wireless (TCI) Turks and Caicos,0.006534,6.6908,telna_fixed,Caribbean per-MB wholesale too high; Telna regional bundles required.,-38.52,-5.06,-1.68,5,caribbean
+Uganda,uganda,Airtel/Warid Uganda,0.005157,5.2808,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-24.42,1.99,2.55,0,global
+Ukraine,ukraine,KyivStar Ukraine,0.0006345,0.6497,weconnect_breakage,10GB full-usage margin $21.89 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.89,25.14,16.44,83,europe-tier
+United Arab Emirates,united-arab-emirates,Etisalat UAE,0.0046035,4.714,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-18.75,4.82,4.25,0,global
+United Kingdom,united-kingdom,Vodafone UK,0.0006885,0.705,weconnect_breakage,10GB full-usage margin $21.34 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,21.34,24.86,16.27,82,europe-tier
+United States,united-states,AT&T USA,0.001188,1.2165,weconnect_breakage,10GB full-usage margin $16.22 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,16.22,22.31,14.74,74,europe-tier
+Uruguay,uruguay,Movistar Uruguay,0.0027945,2.8616,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-0.23,14.08,9.81,5,south-america
+Uzbekistan,uzbekistan,Beeline Uzbekistan,0.000864,0.8847,weconnect_breakage,10GB full-usage margin $19.54 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,19.54,23.97,15.74,79,europe-tier
+Vanuatu,vanuatu,Digicell Vanuatu,0.076518,78.3544,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-755.15,-363.38,-216.67,0,global
+Venezuela,venezuela,Digitel Venezuela,0.0091665,9.3865,telna_fixed,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-65.47,-18.54,-9.77,5,south-america
+Vietnam,vietnam,Vinaphone Vietnam,0.0010665,1.0921,weconnect_breakage,10GB full-usage margin $17.47 (≥25% target). Eligible for virtual bundle on WeConnect PAYG.,17.47,22.93,15.11,76,europe-tier
+Zambia,zambia,Airtel/Zain/Celtel Zambia,0.0051165,5.2393,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-24.0,2.19,2.67,0,global
+Zimbabwe,zimbabwe,Econet Wireless Private Limited,0.151632,155.2712,catalog_cascade,100% usage on 10GB plan loses money on WeConnect per-MB; route to fixed bundle provider.,-1524.32,-747.97,-447.42,0,global

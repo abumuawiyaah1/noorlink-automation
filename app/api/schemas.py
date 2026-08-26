@@ -180,6 +180,33 @@ class FulfillmentResolveResponse(BaseModel):
     mapped: Optional[dict] = None
     chosen: Optional[dict] = None
     ladder: Optional[str] = None
+    breakage_policy: Optional[dict] = Field(None, serialization_alias="breakagePolicy")
+    fulfillment_mode: Optional[dict] = Field(None, serialization_alias="fulfillmentMode")
+    breakage_margin_estimates: Optional[dict] = Field(
+        None, serialization_alias="breakageMarginEstimates"
+    )
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class BreakageStrategySummaryResponse(BaseModel):
+    success: bool
+    summary: dict
+
+
+class BreakageCountryPolicyResponse(BaseModel):
+    success: bool
+    country: str
+    policy: dict
+    fulfillment_mode: Optional[dict] = Field(None, serialization_alias="fulfillmentMode")
+    bundles: list[dict] = Field(default_factory=list)
+
+
+class BreakageAllowanceResponse(BaseModel):
+    success: bool
+    allowance: Optional[dict] = None
+    profit_estimate: Optional[dict] = Field(None, serialization_alias="profitEstimate")
     message: Optional[str] = None
 
     model_config = {"populate_by_name": True}

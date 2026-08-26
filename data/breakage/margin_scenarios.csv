@@ -1,0 +1,2161 @@
+country_slug,country,policy,price_gb_usd,plan,retail_usd,usage_pct,wholesale_usd,margin_usd
+afghanistan,Afghanistan,catalog_cascade,5.737,1gb_5d,14.99,0.25,3.03,11.96
+afghanistan,Afghanistan,catalog_cascade,5.737,1gb_5d,14.99,0.5,4.47,10.52
+afghanistan,Afghanistan,catalog_cascade,5.737,1gb_5d,14.99,0.75,5.9,9.09
+afghanistan,Afghanistan,catalog_cascade,5.737,1gb_5d,14.99,1.0,7.34,7.65
+afghanistan,Afghanistan,catalog_cascade,5.737,3gb_7d,19.99,0.25,5.9,14.09
+afghanistan,Afghanistan,catalog_cascade,5.737,3gb_7d,19.99,0.5,10.21,9.78
+afghanistan,Afghanistan,catalog_cascade,5.737,3gb_7d,19.99,0.75,14.51,5.48
+afghanistan,Afghanistan,catalog_cascade,5.737,3gb_7d,19.99,1.0,18.81,1.18
+afghanistan,Afghanistan,catalog_cascade,5.737,10gb_15d,29.99,0.25,15.94,14.05
+afghanistan,Afghanistan,catalog_cascade,5.737,10gb_15d,29.99,0.5,30.28,-0.29
+afghanistan,Afghanistan,catalog_cascade,5.737,10gb_15d,29.99,0.75,44.63,-14.64
+afghanistan,Afghanistan,catalog_cascade,5.737,10gb_15d,29.99,1.0,58.97,-28.98
+albania,Albania,weconnect_breakage,0.8709,1gb_5d,14.99,0.25,1.82,13.17
+albania,Albania,weconnect_breakage,0.8709,1gb_5d,14.99,0.5,2.04,12.95
+albania,Albania,weconnect_breakage,0.8709,1gb_5d,14.99,0.75,2.25,12.74
+albania,Albania,weconnect_breakage,0.8709,1gb_5d,14.99,1.0,2.47,12.52
+albania,Albania,weconnect_breakage,0.8709,3gb_7d,19.99,0.25,2.25,17.74
+albania,Albania,weconnect_breakage,0.8709,3gb_7d,19.99,0.5,2.91,17.08
+albania,Albania,weconnect_breakage,0.8709,3gb_7d,19.99,0.75,3.56,16.43
+albania,Albania,weconnect_breakage,0.8709,3gb_7d,19.99,1.0,4.21,15.78
+albania,Albania,weconnect_breakage,0.8709,10gb_15d,29.99,0.25,3.78,26.21
+albania,Albania,weconnect_breakage,0.8709,10gb_15d,29.99,0.5,5.95,24.04
+albania,Albania,weconnect_breakage,0.8709,10gb_15d,29.99,0.75,8.13,21.86
+albania,Albania,weconnect_breakage,0.8709,10gb_15d,29.99,1.0,10.31,19.68
+algeria,Algeria,weconnect_breakage,1.1059,1gb_5d,14.99,0.25,1.88,13.11
+algeria,Algeria,weconnect_breakage,1.1059,1gb_5d,14.99,0.5,2.15,12.84
+algeria,Algeria,weconnect_breakage,1.1059,1gb_5d,14.99,0.75,2.43,12.56
+algeria,Algeria,weconnect_breakage,1.1059,1gb_5d,14.99,1.0,2.71,12.28
+algeria,Algeria,weconnect_breakage,1.1059,3gb_7d,19.99,0.25,2.43,17.56
+algeria,Algeria,weconnect_breakage,1.1059,3gb_7d,19.99,0.5,3.26,16.73
+algeria,Algeria,weconnect_breakage,1.1059,3gb_7d,19.99,0.75,4.09,15.9
+algeria,Algeria,weconnect_breakage,1.1059,3gb_7d,19.99,1.0,4.92,15.07
+algeria,Algeria,weconnect_breakage,1.1059,10gb_15d,29.99,0.25,4.36,25.63
+algeria,Algeria,weconnect_breakage,1.1059,10gb_15d,29.99,0.5,7.13,22.86
+algeria,Algeria,weconnect_breakage,1.1059,10gb_15d,29.99,0.75,9.89,20.1
+algeria,Algeria,weconnect_breakage,1.1059,10gb_15d,29.99,1.0,12.66,17.33
+andorra,Andorra,weconnect_breakage,2.4883,1gb_5d,14.99,0.25,2.22,12.77
+andorra,Andorra,weconnect_breakage,2.4883,1gb_5d,14.99,0.5,2.84,12.15
+andorra,Andorra,weconnect_breakage,2.4883,1gb_5d,14.99,0.75,3.47,11.52
+andorra,Andorra,weconnect_breakage,2.4883,1gb_5d,14.99,1.0,4.09,10.9
+andorra,Andorra,weconnect_breakage,2.4883,3gb_7d,19.99,0.25,3.47,16.52
+andorra,Andorra,weconnect_breakage,2.4883,3gb_7d,19.99,0.5,5.33,14.66
+andorra,Andorra,weconnect_breakage,2.4883,3gb_7d,19.99,0.75,7.2,12.79
+andorra,Andorra,weconnect_breakage,2.4883,3gb_7d,19.99,1.0,9.06,10.93
+andorra,Andorra,weconnect_breakage,2.4883,10gb_15d,29.99,0.25,7.82,22.17
+andorra,Andorra,weconnect_breakage,2.4883,10gb_15d,29.99,0.5,14.04,15.95
+andorra,Andorra,weconnect_breakage,2.4883,10gb_15d,29.99,0.75,20.26,9.73
+andorra,Andorra,weconnect_breakage,2.4883,10gb_15d,29.99,1.0,26.48,3.51
+angola,Angola,catalog_cascade,124.0013,1gb_5d,14.99,0.25,32.6,-17.61
+angola,Angola,catalog_cascade,124.0013,1gb_5d,14.99,0.5,63.6,-48.61
+angola,Angola,catalog_cascade,124.0013,1gb_5d,14.99,0.75,94.6,-79.61
+angola,Angola,catalog_cascade,124.0013,1gb_5d,14.99,1.0,125.6,-110.61
+angola,Angola,catalog_cascade,124.0013,3gb_7d,19.99,0.25,94.6,-74.61
+angola,Angola,catalog_cascade,124.0013,3gb_7d,19.99,0.5,187.6,-167.61
+angola,Angola,catalog_cascade,124.0013,3gb_7d,19.99,0.75,280.6,-260.61
+angola,Angola,catalog_cascade,124.0013,3gb_7d,19.99,1.0,373.6,-353.61
+angola,Angola,catalog_cascade,124.0013,10gb_15d,29.99,0.25,311.6,-281.61
+angola,Angola,catalog_cascade,124.0013,10gb_15d,29.99,0.5,621.61,-591.62
+angola,Angola,catalog_cascade,124.0013,10gb_15d,29.99,0.75,931.61,-901.62
+angola,Angola,catalog_cascade,124.0013,10gb_15d,29.99,1.0,1241.61,-1211.62
+anguilla,Anguilla,telna_fixed,6.5802,1gb_5d,14.99,0.25,3.25,11.74
+anguilla,Anguilla,telna_fixed,6.5802,1gb_5d,14.99,0.5,4.89,10.1
+anguilla,Anguilla,telna_fixed,6.5802,1gb_5d,14.99,0.75,6.54,8.45
+anguilla,Anguilla,telna_fixed,6.5802,1gb_5d,14.99,1.0,8.18,6.81
+anguilla,Anguilla,telna_fixed,6.5802,3gb_7d,19.99,0.25,6.54,13.45
+anguilla,Anguilla,telna_fixed,6.5802,3gb_7d,19.99,0.5,11.47,8.52
+anguilla,Anguilla,telna_fixed,6.5802,3gb_7d,19.99,0.75,16.41,3.58
+anguilla,Anguilla,telna_fixed,6.5802,3gb_7d,19.99,1.0,21.34,-1.35
+anguilla,Anguilla,telna_fixed,6.5802,10gb_15d,29.99,0.25,18.05,11.94
+anguilla,Anguilla,telna_fixed,6.5802,10gb_15d,29.99,0.5,34.5,-4.51
+anguilla,Anguilla,telna_fixed,6.5802,10gb_15d,29.99,0.75,50.95,-20.96
+anguilla,Anguilla,telna_fixed,6.5802,10gb_15d,29.99,1.0,67.4,-37.41
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,1gb_5d,14.99,0.25,3.27,11.72
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,1gb_5d,14.99,0.5,4.95,10.04
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,1gb_5d,14.99,0.75,6.62,8.37
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,1gb_5d,14.99,1.0,8.29,6.7
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,3gb_7d,19.99,0.25,6.62,13.37
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,3gb_7d,19.99,0.5,11.64,8.35
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,3gb_7d,19.99,0.75,16.65,3.34
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,3gb_7d,19.99,1.0,21.67,-1.68
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,10gb_15d,29.99,0.25,18.33,11.66
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,10gb_15d,29.99,0.5,35.05,-5.06
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,10gb_15d,29.99,0.75,51.78,-21.79
+antigua-and-barbuda,Antigua and Barbuda,telna_fixed,6.6908,10gb_15d,29.99,1.0,68.51,-38.52
+argentina,Argentina,telna_fixed,2.8477,1gb_5d,14.99,0.25,2.31,12.68
+argentina,Argentina,telna_fixed,2.8477,1gb_5d,14.99,0.5,3.02,11.97
+argentina,Argentina,telna_fixed,2.8477,1gb_5d,14.99,0.75,3.74,11.25
+argentina,Argentina,telna_fixed,2.8477,1gb_5d,14.99,1.0,4.45,10.54
+argentina,Argentina,telna_fixed,2.8477,3gb_7d,19.99,0.25,3.74,16.25
+argentina,Argentina,telna_fixed,2.8477,3gb_7d,19.99,0.5,5.87,14.12
+argentina,Argentina,telna_fixed,2.8477,3gb_7d,19.99,0.75,8.01,11.98
+argentina,Argentina,telna_fixed,2.8477,3gb_7d,19.99,1.0,10.14,9.85
+argentina,Argentina,telna_fixed,2.8477,10gb_15d,29.99,0.25,8.72,21.27
+argentina,Argentina,telna_fixed,2.8477,10gb_15d,29.99,0.5,15.84,14.15
+argentina,Argentina,telna_fixed,2.8477,10gb_15d,29.99,0.75,22.96,7.03
+argentina,Argentina,telna_fixed,2.8477,10gb_15d,29.99,1.0,30.08,-0.09
+armenia,Armenia,weconnect_breakage,1.258,1gb_5d,14.99,0.25,1.91,13.08
+armenia,Armenia,weconnect_breakage,1.258,1gb_5d,14.99,0.5,2.23,12.76
+armenia,Armenia,weconnect_breakage,1.258,1gb_5d,14.99,0.75,2.54,12.45
+armenia,Armenia,weconnect_breakage,1.258,1gb_5d,14.99,1.0,2.86,12.13
+armenia,Armenia,weconnect_breakage,1.258,3gb_7d,19.99,0.25,2.54,17.45
+armenia,Armenia,weconnect_breakage,1.258,3gb_7d,19.99,0.5,3.49,16.5
+armenia,Armenia,weconnect_breakage,1.258,3gb_7d,19.99,0.75,4.43,15.56
+armenia,Armenia,weconnect_breakage,1.258,3gb_7d,19.99,1.0,5.37,14.62
+armenia,Armenia,weconnect_breakage,1.258,10gb_15d,29.99,0.25,4.74,25.25
+armenia,Armenia,weconnect_breakage,1.258,10gb_15d,29.99,0.5,7.89,22.1
+armenia,Armenia,weconnect_breakage,1.258,10gb_15d,29.99,0.75,11.03,18.96
+armenia,Armenia,weconnect_breakage,1.258,10gb_15d,29.99,1.0,14.18,15.81
+australia,Australia,weconnect_breakage,1.2442,1gb_5d,14.99,0.25,1.91,13.08
+australia,Australia,weconnect_breakage,1.2442,1gb_5d,14.99,0.5,2.22,12.77
+australia,Australia,weconnect_breakage,1.2442,1gb_5d,14.99,0.75,2.53,12.46
+australia,Australia,weconnect_breakage,1.2442,1gb_5d,14.99,1.0,2.84,12.15
+australia,Australia,weconnect_breakage,1.2442,3gb_7d,19.99,0.25,2.53,17.46
+australia,Australia,weconnect_breakage,1.2442,3gb_7d,19.99,0.5,3.47,16.52
+australia,Australia,weconnect_breakage,1.2442,3gb_7d,19.99,0.75,4.4,15.59
+australia,Australia,weconnect_breakage,1.2442,3gb_7d,19.99,1.0,5.33,14.66
+australia,Australia,weconnect_breakage,1.2442,10gb_15d,29.99,0.25,4.71,25.28
+australia,Australia,weconnect_breakage,1.2442,10gb_15d,29.99,0.5,7.82,22.17
+australia,Australia,weconnect_breakage,1.2442,10gb_15d,29.99,0.75,10.93,19.06
+australia,Australia,weconnect_breakage,1.2442,10gb_15d,29.99,1.0,14.04,15.95
+austria,Austria,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+austria,Austria,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+austria,Austria,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+austria,Austria,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+austria,Austria,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+austria,Austria,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+austria,Austria,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+austria,Austria,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+austria,Austria,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+austria,Austria,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+austria,Austria,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+austria,Austria,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,1gb_5d,14.99,0.25,2.16,12.83
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,1gb_5d,14.99,0.5,2.72,12.27
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,1gb_5d,14.99,0.75,3.28,11.71
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,1gb_5d,14.99,1.0,3.84,11.15
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,3gb_7d,19.99,0.25,3.28,16.71
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,3gb_7d,19.99,0.5,4.96,15.03
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,3gb_7d,19.99,0.75,6.64,13.35
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,3gb_7d,19.99,1.0,8.32,11.67
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,10gb_15d,29.99,0.25,7.2,22.79
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,10gb_15d,29.99,0.5,12.8,17.19
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,10gb_15d,29.99,0.75,18.4,11.59
+azerbaijan,Azerbaijan,weconnect_breakage,2.2395,10gb_15d,29.99,1.0,23.99,6.0
+bahamas,Bahamas,telna_fixed,8.7368,1gb_5d,14.99,0.25,3.78,11.21
+bahamas,Bahamas,telna_fixed,8.7368,1gb_5d,14.99,0.5,5.97,9.02
+bahamas,Bahamas,telna_fixed,8.7368,1gb_5d,14.99,0.75,8.15,6.84
+bahamas,Bahamas,telna_fixed,8.7368,1gb_5d,14.99,1.0,10.34,4.65
+bahamas,Bahamas,telna_fixed,8.7368,3gb_7d,19.99,0.25,8.15,11.84
+bahamas,Bahamas,telna_fixed,8.7368,3gb_7d,19.99,0.5,14.71,5.28
+bahamas,Bahamas,telna_fixed,8.7368,3gb_7d,19.99,0.75,21.26,-1.27
+bahamas,Bahamas,telna_fixed,8.7368,3gb_7d,19.99,1.0,27.81,-7.82
+bahamas,Bahamas,telna_fixed,8.7368,10gb_15d,29.99,0.25,23.44,6.55
+bahamas,Bahamas,telna_fixed,8.7368,10gb_15d,29.99,0.5,45.28,-15.29
+bahamas,Bahamas,telna_fixed,8.7368,10gb_15d,29.99,0.75,67.13,-37.14
+bahamas,Bahamas,telna_fixed,8.7368,10gb_15d,29.99,1.0,88.97,-58.98
+bahrain,Bahrain,weconnect_breakage,1.4377,1gb_5d,14.99,0.25,1.96,13.03
+bahrain,Bahrain,weconnect_breakage,1.4377,1gb_5d,14.99,0.5,2.32,12.67
+bahrain,Bahrain,weconnect_breakage,1.4377,1gb_5d,14.99,0.75,2.68,12.31
+bahrain,Bahrain,weconnect_breakage,1.4377,1gb_5d,14.99,1.0,3.04,11.95
+bahrain,Bahrain,weconnect_breakage,1.4377,3gb_7d,19.99,0.25,2.68,17.31
+bahrain,Bahrain,weconnect_breakage,1.4377,3gb_7d,19.99,0.5,3.76,16.23
+bahrain,Bahrain,weconnect_breakage,1.4377,3gb_7d,19.99,0.75,4.83,15.16
+bahrain,Bahrain,weconnect_breakage,1.4377,3gb_7d,19.99,1.0,5.91,14.08
+bahrain,Bahrain,weconnect_breakage,1.4377,10gb_15d,29.99,0.25,5.19,24.8
+bahrain,Bahrain,weconnect_breakage,1.4377,10gb_15d,29.99,0.5,8.79,21.2
+bahrain,Bahrain,weconnect_breakage,1.4377,10gb_15d,29.99,0.75,12.38,17.61
+bahrain,Bahrain,weconnect_breakage,1.4377,10gb_15d,29.99,1.0,15.98,14.01
+bangladesh,Bangladesh,weconnect_breakage,1.0368,1gb_5d,14.99,0.25,1.86,13.13
+bangladesh,Bangladesh,weconnect_breakage,1.0368,1gb_5d,14.99,0.5,2.12,12.87
+bangladesh,Bangladesh,weconnect_breakage,1.0368,1gb_5d,14.99,0.75,2.38,12.61
+bangladesh,Bangladesh,weconnect_breakage,1.0368,1gb_5d,14.99,1.0,2.64,12.35
+bangladesh,Bangladesh,weconnect_breakage,1.0368,3gb_7d,19.99,0.25,2.38,17.61
+bangladesh,Bangladesh,weconnect_breakage,1.0368,3gb_7d,19.99,0.5,3.16,16.83
+bangladesh,Bangladesh,weconnect_breakage,1.0368,3gb_7d,19.99,0.75,3.93,16.06
+bangladesh,Bangladesh,weconnect_breakage,1.0368,3gb_7d,19.99,1.0,4.71,15.28
+bangladesh,Bangladesh,weconnect_breakage,1.0368,10gb_15d,29.99,0.25,4.19,25.8
+bangladesh,Bangladesh,weconnect_breakage,1.0368,10gb_15d,29.99,0.5,6.78,23.21
+bangladesh,Bangladesh,weconnect_breakage,1.0368,10gb_15d,29.99,0.75,9.38,20.61
+bangladesh,Bangladesh,weconnect_breakage,1.0368,10gb_15d,29.99,1.0,11.97,18.02
+barbados,Barbados,telna_fixed,6.2899,1gb_5d,14.99,0.25,3.17,11.82
+barbados,Barbados,telna_fixed,6.2899,1gb_5d,14.99,0.5,4.74,10.25
+barbados,Barbados,telna_fixed,6.2899,1gb_5d,14.99,0.75,6.32,8.67
+barbados,Barbados,telna_fixed,6.2899,1gb_5d,14.99,1.0,7.89,7.1
+barbados,Barbados,telna_fixed,6.2899,3gb_7d,19.99,0.25,6.32,13.67
+barbados,Barbados,telna_fixed,6.2899,3gb_7d,19.99,0.5,11.03,8.96
+barbados,Barbados,telna_fixed,6.2899,3gb_7d,19.99,0.75,15.75,4.24
+barbados,Barbados,telna_fixed,6.2899,3gb_7d,19.99,1.0,20.47,-0.48
+barbados,Barbados,telna_fixed,6.2899,10gb_15d,29.99,0.25,17.32,12.67
+barbados,Barbados,telna_fixed,6.2899,10gb_15d,29.99,0.5,33.05,-3.06
+barbados,Barbados,telna_fixed,6.2899,10gb_15d,29.99,0.75,48.77,-18.78
+barbados,Barbados,telna_fixed,6.2899,10gb_15d,29.99,1.0,64.5,-34.51
+belarus,Belarus,weconnect_breakage,1.7556,1gb_5d,14.99,0.25,2.04,12.95
+belarus,Belarus,weconnect_breakage,1.7556,1gb_5d,14.99,0.5,2.48,12.51
+belarus,Belarus,weconnect_breakage,1.7556,1gb_5d,14.99,0.75,2.92,12.07
+belarus,Belarus,weconnect_breakage,1.7556,1gb_5d,14.99,1.0,3.36,11.63
+belarus,Belarus,weconnect_breakage,1.7556,3gb_7d,19.99,0.25,2.92,17.07
+belarus,Belarus,weconnect_breakage,1.7556,3gb_7d,19.99,0.5,4.23,15.76
+belarus,Belarus,weconnect_breakage,1.7556,3gb_7d,19.99,0.75,5.55,14.44
+belarus,Belarus,weconnect_breakage,1.7556,3gb_7d,19.99,1.0,6.87,13.12
+belarus,Belarus,weconnect_breakage,1.7556,10gb_15d,29.99,0.25,5.99,24.0
+belarus,Belarus,weconnect_breakage,1.7556,10gb_15d,29.99,0.5,10.38,19.61
+belarus,Belarus,weconnect_breakage,1.7556,10gb_15d,29.99,0.75,14.77,15.22
+belarus,Belarus,weconnect_breakage,1.7556,10gb_15d,29.99,1.0,19.16,10.83
+belgium,Belgium,weconnect_breakage,0.705,1gb_5d,14.99,0.25,1.78,13.21
+belgium,Belgium,weconnect_breakage,0.705,1gb_5d,14.99,0.5,1.95,13.04
+belgium,Belgium,weconnect_breakage,0.705,1gb_5d,14.99,0.75,2.13,12.86
+belgium,Belgium,weconnect_breakage,0.705,1gb_5d,14.99,1.0,2.31,12.68
+belgium,Belgium,weconnect_breakage,0.705,3gb_7d,19.99,0.25,2.13,17.86
+belgium,Belgium,weconnect_breakage,0.705,3gb_7d,19.99,0.5,2.66,17.33
+belgium,Belgium,weconnect_breakage,0.705,3gb_7d,19.99,0.75,3.19,16.8
+belgium,Belgium,weconnect_breakage,0.705,3gb_7d,19.99,1.0,3.72,16.27
+belgium,Belgium,weconnect_breakage,0.705,10gb_15d,29.99,0.25,3.36,26.63
+belgium,Belgium,weconnect_breakage,0.705,10gb_15d,29.99,0.5,5.13,24.86
+belgium,Belgium,weconnect_breakage,0.705,10gb_15d,29.99,0.75,6.89,23.1
+belgium,Belgium,weconnect_breakage,0.705,10gb_15d,29.99,1.0,8.65,21.34
+belize,Belize,catalog_cascade,11.6398,1gb_5d,14.99,0.25,4.51,10.48
+belize,Belize,catalog_cascade,11.6398,1gb_5d,14.99,0.5,7.42,7.57
+belize,Belize,catalog_cascade,11.6398,1gb_5d,14.99,0.75,10.33,4.66
+belize,Belize,catalog_cascade,11.6398,1gb_5d,14.99,1.0,13.24,1.75
+belize,Belize,catalog_cascade,11.6398,3gb_7d,19.99,0.25,10.33,9.66
+belize,Belize,catalog_cascade,11.6398,3gb_7d,19.99,0.5,19.06,0.93
+belize,Belize,catalog_cascade,11.6398,3gb_7d,19.99,0.75,27.79,-7.8
+belize,Belize,catalog_cascade,11.6398,3gb_7d,19.99,1.0,36.52,-16.53
+belize,Belize,catalog_cascade,11.6398,10gb_15d,29.99,0.25,30.7,-0.71
+belize,Belize,catalog_cascade,11.6398,10gb_15d,29.99,0.5,59.8,-29.81
+belize,Belize,catalog_cascade,11.6398,10gb_15d,29.99,0.75,88.9,-58.91
+belize,Belize,catalog_cascade,11.6398,10gb_15d,29.99,1.0,118.0,-88.01
+benin,Benin,catalog_cascade,5.0734,1gb_5d,14.99,0.25,2.87,12.12
+benin,Benin,catalog_cascade,5.0734,1gb_5d,14.99,0.5,4.14,10.85
+benin,Benin,catalog_cascade,5.0734,1gb_5d,14.99,0.75,5.41,9.58
+benin,Benin,catalog_cascade,5.0734,1gb_5d,14.99,1.0,6.67,8.32
+benin,Benin,catalog_cascade,5.0734,3gb_7d,19.99,0.25,5.41,14.58
+benin,Benin,catalog_cascade,5.0734,3gb_7d,19.99,0.5,9.21,10.78
+benin,Benin,catalog_cascade,5.0734,3gb_7d,19.99,0.75,13.02,6.97
+benin,Benin,catalog_cascade,5.0734,3gb_7d,19.99,1.0,16.82,3.17
+benin,Benin,catalog_cascade,5.0734,10gb_15d,29.99,0.25,14.28,15.71
+benin,Benin,catalog_cascade,5.0734,10gb_15d,29.99,0.5,26.97,3.02
+benin,Benin,catalog_cascade,5.0734,10gb_15d,29.99,0.75,39.65,-9.66
+benin,Benin,catalog_cascade,5.0734,10gb_15d,29.99,1.0,52.33,-22.34
+bermuda,Bermuda,telna_fixed,20.1277,1gb_5d,14.99,0.25,6.63,8.36
+bermuda,Bermuda,telna_fixed,20.1277,1gb_5d,14.99,0.5,11.66,3.33
+bermuda,Bermuda,telna_fixed,20.1277,1gb_5d,14.99,0.75,16.7,-1.71
+bermuda,Bermuda,telna_fixed,20.1277,1gb_5d,14.99,1.0,21.73,-6.74
+bermuda,Bermuda,telna_fixed,20.1277,3gb_7d,19.99,0.25,16.7,3.29
+bermuda,Bermuda,telna_fixed,20.1277,3gb_7d,19.99,0.5,31.79,-11.8
+bermuda,Bermuda,telna_fixed,20.1277,3gb_7d,19.99,0.75,46.89,-26.9
+bermuda,Bermuda,telna_fixed,20.1277,3gb_7d,19.99,1.0,61.98,-41.99
+bermuda,Bermuda,telna_fixed,20.1277,10gb_15d,29.99,0.25,51.92,-21.93
+bermuda,Bermuda,telna_fixed,20.1277,10gb_15d,29.99,0.5,102.24,-72.25
+bermuda,Bermuda,telna_fixed,20.1277,10gb_15d,29.99,0.75,152.56,-122.57
+bermuda,Bermuda,telna_fixed,20.1277,10gb_15d,29.99,1.0,202.88,-172.89
+bhutan,Bhutan,catalog_cascade,187.799,1gb_5d,14.99,0.25,48.55,-33.56
+bhutan,Bhutan,catalog_cascade,187.799,1gb_5d,14.99,0.5,95.5,-80.51
+bhutan,Bhutan,catalog_cascade,187.799,1gb_5d,14.99,0.75,142.45,-127.46
+bhutan,Bhutan,catalog_cascade,187.799,1gb_5d,14.99,1.0,189.4,-174.41
+bhutan,Bhutan,catalog_cascade,187.799,3gb_7d,19.99,0.25,142.45,-122.46
+bhutan,Bhutan,catalog_cascade,187.799,3gb_7d,19.99,0.5,283.3,-263.31
+bhutan,Bhutan,catalog_cascade,187.799,3gb_7d,19.99,0.75,424.15,-404.16
+bhutan,Bhutan,catalog_cascade,187.799,3gb_7d,19.99,1.0,565.0,-545.01
+bhutan,Bhutan,catalog_cascade,187.799,10gb_15d,29.99,0.25,471.1,-441.11
+bhutan,Bhutan,catalog_cascade,187.799,10gb_15d,29.99,0.5,940.6,-910.61
+bhutan,Bhutan,catalog_cascade,187.799,10gb_15d,29.99,0.75,1410.09,-1380.1
+bhutan,Bhutan,catalog_cascade,187.799,10gb_15d,29.99,1.0,1879.59,-1849.6
+bolivia,Bolivia,telna_fixed,6.9811,1gb_5d,14.99,0.25,3.35,11.64
+bolivia,Bolivia,telna_fixed,6.9811,1gb_5d,14.99,0.5,5.09,9.9
+bolivia,Bolivia,telna_fixed,6.9811,1gb_5d,14.99,0.75,6.84,8.15
+bolivia,Bolivia,telna_fixed,6.9811,1gb_5d,14.99,1.0,8.58,6.41
+bolivia,Bolivia,telna_fixed,6.9811,3gb_7d,19.99,0.25,6.84,13.15
+bolivia,Bolivia,telna_fixed,6.9811,3gb_7d,19.99,0.5,12.07,7.92
+bolivia,Bolivia,telna_fixed,6.9811,3gb_7d,19.99,0.75,17.31,2.68
+bolivia,Bolivia,telna_fixed,6.9811,3gb_7d,19.99,1.0,22.54,-2.55
+bolivia,Bolivia,telna_fixed,6.9811,10gb_15d,29.99,0.25,19.05,10.94
+bolivia,Bolivia,telna_fixed,6.9811,10gb_15d,29.99,0.5,36.51,-6.52
+bolivia,Bolivia,telna_fixed,6.9811,10gb_15d,29.99,0.75,53.96,-23.97
+bolivia,Bolivia,telna_fixed,6.9811,10gb_15d,29.99,1.0,71.41,-41.42
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,1gb_5d,14.99,0.25,2.05,12.94
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,1gb_5d,14.99,0.5,2.5,12.49
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,1gb_5d,14.99,0.75,2.95,12.04
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,1gb_5d,14.99,1.0,3.4,11.59
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,3gb_7d,19.99,0.25,2.95,17.04
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,3gb_7d,19.99,0.5,4.3,15.69
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,3gb_7d,19.99,0.75,5.64,14.35
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,3gb_7d,19.99,1.0,6.99,13.0
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,10gb_15d,29.99,0.25,6.09,23.9
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,10gb_15d,29.99,0.5,10.59,19.4
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,10gb_15d,29.99,0.75,15.08,14.91
+bosnia-and-herzegovina,Bosnia and Herzegovina,weconnect_breakage,1.7971,10gb_15d,29.99,1.0,19.57,10.42
+brazil,Brazil,telna_fixed,2.2948,1gb_5d,14.99,0.25,2.17,12.82
+brazil,Brazil,telna_fixed,2.2948,1gb_5d,14.99,0.5,2.75,12.24
+brazil,Brazil,telna_fixed,2.2948,1gb_5d,14.99,0.75,3.32,11.67
+brazil,Brazil,telna_fixed,2.2948,1gb_5d,14.99,1.0,3.89,11.1
+brazil,Brazil,telna_fixed,2.2948,3gb_7d,19.99,0.25,3.32,16.67
+brazil,Brazil,telna_fixed,2.2948,3gb_7d,19.99,0.5,5.04,14.95
+brazil,Brazil,telna_fixed,2.2948,3gb_7d,19.99,0.75,6.76,13.23
+brazil,Brazil,telna_fixed,2.2948,3gb_7d,19.99,1.0,8.48,11.51
+brazil,Brazil,telna_fixed,2.2948,10gb_15d,29.99,0.25,7.34,22.65
+brazil,Brazil,telna_fixed,2.2948,10gb_15d,29.99,0.5,13.07,16.92
+brazil,Brazil,telna_fixed,2.2948,10gb_15d,29.99,0.75,18.81,11.18
+brazil,Brazil,telna_fixed,2.2948,10gb_15d,29.99,1.0,24.55,5.44
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,1gb_5d,14.99,0.25,3.21,11.78
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,1gb_5d,14.99,0.5,4.83,10.16
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,1gb_5d,14.99,0.75,6.44,8.55
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,1gb_5d,14.99,1.0,8.06,6.93
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,3gb_7d,19.99,0.25,6.44,13.55
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,3gb_7d,19.99,0.5,11.28,8.71
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,3gb_7d,19.99,0.75,16.13,3.86
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,3gb_7d,19.99,1.0,20.97,-0.98
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,10gb_15d,29.99,0.25,17.74,12.25
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,10gb_15d,29.99,0.5,33.88,-3.89
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,10gb_15d,29.99,0.75,50.02,-20.03
+british-virgin-islands,British Virgin Islands,telna_fixed,6.4558,10gb_15d,29.99,1.0,66.16,-36.17
+bulgaria,Bulgaria,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+bulgaria,Bulgaria,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+bulgaria,Bulgaria,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+bulgaria,Bulgaria,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+bulgaria,Bulgaria,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+bulgaria,Bulgaria,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+bulgaria,Bulgaria,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+bulgaria,Bulgaria,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+bulgaria,Bulgaria,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+bulgaria,Bulgaria,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+bulgaria,Bulgaria,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+bulgaria,Bulgaria,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+cambodia,Cambodia,weconnect_breakage,2.3777,1gb_5d,14.99,0.25,2.19,12.8
+cambodia,Cambodia,weconnect_breakage,2.3777,1gb_5d,14.99,0.5,2.79,12.2
+cambodia,Cambodia,weconnect_breakage,2.3777,1gb_5d,14.99,0.75,3.38,11.61
+cambodia,Cambodia,weconnect_breakage,2.3777,1gb_5d,14.99,1.0,3.98,11.01
+cambodia,Cambodia,weconnect_breakage,2.3777,3gb_7d,19.99,0.25,3.38,16.61
+cambodia,Cambodia,weconnect_breakage,2.3777,3gb_7d,19.99,0.5,5.17,14.82
+cambodia,Cambodia,weconnect_breakage,2.3777,3gb_7d,19.99,0.75,6.95,13.04
+cambodia,Cambodia,weconnect_breakage,2.3777,3gb_7d,19.99,1.0,8.73,11.26
+cambodia,Cambodia,weconnect_breakage,2.3777,10gb_15d,29.99,0.25,7.54,22.45
+cambodia,Cambodia,weconnect_breakage,2.3777,10gb_15d,29.99,0.5,13.49,16.5
+cambodia,Cambodia,weconnect_breakage,2.3777,10gb_15d,29.99,0.75,19.43,10.56
+cambodia,Cambodia,weconnect_breakage,2.3777,10gb_15d,29.99,1.0,25.38,4.61
+cameroon,Cameroon,catalog_cascade,98.8416,1gb_5d,14.99,0.25,26.31,-11.32
+cameroon,Cameroon,catalog_cascade,98.8416,1gb_5d,14.99,0.5,51.02,-36.03
+cameroon,Cameroon,catalog_cascade,98.8416,1gb_5d,14.99,0.75,75.73,-60.74
+cameroon,Cameroon,catalog_cascade,98.8416,1gb_5d,14.99,1.0,100.44,-85.45
+cameroon,Cameroon,catalog_cascade,98.8416,3gb_7d,19.99,0.25,75.73,-55.74
+cameroon,Cameroon,catalog_cascade,98.8416,3gb_7d,19.99,0.5,149.86,-129.87
+cameroon,Cameroon,catalog_cascade,98.8416,3gb_7d,19.99,0.75,223.99,-204.0
+cameroon,Cameroon,catalog_cascade,98.8416,3gb_7d,19.99,1.0,298.12,-278.13
+cameroon,Cameroon,catalog_cascade,98.8416,10gb_15d,29.99,0.25,248.7,-218.71
+cameroon,Cameroon,catalog_cascade,98.8416,10gb_15d,29.99,0.5,495.81,-465.82
+cameroon,Cameroon,catalog_cascade,98.8416,10gb_15d,29.99,0.75,742.91,-712.92
+cameroon,Cameroon,catalog_cascade,98.8416,10gb_15d,29.99,1.0,990.02,-960.03
+canada,Canada,weconnect_breakage,2.046,1gb_5d,14.99,0.25,2.11,12.88
+canada,Canada,weconnect_breakage,2.046,1gb_5d,14.99,0.5,2.62,12.37
+canada,Canada,weconnect_breakage,2.046,1gb_5d,14.99,0.75,3.13,11.86
+canada,Canada,weconnect_breakage,2.046,1gb_5d,14.99,1.0,3.65,11.34
+canada,Canada,weconnect_breakage,2.046,3gb_7d,19.99,0.25,3.13,16.86
+canada,Canada,weconnect_breakage,2.046,3gb_7d,19.99,0.5,4.67,15.32
+canada,Canada,weconnect_breakage,2.046,3gb_7d,19.99,0.75,6.2,13.79
+canada,Canada,weconnect_breakage,2.046,3gb_7d,19.99,1.0,7.74,12.25
+canada,Canada,weconnect_breakage,2.046,10gb_15d,29.99,0.25,6.71,23.28
+canada,Canada,weconnect_breakage,2.046,10gb_15d,29.99,0.5,11.83,18.16
+canada,Canada,weconnect_breakage,2.046,10gb_15d,29.99,0.75,16.94,13.05
+canada,Canada,weconnect_breakage,2.046,10gb_15d,29.99,1.0,22.06,7.93
+cape-verde,Cape Verde,catalog_cascade,11.2666,1gb_5d,14.99,0.25,4.42,10.57
+cape-verde,Cape Verde,catalog_cascade,11.2666,1gb_5d,14.99,0.5,7.23,7.76
+cape-verde,Cape Verde,catalog_cascade,11.2666,1gb_5d,14.99,0.75,10.05,4.94
+cape-verde,Cape Verde,catalog_cascade,11.2666,1gb_5d,14.99,1.0,12.87,2.12
+cape-verde,Cape Verde,catalog_cascade,11.2666,3gb_7d,19.99,0.25,10.05,9.94
+cape-verde,Cape Verde,catalog_cascade,11.2666,3gb_7d,19.99,0.5,18.5,1.49
+cape-verde,Cape Verde,catalog_cascade,11.2666,3gb_7d,19.99,0.75,26.95,-6.96
+cape-verde,Cape Verde,catalog_cascade,11.2666,3gb_7d,19.99,1.0,35.4,-15.41
+cape-verde,Cape Verde,catalog_cascade,11.2666,10gb_15d,29.99,0.25,29.77,0.22
+cape-verde,Cape Verde,catalog_cascade,11.2666,10gb_15d,29.99,0.5,57.93,-27.94
+cape-verde,Cape Verde,catalog_cascade,11.2666,10gb_15d,29.99,0.75,86.1,-56.11
+cape-verde,Cape Verde,catalog_cascade,11.2666,10gb_15d,29.99,1.0,114.27,-84.28
+cayman-islands,Cayman Islands,telna_fixed,6.5802,1gb_5d,14.99,0.25,3.25,11.74
+cayman-islands,Cayman Islands,telna_fixed,6.5802,1gb_5d,14.99,0.5,4.89,10.1
+cayman-islands,Cayman Islands,telna_fixed,6.5802,1gb_5d,14.99,0.75,6.54,8.45
+cayman-islands,Cayman Islands,telna_fixed,6.5802,1gb_5d,14.99,1.0,8.18,6.81
+cayman-islands,Cayman Islands,telna_fixed,6.5802,3gb_7d,19.99,0.25,6.54,13.45
+cayman-islands,Cayman Islands,telna_fixed,6.5802,3gb_7d,19.99,0.5,11.47,8.52
+cayman-islands,Cayman Islands,telna_fixed,6.5802,3gb_7d,19.99,0.75,16.41,3.58
+cayman-islands,Cayman Islands,telna_fixed,6.5802,3gb_7d,19.99,1.0,21.34,-1.35
+cayman-islands,Cayman Islands,telna_fixed,6.5802,10gb_15d,29.99,0.25,18.05,11.94
+cayman-islands,Cayman Islands,telna_fixed,6.5802,10gb_15d,29.99,0.5,34.5,-4.51
+cayman-islands,Cayman Islands,telna_fixed,6.5802,10gb_15d,29.99,0.75,50.95,-20.96
+cayman-islands,Cayman Islands,telna_fixed,6.5802,10gb_15d,29.99,1.0,67.4,-37.41
+chad,Chad,catalog_cascade,5.6125,1gb_5d,14.99,0.25,3.0,11.99
+chad,Chad,catalog_cascade,5.6125,1gb_5d,14.99,0.5,4.41,10.58
+chad,Chad,catalog_cascade,5.6125,1gb_5d,14.99,0.75,5.81,9.18
+chad,Chad,catalog_cascade,5.6125,1gb_5d,14.99,1.0,7.21,7.78
+chad,Chad,catalog_cascade,5.6125,3gb_7d,19.99,0.25,5.81,14.18
+chad,Chad,catalog_cascade,5.6125,3gb_7d,19.99,0.5,10.02,9.97
+chad,Chad,catalog_cascade,5.6125,3gb_7d,19.99,0.75,14.23,5.76
+chad,Chad,catalog_cascade,5.6125,3gb_7d,19.99,1.0,18.44,1.55
+chad,Chad,catalog_cascade,5.6125,10gb_15d,29.99,0.25,15.63,14.36
+chad,Chad,catalog_cascade,5.6125,10gb_15d,29.99,0.5,29.66,0.33
+chad,Chad,catalog_cascade,5.6125,10gb_15d,29.99,0.75,43.69,-13.7
+chad,Chad,catalog_cascade,5.6125,10gb_15d,29.99,1.0,57.73,-27.74
+chile,Chile,telna_fixed,2.3777,1gb_5d,14.99,0.25,2.19,12.8
+chile,Chile,telna_fixed,2.3777,1gb_5d,14.99,0.5,2.79,12.2
+chile,Chile,telna_fixed,2.3777,1gb_5d,14.99,0.75,3.38,11.61
+chile,Chile,telna_fixed,2.3777,1gb_5d,14.99,1.0,3.98,11.01
+chile,Chile,telna_fixed,2.3777,3gb_7d,19.99,0.25,3.38,16.61
+chile,Chile,telna_fixed,2.3777,3gb_7d,19.99,0.5,5.17,14.82
+chile,Chile,telna_fixed,2.3777,3gb_7d,19.99,0.75,6.95,13.04
+chile,Chile,telna_fixed,2.3777,3gb_7d,19.99,1.0,8.73,11.26
+chile,Chile,telna_fixed,2.3777,10gb_15d,29.99,0.25,7.54,22.45
+chile,Chile,telna_fixed,2.3777,10gb_15d,29.99,0.5,13.49,16.5
+chile,Chile,telna_fixed,2.3777,10gb_15d,29.99,0.75,19.43,10.56
+chile,Chile,telna_fixed,2.3777,10gb_15d,29.99,1.0,25.38,4.61
+china,China,weconnect_breakage,2.1151,1gb_5d,14.99,0.25,2.13,12.86
+china,China,weconnect_breakage,2.1151,1gb_5d,14.99,0.5,2.66,12.33
+china,China,weconnect_breakage,2.1151,1gb_5d,14.99,0.75,3.19,11.8
+china,China,weconnect_breakage,2.1151,1gb_5d,14.99,1.0,3.72,11.27
+china,China,weconnect_breakage,2.1151,3gb_7d,19.99,0.25,3.19,16.8
+china,China,weconnect_breakage,2.1151,3gb_7d,19.99,0.5,4.77,15.22
+china,China,weconnect_breakage,2.1151,3gb_7d,19.99,0.75,6.36,13.63
+china,China,weconnect_breakage,2.1151,3gb_7d,19.99,1.0,7.95,12.04
+china,China,weconnect_breakage,2.1151,10gb_15d,29.99,0.25,6.89,23.1
+china,China,weconnect_breakage,2.1151,10gb_15d,29.99,0.5,12.18,17.81
+china,China,weconnect_breakage,2.1151,10gb_15d,29.99,0.75,17.46,12.53
+china,China,weconnect_breakage,2.1151,10gb_15d,29.99,1.0,22.75,7.24
+colombia,Colombia,telna_fixed,5.8199,1gb_5d,14.99,0.25,3.05,11.94
+colombia,Colombia,telna_fixed,5.8199,1gb_5d,14.99,0.5,4.51,10.48
+colombia,Colombia,telna_fixed,5.8199,1gb_5d,14.99,0.75,5.96,9.03
+colombia,Colombia,telna_fixed,5.8199,1gb_5d,14.99,1.0,7.42,7.57
+colombia,Colombia,telna_fixed,5.8199,3gb_7d,19.99,0.25,5.96,14.03
+colombia,Colombia,telna_fixed,5.8199,3gb_7d,19.99,0.5,10.33,9.66
+colombia,Colombia,telna_fixed,5.8199,3gb_7d,19.99,0.75,14.69,5.3
+colombia,Colombia,telna_fixed,5.8199,3gb_7d,19.99,1.0,19.06,0.93
+colombia,Colombia,telna_fixed,5.8199,10gb_15d,29.99,0.25,16.15,13.84
+colombia,Colombia,telna_fixed,5.8199,10gb_15d,29.99,0.5,30.7,-0.71
+colombia,Colombia,telna_fixed,5.8199,10gb_15d,29.99,0.75,45.25,-15.26
+colombia,Colombia,telna_fixed,5.8199,10gb_15d,29.99,1.0,59.8,-29.81
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,1gb_5d,14.99,0.25,3.0,11.99
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,1gb_5d,14.99,0.5,4.41,10.58
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,1gb_5d,14.99,0.75,5.81,9.18
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,1gb_5d,14.99,1.0,7.21,7.78
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,3gb_7d,19.99,0.25,5.81,14.18
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,3gb_7d,19.99,0.5,10.02,9.97
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,3gb_7d,19.99,0.75,14.23,5.76
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,3gb_7d,19.99,1.0,18.44,1.55
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,10gb_15d,29.99,0.25,15.63,14.36
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,10gb_15d,29.99,0.5,29.66,0.33
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,10gb_15d,29.99,0.75,43.69,-13.7
+congo-dem-rep,"Congo Dem, Rep",catalog_cascade,5.6125,10gb_15d,29.99,1.0,57.73,-27.74
+congo-republic,Congo Republic,catalog_cascade,5.6955,1gb_5d,14.99,0.25,3.02,11.97
+congo-republic,Congo Republic,catalog_cascade,5.6955,1gb_5d,14.99,0.5,4.45,10.54
+congo-republic,Congo Republic,catalog_cascade,5.6955,1gb_5d,14.99,0.75,5.87,9.12
+congo-republic,Congo Republic,catalog_cascade,5.6955,1gb_5d,14.99,1.0,7.3,7.69
+congo-republic,Congo Republic,catalog_cascade,5.6955,3gb_7d,19.99,0.25,5.87,14.12
+congo-republic,Congo Republic,catalog_cascade,5.6955,3gb_7d,19.99,0.5,10.14,9.85
+congo-republic,Congo Republic,catalog_cascade,5.6955,3gb_7d,19.99,0.75,14.41,5.58
+congo-republic,Congo Republic,catalog_cascade,5.6955,3gb_7d,19.99,1.0,18.69,1.3
+congo-republic,Congo Republic,catalog_cascade,5.6955,10gb_15d,29.99,0.25,15.84,14.15
+congo-republic,Congo Republic,catalog_cascade,5.6955,10gb_15d,29.99,0.5,30.08,-0.09
+congo-republic,Congo Republic,catalog_cascade,5.6955,10gb_15d,29.99,0.75,44.32,-14.33
+congo-republic,Congo Republic,catalog_cascade,5.6955,10gb_15d,29.99,1.0,58.55,-28.56
+costa-rica,Costa Rica,telna_fixed,2.8477,1gb_5d,14.99,0.25,2.31,12.68
+costa-rica,Costa Rica,telna_fixed,2.8477,1gb_5d,14.99,0.5,3.02,11.97
+costa-rica,Costa Rica,telna_fixed,2.8477,1gb_5d,14.99,0.75,3.74,11.25
+costa-rica,Costa Rica,telna_fixed,2.8477,1gb_5d,14.99,1.0,4.45,10.54
+costa-rica,Costa Rica,telna_fixed,2.8477,3gb_7d,19.99,0.25,3.74,16.25
+costa-rica,Costa Rica,telna_fixed,2.8477,3gb_7d,19.99,0.5,5.87,14.12
+costa-rica,Costa Rica,telna_fixed,2.8477,3gb_7d,19.99,0.75,8.01,11.98
+costa-rica,Costa Rica,telna_fixed,2.8477,3gb_7d,19.99,1.0,10.14,9.85
+costa-rica,Costa Rica,telna_fixed,2.8477,10gb_15d,29.99,0.25,8.72,21.27
+costa-rica,Costa Rica,telna_fixed,2.8477,10gb_15d,29.99,0.5,15.84,14.15
+costa-rica,Costa Rica,telna_fixed,2.8477,10gb_15d,29.99,0.75,22.96,7.03
+costa-rica,Costa Rica,telna_fixed,2.8477,10gb_15d,29.99,1.0,30.08,-0.09
+croatia,Croatia,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+croatia,Croatia,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+croatia,Croatia,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+croatia,Croatia,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+croatia,Croatia,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+croatia,Croatia,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+croatia,Croatia,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+croatia,Croatia,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+croatia,Croatia,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+croatia,Croatia,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+croatia,Croatia,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+croatia,Croatia,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+cuba,Cuba,telna_fixed,19.2292,1gb_5d,14.99,0.25,6.41,8.58
+cuba,Cuba,telna_fixed,19.2292,1gb_5d,14.99,0.5,11.21,3.78
+cuba,Cuba,telna_fixed,19.2292,1gb_5d,14.99,0.75,16.02,-1.03
+cuba,Cuba,telna_fixed,19.2292,1gb_5d,14.99,1.0,20.83,-5.84
+cuba,Cuba,telna_fixed,19.2292,3gb_7d,19.99,0.25,16.02,3.97
+cuba,Cuba,telna_fixed,19.2292,3gb_7d,19.99,0.5,30.44,-10.45
+cuba,Cuba,telna_fixed,19.2292,3gb_7d,19.99,0.75,44.87,-24.88
+cuba,Cuba,telna_fixed,19.2292,3gb_7d,19.99,1.0,59.29,-39.3
+cuba,Cuba,telna_fixed,19.2292,10gb_15d,29.99,0.25,49.67,-19.68
+cuba,Cuba,telna_fixed,19.2292,10gb_15d,29.99,0.5,97.75,-67.76
+cuba,Cuba,telna_fixed,19.2292,10gb_15d,29.99,0.75,145.82,-115.83
+cuba,Cuba,telna_fixed,19.2292,10gb_15d,29.99,1.0,193.89,-163.9
+curacao,Curacao,telna_fixed,19.2292,1gb_5d,14.99,0.25,6.41,8.58
+curacao,Curacao,telna_fixed,19.2292,1gb_5d,14.99,0.5,11.21,3.78
+curacao,Curacao,telna_fixed,19.2292,1gb_5d,14.99,0.75,16.02,-1.03
+curacao,Curacao,telna_fixed,19.2292,1gb_5d,14.99,1.0,20.83,-5.84
+curacao,Curacao,telna_fixed,19.2292,3gb_7d,19.99,0.25,16.02,3.97
+curacao,Curacao,telna_fixed,19.2292,3gb_7d,19.99,0.5,30.44,-10.45
+curacao,Curacao,telna_fixed,19.2292,3gb_7d,19.99,0.75,44.87,-24.88
+curacao,Curacao,telna_fixed,19.2292,3gb_7d,19.99,1.0,59.29,-39.3
+curacao,Curacao,telna_fixed,19.2292,10gb_15d,29.99,0.25,49.67,-19.68
+curacao,Curacao,telna_fixed,19.2292,10gb_15d,29.99,0.5,97.75,-67.76
+curacao,Curacao,telna_fixed,19.2292,10gb_15d,29.99,0.75,145.82,-115.83
+curacao,Curacao,telna_fixed,19.2292,10gb_15d,29.99,1.0,193.89,-163.9
+cyprus,Cyprus,weconnect_breakage,0.7188,1gb_5d,14.99,0.25,1.78,13.21
+cyprus,Cyprus,weconnect_breakage,0.7188,1gb_5d,14.99,0.5,1.96,13.03
+cyprus,Cyprus,weconnect_breakage,0.7188,1gb_5d,14.99,0.75,2.14,12.85
+cyprus,Cyprus,weconnect_breakage,0.7188,1gb_5d,14.99,1.0,2.32,12.67
+cyprus,Cyprus,weconnect_breakage,0.7188,3gb_7d,19.99,0.25,2.14,17.85
+cyprus,Cyprus,weconnect_breakage,0.7188,3gb_7d,19.99,0.5,2.68,17.31
+cyprus,Cyprus,weconnect_breakage,0.7188,3gb_7d,19.99,0.75,3.22,16.77
+cyprus,Cyprus,weconnect_breakage,0.7188,3gb_7d,19.99,1.0,3.76,16.23
+cyprus,Cyprus,weconnect_breakage,0.7188,10gb_15d,29.99,0.25,3.4,26.59
+cyprus,Cyprus,weconnect_breakage,0.7188,10gb_15d,29.99,0.5,5.19,24.8
+cyprus,Cyprus,weconnect_breakage,0.7188,10gb_15d,29.99,0.75,6.99,23.0
+cyprus,Cyprus,weconnect_breakage,0.7188,10gb_15d,29.99,1.0,8.79,21.2
+czech-republic,Czech Republic,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+czech-republic,Czech Republic,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+czech-republic,Czech Republic,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+czech-republic,Czech Republic,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+czech-republic,Czech Republic,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+czech-republic,Czech Republic,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+czech-republic,Czech Republic,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+czech-republic,Czech Republic,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+czech-republic,Czech Republic,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+czech-republic,Czech Republic,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+czech-republic,Czech Republic,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+czech-republic,Czech Republic,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+denmark,Denmark,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+denmark,Denmark,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+denmark,Denmark,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+denmark,Denmark,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+denmark,Denmark,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+denmark,Denmark,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+denmark,Denmark,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+denmark,Denmark,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+denmark,Denmark,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+denmark,Denmark,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+denmark,Denmark,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+denmark,Denmark,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+dominica,Dominica,telna_fixed,6.6908,1gb_5d,14.99,0.25,3.27,11.72
+dominica,Dominica,telna_fixed,6.6908,1gb_5d,14.99,0.5,4.95,10.04
+dominica,Dominica,telna_fixed,6.6908,1gb_5d,14.99,0.75,6.62,8.37
+dominica,Dominica,telna_fixed,6.6908,1gb_5d,14.99,1.0,8.29,6.7
+dominica,Dominica,telna_fixed,6.6908,3gb_7d,19.99,0.25,6.62,13.37
+dominica,Dominica,telna_fixed,6.6908,3gb_7d,19.99,0.5,11.64,8.35
+dominica,Dominica,telna_fixed,6.6908,3gb_7d,19.99,0.75,16.65,3.34
+dominica,Dominica,telna_fixed,6.6908,3gb_7d,19.99,1.0,21.67,-1.68
+dominica,Dominica,telna_fixed,6.6908,10gb_15d,29.99,0.25,18.33,11.66
+dominica,Dominica,telna_fixed,6.6908,10gb_15d,29.99,0.5,35.05,-5.06
+dominica,Dominica,telna_fixed,6.6908,10gb_15d,29.99,0.75,51.78,-21.79
+dominica,Dominica,telna_fixed,6.6908,10gb_15d,29.99,1.0,68.51,-38.52
+dominican-republic,Dominican Republic,telna_fixed,8.1285,1gb_5d,14.99,0.25,3.63,11.36
+dominican-republic,Dominican Republic,telna_fixed,8.1285,1gb_5d,14.99,0.5,5.66,9.33
+dominican-republic,Dominican Republic,telna_fixed,8.1285,1gb_5d,14.99,0.75,7.7,7.29
+dominican-republic,Dominican Republic,telna_fixed,8.1285,1gb_5d,14.99,1.0,9.73,5.26
+dominican-republic,Dominican Republic,telna_fixed,8.1285,3gb_7d,19.99,0.25,7.7,12.29
+dominican-republic,Dominican Republic,telna_fixed,8.1285,3gb_7d,19.99,0.5,13.79,6.2
+dominican-republic,Dominican Republic,telna_fixed,8.1285,3gb_7d,19.99,0.75,19.89,0.1
+dominican-republic,Dominican Republic,telna_fixed,8.1285,3gb_7d,19.99,1.0,25.99,-6.0
+dominican-republic,Dominican Republic,telna_fixed,8.1285,10gb_15d,29.99,0.25,21.92,8.07
+dominican-republic,Dominican Republic,telna_fixed,8.1285,10gb_15d,29.99,0.5,42.24,-12.25
+dominican-republic,Dominican Republic,telna_fixed,8.1285,10gb_15d,29.99,0.75,62.56,-32.57
+dominican-republic,Dominican Republic,telna_fixed,8.1285,10gb_15d,29.99,1.0,82.89,-52.9
+ecuador,Ecuador,telna_fixed,2.8201,1gb_5d,14.99,0.25,2.31,12.68
+ecuador,Ecuador,telna_fixed,2.8201,1gb_5d,14.99,0.5,3.01,11.98
+ecuador,Ecuador,telna_fixed,2.8201,1gb_5d,14.99,0.75,3.72,11.27
+ecuador,Ecuador,telna_fixed,2.8201,1gb_5d,14.99,1.0,4.42,10.57
+ecuador,Ecuador,telna_fixed,2.8201,3gb_7d,19.99,0.25,3.72,16.27
+ecuador,Ecuador,telna_fixed,2.8201,3gb_7d,19.99,0.5,5.83,14.16
+ecuador,Ecuador,telna_fixed,2.8201,3gb_7d,19.99,0.75,7.95,12.04
+ecuador,Ecuador,telna_fixed,2.8201,3gb_7d,19.99,1.0,10.06,9.93
+ecuador,Ecuador,telna_fixed,2.8201,10gb_15d,29.99,0.25,8.65,21.34
+ecuador,Ecuador,telna_fixed,2.8201,10gb_15d,29.99,0.5,15.7,14.29
+ecuador,Ecuador,telna_fixed,2.8201,10gb_15d,29.99,0.75,22.75,7.24
+ecuador,Ecuador,telna_fixed,2.8201,10gb_15d,29.99,1.0,29.8,0.19
+egypt,Egypt,weconnect_breakage,1.2165,1gb_5d,14.99,0.25,1.9,13.09
+egypt,Egypt,weconnect_breakage,1.2165,1gb_5d,14.99,0.5,2.21,12.78
+egypt,Egypt,weconnect_breakage,1.2165,1gb_5d,14.99,0.75,2.51,12.48
+egypt,Egypt,weconnect_breakage,1.2165,1gb_5d,14.99,1.0,2.82,12.17
+egypt,Egypt,weconnect_breakage,1.2165,3gb_7d,19.99,0.25,2.51,17.48
+egypt,Egypt,weconnect_breakage,1.2165,3gb_7d,19.99,0.5,3.42,16.57
+egypt,Egypt,weconnect_breakage,1.2165,3gb_7d,19.99,0.75,4.34,15.65
+egypt,Egypt,weconnect_breakage,1.2165,3gb_7d,19.99,1.0,5.25,14.74
+egypt,Egypt,weconnect_breakage,1.2165,10gb_15d,29.99,0.25,4.64,25.35
+egypt,Egypt,weconnect_breakage,1.2165,10gb_15d,29.99,0.5,7.68,22.31
+egypt,Egypt,weconnect_breakage,1.2165,10gb_15d,29.99,0.75,10.72,19.27
+egypt,Egypt,weconnect_breakage,1.2165,10gb_15d,29.99,1.0,13.77,16.22
+el-salvador,El Salvador,telna_fixed,2.9722,1gb_5d,14.99,0.25,2.34,12.65
+el-salvador,El Salvador,telna_fixed,2.9722,1gb_5d,14.99,0.5,3.09,11.9
+el-salvador,El Salvador,telna_fixed,2.9722,1gb_5d,14.99,0.75,3.83,11.16
+el-salvador,El Salvador,telna_fixed,2.9722,1gb_5d,14.99,1.0,4.57,10.42
+el-salvador,El Salvador,telna_fixed,2.9722,3gb_7d,19.99,0.25,3.83,16.16
+el-salvador,El Salvador,telna_fixed,2.9722,3gb_7d,19.99,0.5,6.06,13.93
+el-salvador,El Salvador,telna_fixed,2.9722,3gb_7d,19.99,0.75,8.29,11.7
+el-salvador,El Salvador,telna_fixed,2.9722,3gb_7d,19.99,1.0,10.52,9.47
+el-salvador,El Salvador,telna_fixed,2.9722,10gb_15d,29.99,0.25,9.03,20.96
+el-salvador,El Salvador,telna_fixed,2.9722,10gb_15d,29.99,0.5,16.46,13.53
+el-salvador,El Salvador,telna_fixed,2.9722,10gb_15d,29.99,0.75,23.89,6.1
+el-salvador,El Salvador,telna_fixed,2.9722,10gb_15d,29.99,1.0,31.32,-1.33
+estonia,Estonia,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+estonia,Estonia,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+estonia,Estonia,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+estonia,Estonia,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+estonia,Estonia,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+estonia,Estonia,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+estonia,Estonia,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+estonia,Estonia,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+estonia,Estonia,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+estonia,Estonia,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+estonia,Estonia,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+estonia,Estonia,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+eswatini,Eswatini,catalog_cascade,100.6387,1gb_5d,14.99,0.25,26.76,-11.77
+eswatini,Eswatini,catalog_cascade,100.6387,1gb_5d,14.99,0.5,51.92,-36.93
+eswatini,Eswatini,catalog_cascade,100.6387,1gb_5d,14.99,0.75,77.08,-62.09
+eswatini,Eswatini,catalog_cascade,100.6387,1gb_5d,14.99,1.0,102.24,-87.25
+eswatini,Eswatini,catalog_cascade,100.6387,3gb_7d,19.99,0.25,77.08,-57.09
+eswatini,Eswatini,catalog_cascade,100.6387,3gb_7d,19.99,0.5,152.56,-132.57
+eswatini,Eswatini,catalog_cascade,100.6387,3gb_7d,19.99,0.75,228.04,-208.05
+eswatini,Eswatini,catalog_cascade,100.6387,3gb_7d,19.99,1.0,303.52,-283.53
+eswatini,Eswatini,catalog_cascade,100.6387,10gb_15d,29.99,0.25,253.2,-223.21
+eswatini,Eswatini,catalog_cascade,100.6387,10gb_15d,29.99,0.5,504.79,-474.8
+eswatini,Eswatini,catalog_cascade,100.6387,10gb_15d,29.99,0.75,756.39,-726.4
+eswatini,Eswatini,catalog_cascade,100.6387,10gb_15d,29.99,1.0,1007.99,-978.0
+ethiopia,Ethiopia,catalog_cascade,6.207,1gb_5d,14.99,0.25,3.15,11.84
+ethiopia,Ethiopia,catalog_cascade,6.207,1gb_5d,14.99,0.5,4.7,10.29
+ethiopia,Ethiopia,catalog_cascade,6.207,1gb_5d,14.99,0.75,6.26,8.73
+ethiopia,Ethiopia,catalog_cascade,6.207,1gb_5d,14.99,1.0,7.81,7.18
+ethiopia,Ethiopia,catalog_cascade,6.207,3gb_7d,19.99,0.25,6.26,13.73
+ethiopia,Ethiopia,catalog_cascade,6.207,3gb_7d,19.99,0.5,10.91,9.08
+ethiopia,Ethiopia,catalog_cascade,6.207,3gb_7d,19.99,0.75,15.57,4.42
+ethiopia,Ethiopia,catalog_cascade,6.207,3gb_7d,19.99,1.0,20.22,-0.23
+ethiopia,Ethiopia,catalog_cascade,6.207,10gb_15d,29.99,0.25,17.12,12.87
+ethiopia,Ethiopia,catalog_cascade,6.207,10gb_15d,29.99,0.5,32.63,-2.64
+ethiopia,Ethiopia,catalog_cascade,6.207,10gb_15d,29.99,0.75,48.15,-18.16
+ethiopia,Ethiopia,catalog_cascade,6.207,10gb_15d,29.99,1.0,63.67,-33.68
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,1gb_5d,14.99,0.25,2.07,12.92
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,1gb_5d,14.99,0.5,2.55,12.44
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,1gb_5d,14.99,0.75,3.02,11.97
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,1gb_5d,14.99,1.0,3.49,11.5
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,3gb_7d,19.99,0.25,3.02,16.97
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,3gb_7d,19.99,0.5,4.44,15.55
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,3gb_7d,19.99,0.75,5.86,14.13
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,3gb_7d,19.99,1.0,7.28,12.71
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,10gb_15d,29.99,0.25,6.33,23.66
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,10gb_15d,29.99,0.5,11.07,18.92
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,10gb_15d,29.99,0.75,15.8,14.19
+faroe-islands,Faroe Islands,weconnect_breakage,1.8939,10gb_15d,29.99,1.0,20.54,9.45
+fiji,Fiji,weconnect_breakage,2.046,1gb_5d,14.99,0.25,2.11,12.88
+fiji,Fiji,weconnect_breakage,2.046,1gb_5d,14.99,0.5,2.62,12.37
+fiji,Fiji,weconnect_breakage,2.046,1gb_5d,14.99,0.75,3.13,11.86
+fiji,Fiji,weconnect_breakage,2.046,1gb_5d,14.99,1.0,3.65,11.34
+fiji,Fiji,weconnect_breakage,2.046,3gb_7d,19.99,0.25,3.13,16.86
+fiji,Fiji,weconnect_breakage,2.046,3gb_7d,19.99,0.5,4.67,15.32
+fiji,Fiji,weconnect_breakage,2.046,3gb_7d,19.99,0.75,6.2,13.79
+fiji,Fiji,weconnect_breakage,2.046,3gb_7d,19.99,1.0,7.74,12.25
+fiji,Fiji,weconnect_breakage,2.046,10gb_15d,29.99,0.25,6.71,23.28
+fiji,Fiji,weconnect_breakage,2.046,10gb_15d,29.99,0.5,11.83,18.16
+fiji,Fiji,weconnect_breakage,2.046,10gb_15d,29.99,0.75,16.94,13.05
+fiji,Fiji,weconnect_breakage,2.046,10gb_15d,29.99,1.0,22.06,7.93
+finland,Finland,weconnect_breakage,0.6774,1gb_5d,14.99,0.25,1.77,13.22
+finland,Finland,weconnect_breakage,0.6774,1gb_5d,14.99,0.5,1.94,13.05
+finland,Finland,weconnect_breakage,0.6774,1gb_5d,14.99,0.75,2.11,12.88
+finland,Finland,weconnect_breakage,0.6774,1gb_5d,14.99,1.0,2.28,12.71
+finland,Finland,weconnect_breakage,0.6774,3gb_7d,19.99,0.25,2.11,17.88
+finland,Finland,weconnect_breakage,0.6774,3gb_7d,19.99,0.5,2.62,17.37
+finland,Finland,weconnect_breakage,0.6774,3gb_7d,19.99,0.75,3.12,16.87
+finland,Finland,weconnect_breakage,0.6774,3gb_7d,19.99,1.0,3.63,16.36
+finland,Finland,weconnect_breakage,0.6774,10gb_15d,29.99,0.25,3.29,26.7
+finland,Finland,weconnect_breakage,0.6774,10gb_15d,29.99,0.5,4.99,25.0
+finland,Finland,weconnect_breakage,0.6774,10gb_15d,29.99,0.75,6.68,23.31
+finland,Finland,weconnect_breakage,0.6774,10gb_15d,29.99,1.0,8.37,21.62
+france,France,weconnect_breakage,0.705,1gb_5d,14.99,0.25,1.78,13.21
+france,France,weconnect_breakage,0.705,1gb_5d,14.99,0.5,1.95,13.04
+france,France,weconnect_breakage,0.705,1gb_5d,14.99,0.75,2.13,12.86
+france,France,weconnect_breakage,0.705,1gb_5d,14.99,1.0,2.31,12.68
+france,France,weconnect_breakage,0.705,3gb_7d,19.99,0.25,2.13,17.86
+france,France,weconnect_breakage,0.705,3gb_7d,19.99,0.5,2.66,17.33
+france,France,weconnect_breakage,0.705,3gb_7d,19.99,0.75,3.19,16.8
+france,France,weconnect_breakage,0.705,3gb_7d,19.99,1.0,3.72,16.27
+france,France,weconnect_breakage,0.705,10gb_15d,29.99,0.25,3.36,26.63
+france,France,weconnect_breakage,0.705,10gb_15d,29.99,0.5,5.13,24.86
+france,France,weconnect_breakage,0.705,10gb_15d,29.99,0.75,6.89,23.1
+france,France,weconnect_breakage,0.705,10gb_15d,29.99,1.0,8.65,21.34
+french-guiana,French Guiana,weconnect_breakage,2.4883,1gb_5d,14.99,0.25,2.22,12.77
+french-guiana,French Guiana,weconnect_breakage,2.4883,1gb_5d,14.99,0.5,2.84,12.15
+french-guiana,French Guiana,weconnect_breakage,2.4883,1gb_5d,14.99,0.75,3.47,11.52
+french-guiana,French Guiana,weconnect_breakage,2.4883,1gb_5d,14.99,1.0,4.09,10.9
+french-guiana,French Guiana,weconnect_breakage,2.4883,3gb_7d,19.99,0.25,3.47,16.52
+french-guiana,French Guiana,weconnect_breakage,2.4883,3gb_7d,19.99,0.5,5.33,14.66
+french-guiana,French Guiana,weconnect_breakage,2.4883,3gb_7d,19.99,0.75,7.2,12.79
+french-guiana,French Guiana,weconnect_breakage,2.4883,3gb_7d,19.99,1.0,9.06,10.93
+french-guiana,French Guiana,weconnect_breakage,2.4883,10gb_15d,29.99,0.25,7.82,22.17
+french-guiana,French Guiana,weconnect_breakage,2.4883,10gb_15d,29.99,0.5,14.04,15.95
+french-guiana,French Guiana,weconnect_breakage,2.4883,10gb_15d,29.99,0.75,20.26,9.73
+french-guiana,French Guiana,weconnect_breakage,2.4883,10gb_15d,29.99,1.0,26.48,3.51
+french-polynesia,French Polynesia,catalog_cascade,19.5886,1gb_5d,14.99,0.25,6.5,8.49
+french-polynesia,French Polynesia,catalog_cascade,19.5886,1gb_5d,14.99,0.5,11.39,3.6
+french-polynesia,French Polynesia,catalog_cascade,19.5886,1gb_5d,14.99,0.75,16.29,-1.3
+french-polynesia,French Polynesia,catalog_cascade,19.5886,1gb_5d,14.99,1.0,21.19,-6.2
+french-polynesia,French Polynesia,catalog_cascade,19.5886,3gb_7d,19.99,0.25,16.29,3.7
+french-polynesia,French Polynesia,catalog_cascade,19.5886,3gb_7d,19.99,0.5,30.98,-10.99
+french-polynesia,French Polynesia,catalog_cascade,19.5886,3gb_7d,19.99,0.75,45.67,-25.68
+french-polynesia,French Polynesia,catalog_cascade,19.5886,3gb_7d,19.99,1.0,60.37,-40.38
+french-polynesia,French Polynesia,catalog_cascade,19.5886,10gb_15d,29.99,0.25,50.57,-20.58
+french-polynesia,French Polynesia,catalog_cascade,19.5886,10gb_15d,29.99,0.5,99.54,-69.55
+french-polynesia,French Polynesia,catalog_cascade,19.5886,10gb_15d,29.99,0.75,148.51,-118.52
+french-polynesia,French Polynesia,catalog_cascade,19.5886,10gb_15d,29.99,1.0,197.49,-167.5
+gabon,Gabon,catalog_cascade,5.3222,1gb_5d,14.99,0.25,2.93,12.06
+gabon,Gabon,catalog_cascade,5.3222,1gb_5d,14.99,0.5,4.26,10.73
+gabon,Gabon,catalog_cascade,5.3222,1gb_5d,14.99,0.75,5.59,9.4
+gabon,Gabon,catalog_cascade,5.3222,1gb_5d,14.99,1.0,6.92,8.07
+gabon,Gabon,catalog_cascade,5.3222,3gb_7d,19.99,0.25,5.59,14.4
+gabon,Gabon,catalog_cascade,5.3222,3gb_7d,19.99,0.5,9.58,10.41
+gabon,Gabon,catalog_cascade,5.3222,3gb_7d,19.99,0.75,13.58,6.41
+gabon,Gabon,catalog_cascade,5.3222,3gb_7d,19.99,1.0,17.57,2.42
+gabon,Gabon,catalog_cascade,5.3222,10gb_15d,29.99,0.25,14.91,15.08
+gabon,Gabon,catalog_cascade,5.3222,10gb_15d,29.99,0.5,28.21,1.78
+gabon,Gabon,catalog_cascade,5.3222,10gb_15d,29.99,0.75,41.52,-11.53
+gabon,Gabon,catalog_cascade,5.3222,10gb_15d,29.99,1.0,54.82,-24.83
+georgia,Georgia,weconnect_breakage,1.1474,1gb_5d,14.99,0.25,1.89,13.1
+georgia,Georgia,weconnect_breakage,1.1474,1gb_5d,14.99,0.5,2.17,12.82
+georgia,Georgia,weconnect_breakage,1.1474,1gb_5d,14.99,0.75,2.46,12.53
+georgia,Georgia,weconnect_breakage,1.1474,1gb_5d,14.99,1.0,2.75,12.24
+georgia,Georgia,weconnect_breakage,1.1474,3gb_7d,19.99,0.25,2.46,17.53
+georgia,Georgia,weconnect_breakage,1.1474,3gb_7d,19.99,0.5,3.32,16.67
+georgia,Georgia,weconnect_breakage,1.1474,3gb_7d,19.99,0.75,4.18,15.81
+georgia,Georgia,weconnect_breakage,1.1474,3gb_7d,19.99,1.0,5.04,14.95
+georgia,Georgia,weconnect_breakage,1.1474,10gb_15d,29.99,0.25,4.47,25.52
+georgia,Georgia,weconnect_breakage,1.1474,10gb_15d,29.99,0.5,7.34,22.65
+georgia,Georgia,weconnect_breakage,1.1474,10gb_15d,29.99,0.75,10.21,19.78
+georgia,Georgia,weconnect_breakage,1.1474,10gb_15d,29.99,1.0,13.07,16.92
+germany,Germany,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+germany,Germany,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+germany,Germany,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+germany,Germany,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+germany,Germany,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+germany,Germany,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+germany,Germany,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+germany,Germany,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+germany,Germany,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+germany,Germany,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+germany,Germany,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+germany,Germany,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+ghana,Ghana,weconnect_breakage,2.2257,1gb_5d,14.99,0.25,2.16,12.83
+ghana,Ghana,weconnect_breakage,2.2257,1gb_5d,14.99,0.5,2.71,12.28
+ghana,Ghana,weconnect_breakage,2.2257,1gb_5d,14.99,0.75,3.27,11.72
+ghana,Ghana,weconnect_breakage,2.2257,1gb_5d,14.99,1.0,3.83,11.16
+ghana,Ghana,weconnect_breakage,2.2257,3gb_7d,19.99,0.25,3.27,16.72
+ghana,Ghana,weconnect_breakage,2.2257,3gb_7d,19.99,0.5,4.94,15.05
+ghana,Ghana,weconnect_breakage,2.2257,3gb_7d,19.99,0.75,6.61,13.38
+ghana,Ghana,weconnect_breakage,2.2257,3gb_7d,19.99,1.0,8.28,11.71
+ghana,Ghana,weconnect_breakage,2.2257,10gb_15d,29.99,0.25,7.16,22.83
+ghana,Ghana,weconnect_breakage,2.2257,10gb_15d,29.99,0.5,12.73,17.26
+ghana,Ghana,weconnect_breakage,2.2257,10gb_15d,29.99,0.75,18.29,11.7
+ghana,Ghana,weconnect_breakage,2.2257,10gb_15d,29.99,1.0,23.86,6.13
+gibraltar,Gibraltar,catalog_cascade,2.9445,1gb_5d,14.99,0.25,2.34,12.65
+gibraltar,Gibraltar,catalog_cascade,2.9445,1gb_5d,14.99,0.5,3.07,11.92
+gibraltar,Gibraltar,catalog_cascade,2.9445,1gb_5d,14.99,0.75,3.81,11.18
+gibraltar,Gibraltar,catalog_cascade,2.9445,1gb_5d,14.99,1.0,4.54,10.45
+gibraltar,Gibraltar,catalog_cascade,2.9445,3gb_7d,19.99,0.25,3.81,16.18
+gibraltar,Gibraltar,catalog_cascade,2.9445,3gb_7d,19.99,0.5,6.02,13.97
+gibraltar,Gibraltar,catalog_cascade,2.9445,3gb_7d,19.99,0.75,8.23,11.76
+gibraltar,Gibraltar,catalog_cascade,2.9445,3gb_7d,19.99,1.0,10.43,9.56
+gibraltar,Gibraltar,catalog_cascade,2.9445,10gb_15d,29.99,0.25,8.96,21.03
+gibraltar,Gibraltar,catalog_cascade,2.9445,10gb_15d,29.99,0.5,16.32,13.67
+gibraltar,Gibraltar,catalog_cascade,2.9445,10gb_15d,29.99,0.75,23.68,6.31
+gibraltar,Gibraltar,catalog_cascade,2.9445,10gb_15d,29.99,1.0,31.05,-1.06
+greece,Greece,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+greece,Greece,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+greece,Greece,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+greece,Greece,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+greece,Greece,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+greece,Greece,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+greece,Greece,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+greece,Greece,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+greece,Greece,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+greece,Greece,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+greece,Greece,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+greece,Greece,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+greenland,Greenland,catalog_cascade,20.9572,1gb_5d,14.99,0.25,6.84,8.15
+greenland,Greenland,catalog_cascade,20.9572,1gb_5d,14.99,0.5,12.08,2.91
+greenland,Greenland,catalog_cascade,20.9572,1gb_5d,14.99,0.75,17.32,-2.33
+greenland,Greenland,catalog_cascade,20.9572,1gb_5d,14.99,1.0,22.56,-7.57
+greenland,Greenland,catalog_cascade,20.9572,3gb_7d,19.99,0.25,17.32,2.67
+greenland,Greenland,catalog_cascade,20.9572,3gb_7d,19.99,0.5,33.04,-13.05
+greenland,Greenland,catalog_cascade,20.9572,3gb_7d,19.99,0.75,48.75,-28.76
+greenland,Greenland,catalog_cascade,20.9572,3gb_7d,19.99,1.0,64.47,-44.48
+greenland,Greenland,catalog_cascade,20.9572,10gb_15d,29.99,0.25,53.99,-24.0
+greenland,Greenland,catalog_cascade,20.9572,10gb_15d,29.99,0.5,106.39,-76.4
+greenland,Greenland,catalog_cascade,20.9572,10gb_15d,29.99,0.75,158.78,-128.79
+greenland,Greenland,catalog_cascade,20.9572,10gb_15d,29.99,1.0,211.17,-181.18
+grenada,Grenada,telna_fixed,6.6908,1gb_5d,14.99,0.25,3.27,11.72
+grenada,Grenada,telna_fixed,6.6908,1gb_5d,14.99,0.5,4.95,10.04
+grenada,Grenada,telna_fixed,6.6908,1gb_5d,14.99,0.75,6.62,8.37
+grenada,Grenada,telna_fixed,6.6908,1gb_5d,14.99,1.0,8.29,6.7
+grenada,Grenada,telna_fixed,6.6908,3gb_7d,19.99,0.25,6.62,13.37
+grenada,Grenada,telna_fixed,6.6908,3gb_7d,19.99,0.5,11.64,8.35
+grenada,Grenada,telna_fixed,6.6908,3gb_7d,19.99,0.75,16.65,3.34
+grenada,Grenada,telna_fixed,6.6908,3gb_7d,19.99,1.0,21.67,-1.68
+grenada,Grenada,telna_fixed,6.6908,10gb_15d,29.99,0.25,18.33,11.66
+grenada,Grenada,telna_fixed,6.6908,10gb_15d,29.99,0.5,35.05,-5.06
+grenada,Grenada,telna_fixed,6.6908,10gb_15d,29.99,0.75,51.78,-21.79
+grenada,Grenada,telna_fixed,6.6908,10gb_15d,29.99,1.0,68.51,-38.52
+guadeloupe,Guadeloupe,telna_fixed,4.4652,1gb_5d,14.99,0.25,2.72,12.27
+guadeloupe,Guadeloupe,telna_fixed,4.4652,1gb_5d,14.99,0.5,3.83,11.16
+guadeloupe,Guadeloupe,telna_fixed,4.4652,1gb_5d,14.99,0.75,4.95,10.04
+guadeloupe,Guadeloupe,telna_fixed,4.4652,1gb_5d,14.99,1.0,6.07,8.92
+guadeloupe,Guadeloupe,telna_fixed,4.4652,3gb_7d,19.99,0.25,4.95,15.04
+guadeloupe,Guadeloupe,telna_fixed,4.4652,3gb_7d,19.99,0.5,8.3,11.69
+guadeloupe,Guadeloupe,telna_fixed,4.4652,3gb_7d,19.99,0.75,11.65,8.34
+guadeloupe,Guadeloupe,telna_fixed,4.4652,3gb_7d,19.99,1.0,15.0,4.99
+guadeloupe,Guadeloupe,telna_fixed,4.4652,10gb_15d,29.99,0.25,12.76,17.23
+guadeloupe,Guadeloupe,telna_fixed,4.4652,10gb_15d,29.99,0.5,23.93,6.06
+guadeloupe,Guadeloupe,telna_fixed,4.4652,10gb_15d,29.99,0.75,35.09,-5.1
+guadeloupe,Guadeloupe,telna_fixed,4.4652,10gb_15d,29.99,1.0,46.25,-16.26
+guam,Guam,catalog_cascade,12.6766,1gb_5d,14.99,0.25,4.77,10.22
+guam,Guam,catalog_cascade,12.6766,1gb_5d,14.99,0.5,7.94,7.05
+guam,Guam,catalog_cascade,12.6766,1gb_5d,14.99,0.75,11.11,3.88
+guam,Guam,catalog_cascade,12.6766,1gb_5d,14.99,1.0,14.28,0.71
+guam,Guam,catalog_cascade,12.6766,3gb_7d,19.99,0.25,11.11,8.88
+guam,Guam,catalog_cascade,12.6766,3gb_7d,19.99,0.5,20.61,-0.62
+guam,Guam,catalog_cascade,12.6766,3gb_7d,19.99,0.75,30.12,-10.13
+guam,Guam,catalog_cascade,12.6766,3gb_7d,19.99,1.0,39.63,-19.64
+guam,Guam,catalog_cascade,12.6766,10gb_15d,29.99,0.25,33.29,-3.3
+guam,Guam,catalog_cascade,12.6766,10gb_15d,29.99,0.5,64.98,-34.99
+guam,Guam,catalog_cascade,12.6766,10gb_15d,29.99,0.75,96.67,-66.68
+guam,Guam,catalog_cascade,12.6766,10gb_15d,29.99,1.0,128.37,-98.38
+guatemala,Guatemala,telna_fixed,6.0964,1gb_5d,14.99,0.25,3.12,11.87
+guatemala,Guatemala,telna_fixed,6.0964,1gb_5d,14.99,0.5,4.65,10.34
+guatemala,Guatemala,telna_fixed,6.0964,1gb_5d,14.99,0.75,6.17,8.82
+guatemala,Guatemala,telna_fixed,6.0964,1gb_5d,14.99,1.0,7.7,7.29
+guatemala,Guatemala,telna_fixed,6.0964,3gb_7d,19.99,0.25,6.17,13.82
+guatemala,Guatemala,telna_fixed,6.0964,3gb_7d,19.99,0.5,10.74,9.25
+guatemala,Guatemala,telna_fixed,6.0964,3gb_7d,19.99,0.75,15.32,4.67
+guatemala,Guatemala,telna_fixed,6.0964,3gb_7d,19.99,1.0,19.89,0.1
+guatemala,Guatemala,telna_fixed,6.0964,10gb_15d,29.99,0.25,16.84,13.15
+guatemala,Guatemala,telna_fixed,6.0964,10gb_15d,29.99,0.5,32.08,-2.09
+guatemala,Guatemala,telna_fixed,6.0964,10gb_15d,29.99,0.75,47.32,-17.33
+guatemala,Guatemala,telna_fixed,6.0964,10gb_15d,29.99,1.0,62.56,-32.57
+guyana,Guyana,catalog_cascade,19.7683,1gb_5d,14.99,0.25,6.54,8.45
+guyana,Guyana,catalog_cascade,19.7683,1gb_5d,14.99,0.5,11.48,3.51
+guyana,Guyana,catalog_cascade,19.7683,1gb_5d,14.99,0.75,16.43,-1.44
+guyana,Guyana,catalog_cascade,19.7683,1gb_5d,14.99,1.0,21.37,-6.38
+guyana,Guyana,catalog_cascade,19.7683,3gb_7d,19.99,0.25,16.43,3.56
+guyana,Guyana,catalog_cascade,19.7683,3gb_7d,19.99,0.5,31.25,-11.26
+guyana,Guyana,catalog_cascade,19.7683,3gb_7d,19.99,0.75,46.08,-26.09
+guyana,Guyana,catalog_cascade,19.7683,3gb_7d,19.99,1.0,60.9,-40.91
+guyana,Guyana,catalog_cascade,19.7683,10gb_15d,29.99,0.25,51.02,-21.03
+guyana,Guyana,catalog_cascade,19.7683,10gb_15d,29.99,0.5,100.44,-70.45
+guyana,Guyana,catalog_cascade,19.7683,10gb_15d,29.99,0.75,149.86,-119.87
+guyana,Guyana,catalog_cascade,19.7683,10gb_15d,29.99,1.0,199.28,-169.29
+honduras,Honduras,telna_fixed,7.0502,1gb_5d,14.99,0.25,3.36,11.63
+honduras,Honduras,telna_fixed,7.0502,1gb_5d,14.99,0.5,5.13,9.86
+honduras,Honduras,telna_fixed,7.0502,1gb_5d,14.99,0.75,6.89,8.1
+honduras,Honduras,telna_fixed,7.0502,1gb_5d,14.99,1.0,8.65,6.34
+honduras,Honduras,telna_fixed,7.0502,3gb_7d,19.99,0.25,6.89,13.1
+honduras,Honduras,telna_fixed,7.0502,3gb_7d,19.99,0.5,12.18,7.81
+honduras,Honduras,telna_fixed,7.0502,3gb_7d,19.99,0.75,17.46,2.53
+honduras,Honduras,telna_fixed,7.0502,3gb_7d,19.99,1.0,22.75,-2.76
+honduras,Honduras,telna_fixed,7.0502,10gb_15d,29.99,0.25,19.23,10.76
+honduras,Honduras,telna_fixed,7.0502,10gb_15d,29.99,0.5,36.85,-6.86
+honduras,Honduras,telna_fixed,7.0502,10gb_15d,29.99,0.75,54.48,-24.49
+honduras,Honduras,telna_fixed,7.0502,10gb_15d,29.99,1.0,72.1,-42.11
+hong-kong,Hong Kong,weconnect_breakage,1.0644,1gb_5d,14.99,0.25,1.87,13.12
+hong-kong,Hong Kong,weconnect_breakage,1.0644,1gb_5d,14.99,0.5,2.13,12.86
+hong-kong,Hong Kong,weconnect_breakage,1.0644,1gb_5d,14.99,0.75,2.4,12.59
+hong-kong,Hong Kong,weconnect_breakage,1.0644,1gb_5d,14.99,1.0,2.66,12.33
+hong-kong,Hong Kong,weconnect_breakage,1.0644,3gb_7d,19.99,0.25,2.4,17.59
+hong-kong,Hong Kong,weconnect_breakage,1.0644,3gb_7d,19.99,0.5,3.2,16.79
+hong-kong,Hong Kong,weconnect_breakage,1.0644,3gb_7d,19.99,0.75,4.0,15.99
+hong-kong,Hong Kong,weconnect_breakage,1.0644,3gb_7d,19.99,1.0,4.79,15.2
+hong-kong,Hong Kong,weconnect_breakage,1.0644,10gb_15d,29.99,0.25,4.26,25.73
+hong-kong,Hong Kong,weconnect_breakage,1.0644,10gb_15d,29.99,0.5,6.92,23.07
+hong-kong,Hong Kong,weconnect_breakage,1.0644,10gb_15d,29.99,0.75,9.58,20.41
+hong-kong,Hong Kong,weconnect_breakage,1.0644,10gb_15d,29.99,1.0,12.24,17.75
+hungary,Hungary,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+hungary,Hungary,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+hungary,Hungary,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+hungary,Hungary,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+hungary,Hungary,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+hungary,Hungary,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+hungary,Hungary,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+hungary,Hungary,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+hungary,Hungary,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+hungary,Hungary,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+hungary,Hungary,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+hungary,Hungary,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+iceland,Iceland,weconnect_breakage,1.1612,1gb_5d,14.99,0.25,1.89,13.1
+iceland,Iceland,weconnect_breakage,1.1612,1gb_5d,14.99,0.5,2.18,12.81
+iceland,Iceland,weconnect_breakage,1.1612,1gb_5d,14.99,0.75,2.47,12.52
+iceland,Iceland,weconnect_breakage,1.1612,1gb_5d,14.99,1.0,2.76,12.23
+iceland,Iceland,weconnect_breakage,1.1612,3gb_7d,19.99,0.25,2.47,17.52
+iceland,Iceland,weconnect_breakage,1.1612,3gb_7d,19.99,0.5,3.34,16.65
+iceland,Iceland,weconnect_breakage,1.1612,3gb_7d,19.99,0.75,4.21,15.78
+iceland,Iceland,weconnect_breakage,1.1612,3gb_7d,19.99,1.0,5.08,14.91
+iceland,Iceland,weconnect_breakage,1.1612,10gb_15d,29.99,0.25,4.5,25.49
+iceland,Iceland,weconnect_breakage,1.1612,10gb_15d,29.99,0.5,7.41,22.58
+iceland,Iceland,weconnect_breakage,1.1612,10gb_15d,29.99,0.75,10.31,19.68
+iceland,Iceland,weconnect_breakage,1.1612,10gb_15d,29.99,1.0,13.21,16.78
+india,India,weconnect_breakage,1.7556,1gb_5d,14.99,0.25,2.04,12.95
+india,India,weconnect_breakage,1.7556,1gb_5d,14.99,0.5,2.48,12.51
+india,India,weconnect_breakage,1.7556,1gb_5d,14.99,0.75,2.92,12.07
+india,India,weconnect_breakage,1.7556,1gb_5d,14.99,1.0,3.36,11.63
+india,India,weconnect_breakage,1.7556,3gb_7d,19.99,0.25,2.92,17.07
+india,India,weconnect_breakage,1.7556,3gb_7d,19.99,0.5,4.23,15.76
+india,India,weconnect_breakage,1.7556,3gb_7d,19.99,0.75,5.55,14.44
+india,India,weconnect_breakage,1.7556,3gb_7d,19.99,1.0,6.87,13.12
+india,India,weconnect_breakage,1.7556,10gb_15d,29.99,0.25,5.99,24.0
+india,India,weconnect_breakage,1.7556,10gb_15d,29.99,0.5,10.38,19.61
+india,India,weconnect_breakage,1.7556,10gb_15d,29.99,0.75,14.77,15.22
+india,India,weconnect_breakage,1.7556,10gb_15d,29.99,1.0,19.16,10.83
+indonesia,Indonesia,weconnect_breakage,1.3271,1gb_5d,14.99,0.25,1.93,13.06
+indonesia,Indonesia,weconnect_breakage,1.3271,1gb_5d,14.99,0.5,2.26,12.73
+indonesia,Indonesia,weconnect_breakage,1.3271,1gb_5d,14.99,0.75,2.6,12.39
+indonesia,Indonesia,weconnect_breakage,1.3271,1gb_5d,14.99,1.0,2.93,12.06
+indonesia,Indonesia,weconnect_breakage,1.3271,3gb_7d,19.99,0.25,2.6,17.39
+indonesia,Indonesia,weconnect_breakage,1.3271,3gb_7d,19.99,0.5,3.59,16.4
+indonesia,Indonesia,weconnect_breakage,1.3271,3gb_7d,19.99,0.75,4.59,15.4
+indonesia,Indonesia,weconnect_breakage,1.3271,3gb_7d,19.99,1.0,5.58,14.41
+indonesia,Indonesia,weconnect_breakage,1.3271,10gb_15d,29.99,0.25,4.92,25.07
+indonesia,Indonesia,weconnect_breakage,1.3271,10gb_15d,29.99,0.5,8.24,21.75
+indonesia,Indonesia,weconnect_breakage,1.3271,10gb_15d,29.99,0.75,11.55,18.44
+indonesia,Indonesia,weconnect_breakage,1.3271,10gb_15d,29.99,1.0,14.87,15.12
+iran,Iran,catalog_cascade,7.9073,1gb_5d,14.99,0.25,3.58,11.41
+iran,Iran,catalog_cascade,7.9073,1gb_5d,14.99,0.5,5.55,9.44
+iran,Iran,catalog_cascade,7.9073,1gb_5d,14.99,0.75,7.53,7.46
+iran,Iran,catalog_cascade,7.9073,1gb_5d,14.99,1.0,9.51,5.48
+iran,Iran,catalog_cascade,7.9073,3gb_7d,19.99,0.25,7.53,12.46
+iran,Iran,catalog_cascade,7.9073,3gb_7d,19.99,0.5,13.46,6.53
+iran,Iran,catalog_cascade,7.9073,3gb_7d,19.99,0.75,19.39,0.6
+iran,Iran,catalog_cascade,7.9073,3gb_7d,19.99,1.0,25.32,-5.33
+iran,Iran,catalog_cascade,7.9073,10gb_15d,29.99,0.25,21.37,8.62
+iran,Iran,catalog_cascade,7.9073,10gb_15d,29.99,0.5,41.14,-11.15
+iran,Iran,catalog_cascade,7.9073,10gb_15d,29.99,0.75,60.9,-30.91
+iran,Iran,catalog_cascade,7.9073,10gb_15d,29.99,1.0,80.67,-50.68
+iraq,Iraq,catalog_cascade,3.0413,1gb_5d,14.99,0.25,2.36,12.63
+iraq,Iraq,catalog_cascade,3.0413,1gb_5d,14.99,0.5,3.12,11.87
+iraq,Iraq,catalog_cascade,3.0413,1gb_5d,14.99,0.75,3.88,11.11
+iraq,Iraq,catalog_cascade,3.0413,1gb_5d,14.99,1.0,4.64,10.35
+iraq,Iraq,catalog_cascade,3.0413,3gb_7d,19.99,0.25,3.88,16.11
+iraq,Iraq,catalog_cascade,3.0413,3gb_7d,19.99,0.5,6.16,13.83
+iraq,Iraq,catalog_cascade,3.0413,3gb_7d,19.99,0.75,8.44,11.55
+iraq,Iraq,catalog_cascade,3.0413,3gb_7d,19.99,1.0,10.72,9.27
+iraq,Iraq,catalog_cascade,3.0413,10gb_15d,29.99,0.25,9.2,20.79
+iraq,Iraq,catalog_cascade,3.0413,10gb_15d,29.99,0.5,16.81,13.18
+iraq,Iraq,catalog_cascade,3.0413,10gb_15d,29.99,0.75,24.41,5.58
+iraq,Iraq,catalog_cascade,3.0413,10gb_15d,29.99,1.0,32.01,-2.02
+ireland,Ireland,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+ireland,Ireland,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+ireland,Ireland,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+ireland,Ireland,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+ireland,Ireland,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+ireland,Ireland,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+ireland,Ireland,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+ireland,Ireland,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+ireland,Ireland,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+ireland,Ireland,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+ireland,Ireland,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+ireland,Ireland,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+israel,Israel,weconnect_breakage,0.94,1gb_5d,14.99,0.25,1.84,13.15
+israel,Israel,weconnect_breakage,0.94,1gb_5d,14.99,0.5,2.07,12.92
+israel,Israel,weconnect_breakage,0.94,1gb_5d,14.99,0.75,2.31,12.68
+israel,Israel,weconnect_breakage,0.94,1gb_5d,14.99,1.0,2.54,12.45
+israel,Israel,weconnect_breakage,0.94,3gb_7d,19.99,0.25,2.31,17.68
+israel,Israel,weconnect_breakage,0.94,3gb_7d,19.99,0.5,3.01,16.98
+israel,Israel,weconnect_breakage,0.94,3gb_7d,19.99,0.75,3.72,16.27
+israel,Israel,weconnect_breakage,0.94,3gb_7d,19.99,1.0,4.42,15.57
+israel,Israel,weconnect_breakage,0.94,10gb_15d,29.99,0.25,3.95,26.04
+israel,Israel,weconnect_breakage,0.94,10gb_15d,29.99,0.5,6.3,23.69
+israel,Israel,weconnect_breakage,0.94,10gb_15d,29.99,0.75,8.65,21.34
+israel,Israel,weconnect_breakage,0.94,10gb_15d,29.99,1.0,11.0,18.99
+italy,Italy,weconnect_breakage,0.705,1gb_5d,14.99,0.25,1.78,13.21
+italy,Italy,weconnect_breakage,0.705,1gb_5d,14.99,0.5,1.95,13.04
+italy,Italy,weconnect_breakage,0.705,1gb_5d,14.99,0.75,2.13,12.86
+italy,Italy,weconnect_breakage,0.705,1gb_5d,14.99,1.0,2.31,12.68
+italy,Italy,weconnect_breakage,0.705,3gb_7d,19.99,0.25,2.13,17.86
+italy,Italy,weconnect_breakage,0.705,3gb_7d,19.99,0.5,2.66,17.33
+italy,Italy,weconnect_breakage,0.705,3gb_7d,19.99,0.75,3.19,16.8
+italy,Italy,weconnect_breakage,0.705,3gb_7d,19.99,1.0,3.72,16.27
+italy,Italy,weconnect_breakage,0.705,10gb_15d,29.99,0.25,3.36,26.63
+italy,Italy,weconnect_breakage,0.705,10gb_15d,29.99,0.5,5.13,24.86
+italy,Italy,weconnect_breakage,0.705,10gb_15d,29.99,0.75,6.89,23.1
+italy,Italy,weconnect_breakage,0.705,10gb_15d,29.99,1.0,8.65,21.34
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,1gb_5d,14.99,0.25,26.54,-11.55
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,1gb_5d,14.99,0.5,51.47,-36.48
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,1gb_5d,14.99,0.75,76.41,-61.42
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,1gb_5d,14.99,1.0,101.34,-86.35
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,3gb_7d,19.99,0.25,76.41,-56.42
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,3gb_7d,19.99,0.5,151.21,-131.22
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,3gb_7d,19.99,0.75,226.02,-206.03
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,3gb_7d,19.99,1.0,300.82,-280.83
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,10gb_15d,29.99,0.25,250.95,-220.96
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,10gb_15d,29.99,0.5,500.3,-470.31
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,10gb_15d,29.99,0.75,749.65,-719.66
+ivory-coast,Ivory Coast,catalog_cascade,99.7402,10gb_15d,29.99,1.0,999.0,-969.01
+jamaica,Jamaica,telna_fixed,6.2346,1gb_5d,14.99,0.25,3.16,11.83
+jamaica,Jamaica,telna_fixed,6.2346,1gb_5d,14.99,0.5,4.72,10.27
+jamaica,Jamaica,telna_fixed,6.2346,1gb_5d,14.99,0.75,6.28,8.71
+jamaica,Jamaica,telna_fixed,6.2346,1gb_5d,14.99,1.0,7.83,7.16
+jamaica,Jamaica,telna_fixed,6.2346,3gb_7d,19.99,0.25,6.28,13.71
+jamaica,Jamaica,telna_fixed,6.2346,3gb_7d,19.99,0.5,10.95,9.04
+jamaica,Jamaica,telna_fixed,6.2346,3gb_7d,19.99,0.75,15.63,4.36
+jamaica,Jamaica,telna_fixed,6.2346,3gb_7d,19.99,1.0,20.3,-0.31
+jamaica,Jamaica,telna_fixed,6.2346,10gb_15d,29.99,0.25,17.19,12.8
+jamaica,Jamaica,telna_fixed,6.2346,10gb_15d,29.99,0.5,32.77,-2.78
+jamaica,Jamaica,telna_fixed,6.2346,10gb_15d,29.99,0.75,48.36,-18.37
+jamaica,Jamaica,telna_fixed,6.2346,10gb_15d,29.99,1.0,63.95,-33.96
+japan,Japan,weconnect_breakage,2.7233,1gb_5d,14.99,0.25,2.28,12.71
+japan,Japan,weconnect_breakage,2.7233,1gb_5d,14.99,0.5,2.96,12.03
+japan,Japan,weconnect_breakage,2.7233,1gb_5d,14.99,0.75,3.64,11.35
+japan,Japan,weconnect_breakage,2.7233,1gb_5d,14.99,1.0,4.32,10.67
+japan,Japan,weconnect_breakage,2.7233,3gb_7d,19.99,0.25,3.64,16.35
+japan,Japan,weconnect_breakage,2.7233,3gb_7d,19.99,0.5,5.68,14.31
+japan,Japan,weconnect_breakage,2.7233,3gb_7d,19.99,0.75,7.73,12.26
+japan,Japan,weconnect_breakage,2.7233,3gb_7d,19.99,1.0,9.77,10.22
+japan,Japan,weconnect_breakage,2.7233,10gb_15d,29.99,0.25,8.41,21.58
+japan,Japan,weconnect_breakage,2.7233,10gb_15d,29.99,0.5,15.22,14.77
+japan,Japan,weconnect_breakage,2.7233,10gb_15d,29.99,0.75,22.02,7.97
+japan,Japan,weconnect_breakage,2.7233,10gb_15d,29.99,1.0,28.83,1.16
+jordan,Jordan,catalog_cascade,6.0687,1gb_5d,14.99,0.25,3.12,11.87
+jordan,Jordan,catalog_cascade,6.0687,1gb_5d,14.99,0.5,4.63,10.36
+jordan,Jordan,catalog_cascade,6.0687,1gb_5d,14.99,0.75,6.15,8.84
+jordan,Jordan,catalog_cascade,6.0687,1gb_5d,14.99,1.0,7.67,7.32
+jordan,Jordan,catalog_cascade,6.0687,3gb_7d,19.99,0.25,6.15,13.84
+jordan,Jordan,catalog_cascade,6.0687,3gb_7d,19.99,0.5,10.7,9.29
+jordan,Jordan,catalog_cascade,6.0687,3gb_7d,19.99,0.75,15.25,4.74
+jordan,Jordan,catalog_cascade,6.0687,3gb_7d,19.99,1.0,19.81,0.18
+jordan,Jordan,catalog_cascade,6.0687,10gb_15d,29.99,0.25,16.77,13.22
+jordan,Jordan,catalog_cascade,6.0687,10gb_15d,29.99,0.5,31.94,-1.95
+jordan,Jordan,catalog_cascade,6.0687,10gb_15d,29.99,0.75,47.12,-17.13
+jordan,Jordan,catalog_cascade,6.0687,10gb_15d,29.99,1.0,62.29,-32.3
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,1gb_5d,14.99,0.25,1.82,13.17
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,1gb_5d,14.99,0.5,2.04,12.95
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,1gb_5d,14.99,0.75,2.25,12.74
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,1gb_5d,14.99,1.0,2.47,12.52
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,3gb_7d,19.99,0.25,2.25,17.74
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,3gb_7d,19.99,0.5,2.91,17.08
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,3gb_7d,19.99,0.75,3.56,16.43
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,3gb_7d,19.99,1.0,4.21,15.78
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,10gb_15d,29.99,0.25,3.78,26.21
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,10gb_15d,29.99,0.5,5.95,24.04
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,10gb_15d,29.99,0.75,8.13,21.86
+kazakhstan,Kazakhstan,weconnect_breakage,0.8709,10gb_15d,29.99,1.0,10.31,19.68
+kenya,Kenya,catalog_cascade,4.8522,1gb_5d,14.99,0.25,2.81,12.18
+kenya,Kenya,catalog_cascade,4.8522,1gb_5d,14.99,0.5,4.03,10.96
+kenya,Kenya,catalog_cascade,4.8522,1gb_5d,14.99,0.75,5.24,9.75
+kenya,Kenya,catalog_cascade,4.8522,1gb_5d,14.99,1.0,6.45,8.54
+kenya,Kenya,catalog_cascade,4.8522,3gb_7d,19.99,0.25,5.24,14.75
+kenya,Kenya,catalog_cascade,4.8522,3gb_7d,19.99,0.5,8.88,11.11
+kenya,Kenya,catalog_cascade,4.8522,3gb_7d,19.99,0.75,12.52,7.47
+kenya,Kenya,catalog_cascade,4.8522,3gb_7d,19.99,1.0,16.16,3.83
+kenya,Kenya,catalog_cascade,4.8522,10gb_15d,29.99,0.25,13.73,16.26
+kenya,Kenya,catalog_cascade,4.8522,10gb_15d,29.99,0.5,25.86,4.13
+kenya,Kenya,catalog_cascade,4.8522,10gb_15d,29.99,0.75,37.99,-8.0
+kenya,Kenya,catalog_cascade,4.8522,10gb_15d,29.99,1.0,50.12,-20.13
+kuwait,Kuwait,weconnect_breakage,1.8109,1gb_5d,14.99,0.25,2.05,12.94
+kuwait,Kuwait,weconnect_breakage,1.8109,1gb_5d,14.99,0.5,2.51,12.48
+kuwait,Kuwait,weconnect_breakage,1.8109,1gb_5d,14.99,0.75,2.96,12.03
+kuwait,Kuwait,weconnect_breakage,1.8109,1gb_5d,14.99,1.0,3.41,11.58
+kuwait,Kuwait,weconnect_breakage,1.8109,3gb_7d,19.99,0.25,2.96,17.03
+kuwait,Kuwait,weconnect_breakage,1.8109,3gb_7d,19.99,0.5,4.32,15.67
+kuwait,Kuwait,weconnect_breakage,1.8109,3gb_7d,19.99,0.75,5.67,14.32
+kuwait,Kuwait,weconnect_breakage,1.8109,3gb_7d,19.99,1.0,7.03,12.96
+kuwait,Kuwait,weconnect_breakage,1.8109,10gb_15d,29.99,0.25,6.13,23.86
+kuwait,Kuwait,weconnect_breakage,1.8109,10gb_15d,29.99,0.5,10.65,19.34
+kuwait,Kuwait,weconnect_breakage,1.8109,10gb_15d,29.99,0.75,15.18,14.81
+kuwait,Kuwait,weconnect_breakage,1.8109,10gb_15d,29.99,1.0,19.71,10.28
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,1gb_5d,14.99,0.25,1.81,13.18
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,1gb_5d,14.99,0.5,2.03,12.96
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,1gb_5d,14.99,0.75,2.24,12.75
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,1gb_5d,14.99,1.0,2.46,12.53
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,3gb_7d,19.99,0.25,2.24,17.75
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,3gb_7d,19.99,0.5,2.89,17.1
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,3gb_7d,19.99,0.75,3.53,16.46
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,3gb_7d,19.99,1.0,4.17,15.82
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,10gb_15d,29.99,0.25,3.74,26.25
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,10gb_15d,29.99,0.5,5.89,24.1
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,10gb_15d,29.99,0.75,8.03,21.96
+kyrgyzstan,Kyrgyzstan,weconnect_breakage,0.8571,10gb_15d,29.99,1.0,10.17,19.82
+laos,Laos,catalog_cascade,2.9169,1gb_5d,14.99,0.25,2.33,12.66
+laos,Laos,catalog_cascade,2.9169,1gb_5d,14.99,0.5,3.06,11.93
+laos,Laos,catalog_cascade,2.9169,1gb_5d,14.99,0.75,3.79,11.2
+laos,Laos,catalog_cascade,2.9169,1gb_5d,14.99,1.0,4.52,10.47
+laos,Laos,catalog_cascade,2.9169,3gb_7d,19.99,0.25,3.79,16.2
+laos,Laos,catalog_cascade,2.9169,3gb_7d,19.99,0.5,5.98,14.01
+laos,Laos,catalog_cascade,2.9169,3gb_7d,19.99,0.75,8.16,11.83
+laos,Laos,catalog_cascade,2.9169,3gb_7d,19.99,1.0,10.35,9.64
+laos,Laos,catalog_cascade,2.9169,10gb_15d,29.99,0.25,8.89,21.1
+laos,Laos,catalog_cascade,2.9169,10gb_15d,29.99,0.5,16.18,13.81
+laos,Laos,catalog_cascade,2.9169,10gb_15d,29.99,0.75,23.48,6.51
+laos,Laos,catalog_cascade,2.9169,10gb_15d,29.99,1.0,30.77,-0.78
+latvia,Latvia,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+latvia,Latvia,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+latvia,Latvia,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+latvia,Latvia,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+latvia,Latvia,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+latvia,Latvia,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+latvia,Latvia,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+latvia,Latvia,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+latvia,Latvia,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+latvia,Latvia,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+latvia,Latvia,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+latvia,Latvia,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+lesotho,Lesotho,catalog_cascade,22.464,1gb_5d,14.99,0.25,7.22,7.77
+lesotho,Lesotho,catalog_cascade,22.464,1gb_5d,14.99,0.5,12.83,2.16
+lesotho,Lesotho,catalog_cascade,22.464,1gb_5d,14.99,0.75,18.45,-3.46
+lesotho,Lesotho,catalog_cascade,22.464,1gb_5d,14.99,1.0,24.06,-9.07
+lesotho,Lesotho,catalog_cascade,22.464,3gb_7d,19.99,0.25,18.45,1.54
+lesotho,Lesotho,catalog_cascade,22.464,3gb_7d,19.99,0.5,35.3,-15.31
+lesotho,Lesotho,catalog_cascade,22.464,3gb_7d,19.99,0.75,52.14,-32.15
+lesotho,Lesotho,catalog_cascade,22.464,3gb_7d,19.99,1.0,68.99,-49.0
+lesotho,Lesotho,catalog_cascade,22.464,10gb_15d,29.99,0.25,57.76,-27.77
+lesotho,Lesotho,catalog_cascade,22.464,10gb_15d,29.99,0.5,113.92,-83.93
+lesotho,Lesotho,catalog_cascade,22.464,10gb_15d,29.99,0.75,170.08,-140.09
+lesotho,Lesotho,catalog_cascade,22.464,10gb_15d,29.99,1.0,226.24,-196.25
+liberia,Liberia,catalog_cascade,100.6387,1gb_5d,14.99,0.25,26.76,-11.77
+liberia,Liberia,catalog_cascade,100.6387,1gb_5d,14.99,0.5,51.92,-36.93
+liberia,Liberia,catalog_cascade,100.6387,1gb_5d,14.99,0.75,77.08,-62.09
+liberia,Liberia,catalog_cascade,100.6387,1gb_5d,14.99,1.0,102.24,-87.25
+liberia,Liberia,catalog_cascade,100.6387,3gb_7d,19.99,0.25,77.08,-57.09
+liberia,Liberia,catalog_cascade,100.6387,3gb_7d,19.99,0.5,152.56,-132.57
+liberia,Liberia,catalog_cascade,100.6387,3gb_7d,19.99,0.75,228.04,-208.05
+liberia,Liberia,catalog_cascade,100.6387,3gb_7d,19.99,1.0,303.52,-283.53
+liberia,Liberia,catalog_cascade,100.6387,10gb_15d,29.99,0.25,253.2,-223.21
+liberia,Liberia,catalog_cascade,100.6387,10gb_15d,29.99,0.5,504.79,-474.8
+liberia,Liberia,catalog_cascade,100.6387,10gb_15d,29.99,0.75,756.39,-726.4
+liberia,Liberia,catalog_cascade,100.6387,10gb_15d,29.99,1.0,1007.99,-978.0
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+liechtenstein,Liechtenstein,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+lithuania,Lithuania,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+lithuania,Lithuania,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+lithuania,Lithuania,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+lithuania,Lithuania,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+lithuania,Lithuania,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+lithuania,Lithuania,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+lithuania,Lithuania,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+lithuania,Lithuania,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+lithuania,Lithuania,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+lithuania,Lithuania,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+lithuania,Lithuania,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+lithuania,Lithuania,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+luxembourg,Luxembourg,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+luxembourg,Luxembourg,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+luxembourg,Luxembourg,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+luxembourg,Luxembourg,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+luxembourg,Luxembourg,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+luxembourg,Luxembourg,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+luxembourg,Luxembourg,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+luxembourg,Luxembourg,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+luxembourg,Luxembourg,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+luxembourg,Luxembourg,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+luxembourg,Luxembourg,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+luxembourg,Luxembourg,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+macao-china,Macao China,weconnect_breakage,1.0783,1gb_5d,14.99,0.25,1.87,13.12
+macao-china,Macao China,weconnect_breakage,1.0783,1gb_5d,14.99,0.5,2.14,12.85
+macao-china,Macao China,weconnect_breakage,1.0783,1gb_5d,14.99,0.75,2.41,12.58
+macao-china,Macao China,weconnect_breakage,1.0783,1gb_5d,14.99,1.0,2.68,12.31
+macao-china,Macao China,weconnect_breakage,1.0783,3gb_7d,19.99,0.25,2.41,17.58
+macao-china,Macao China,weconnect_breakage,1.0783,3gb_7d,19.99,0.5,3.22,16.77
+macao-china,Macao China,weconnect_breakage,1.0783,3gb_7d,19.99,0.75,4.03,15.96
+macao-china,Macao China,weconnect_breakage,1.0783,3gb_7d,19.99,1.0,4.83,15.16
+macao-china,Macao China,weconnect_breakage,1.0783,10gb_15d,29.99,0.25,4.3,25.69
+macao-china,Macao China,weconnect_breakage,1.0783,10gb_15d,29.99,0.5,6.99,23.0
+macao-china,Macao China,weconnect_breakage,1.0783,10gb_15d,29.99,0.75,9.69,20.3
+macao-china,Macao China,weconnect_breakage,1.0783,10gb_15d,29.99,1.0,12.38,17.61
+macedonia,Macedonia,weconnect_breakage,1.2165,1gb_5d,14.99,0.25,1.9,13.09
+macedonia,Macedonia,weconnect_breakage,1.2165,1gb_5d,14.99,0.5,2.21,12.78
+macedonia,Macedonia,weconnect_breakage,1.2165,1gb_5d,14.99,0.75,2.51,12.48
+macedonia,Macedonia,weconnect_breakage,1.2165,1gb_5d,14.99,1.0,2.82,12.17
+macedonia,Macedonia,weconnect_breakage,1.2165,3gb_7d,19.99,0.25,2.51,17.48
+macedonia,Macedonia,weconnect_breakage,1.2165,3gb_7d,19.99,0.5,3.42,16.57
+macedonia,Macedonia,weconnect_breakage,1.2165,3gb_7d,19.99,0.75,4.34,15.65
+macedonia,Macedonia,weconnect_breakage,1.2165,3gb_7d,19.99,1.0,5.25,14.74
+macedonia,Macedonia,weconnect_breakage,1.2165,10gb_15d,29.99,0.25,4.64,25.35
+macedonia,Macedonia,weconnect_breakage,1.2165,10gb_15d,29.99,0.5,7.68,22.31
+macedonia,Macedonia,weconnect_breakage,1.2165,10gb_15d,29.99,0.75,10.72,19.27
+macedonia,Macedonia,weconnect_breakage,1.2165,10gb_15d,29.99,1.0,13.77,16.22
+madagascar,Madagascar,catalog_cascade,5.1287,1gb_5d,14.99,0.25,2.88,12.11
+madagascar,Madagascar,catalog_cascade,5.1287,1gb_5d,14.99,0.5,4.16,10.83
+madagascar,Madagascar,catalog_cascade,5.1287,1gb_5d,14.99,0.75,5.45,9.54
+madagascar,Madagascar,catalog_cascade,5.1287,1gb_5d,14.99,1.0,6.73,8.26
+madagascar,Madagascar,catalog_cascade,5.1287,3gb_7d,19.99,0.25,5.45,14.54
+madagascar,Madagascar,catalog_cascade,5.1287,3gb_7d,19.99,0.5,9.29,10.7
+madagascar,Madagascar,catalog_cascade,5.1287,3gb_7d,19.99,0.75,13.14,6.85
+madagascar,Madagascar,catalog_cascade,5.1287,3gb_7d,19.99,1.0,16.99,3.0
+madagascar,Madagascar,catalog_cascade,5.1287,10gb_15d,29.99,0.25,14.42,15.57
+madagascar,Madagascar,catalog_cascade,5.1287,10gb_15d,29.99,0.5,27.24,2.75
+madagascar,Madagascar,catalog_cascade,5.1287,10gb_15d,29.99,0.75,40.07,-10.08
+madagascar,Madagascar,catalog_cascade,5.1287,10gb_15d,29.99,1.0,52.89,-22.9
+malawi,Malawi,catalog_cascade,5.6125,1gb_5d,14.99,0.25,3.0,11.99
+malawi,Malawi,catalog_cascade,5.6125,1gb_5d,14.99,0.5,4.41,10.58
+malawi,Malawi,catalog_cascade,5.6125,1gb_5d,14.99,0.75,5.81,9.18
+malawi,Malawi,catalog_cascade,5.6125,1gb_5d,14.99,1.0,7.21,7.78
+malawi,Malawi,catalog_cascade,5.6125,3gb_7d,19.99,0.25,5.81,14.18
+malawi,Malawi,catalog_cascade,5.6125,3gb_7d,19.99,0.5,10.02,9.97
+malawi,Malawi,catalog_cascade,5.6125,3gb_7d,19.99,0.75,14.23,5.76
+malawi,Malawi,catalog_cascade,5.6125,3gb_7d,19.99,1.0,18.44,1.55
+malawi,Malawi,catalog_cascade,5.6125,10gb_15d,29.99,0.25,15.63,14.36
+malawi,Malawi,catalog_cascade,5.6125,10gb_15d,29.99,0.5,29.66,0.33
+malawi,Malawi,catalog_cascade,5.6125,10gb_15d,29.99,0.75,43.69,-13.7
+malawi,Malawi,catalog_cascade,5.6125,10gb_15d,29.99,1.0,57.73,-27.74
+malaysia,Malaysia,weconnect_breakage,1.1889,1gb_5d,14.99,0.25,1.9,13.09
+malaysia,Malaysia,weconnect_breakage,1.1889,1gb_5d,14.99,0.5,2.19,12.8
+malaysia,Malaysia,weconnect_breakage,1.1889,1gb_5d,14.99,0.75,2.49,12.5
+malaysia,Malaysia,weconnect_breakage,1.1889,1gb_5d,14.99,1.0,2.79,12.2
+malaysia,Malaysia,weconnect_breakage,1.1889,3gb_7d,19.99,0.25,2.49,17.5
+malaysia,Malaysia,weconnect_breakage,1.1889,3gb_7d,19.99,0.5,3.38,16.61
+malaysia,Malaysia,weconnect_breakage,1.1889,3gb_7d,19.99,0.75,4.27,15.72
+malaysia,Malaysia,weconnect_breakage,1.1889,3gb_7d,19.99,1.0,5.17,14.82
+malaysia,Malaysia,weconnect_breakage,1.1889,10gb_15d,29.99,0.25,4.57,25.42
+malaysia,Malaysia,weconnect_breakage,1.1889,10gb_15d,29.99,0.5,7.54,22.45
+malaysia,Malaysia,weconnect_breakage,1.1889,10gb_15d,29.99,0.75,10.52,19.47
+malaysia,Malaysia,weconnect_breakage,1.1889,10gb_15d,29.99,1.0,13.49,16.5
+maldives,Maldives,catalog_cascade,8.6538,1gb_5d,14.99,0.25,3.76,11.23
+maldives,Maldives,catalog_cascade,8.6538,1gb_5d,14.99,0.5,5.93,9.06
+maldives,Maldives,catalog_cascade,8.6538,1gb_5d,14.99,0.75,8.09,6.9
+maldives,Maldives,catalog_cascade,8.6538,1gb_5d,14.99,1.0,10.25,4.74
+maldives,Maldives,catalog_cascade,8.6538,3gb_7d,19.99,0.25,8.09,11.9
+maldives,Maldives,catalog_cascade,8.6538,3gb_7d,19.99,0.5,14.58,5.41
+maldives,Maldives,catalog_cascade,8.6538,3gb_7d,19.99,0.75,21.07,-1.08
+maldives,Maldives,catalog_cascade,8.6538,3gb_7d,19.99,1.0,27.56,-7.57
+maldives,Maldives,catalog_cascade,8.6538,10gb_15d,29.99,0.25,23.23,6.76
+maldives,Maldives,catalog_cascade,8.6538,10gb_15d,29.99,0.5,44.87,-14.88
+maldives,Maldives,catalog_cascade,8.6538,10gb_15d,29.99,0.75,66.5,-36.51
+maldives,Maldives,catalog_cascade,8.6538,10gb_15d,29.99,1.0,88.14,-58.15
+malta,Malta,weconnect_breakage,0.705,1gb_5d,14.99,0.25,1.78,13.21
+malta,Malta,weconnect_breakage,0.705,1gb_5d,14.99,0.5,1.95,13.04
+malta,Malta,weconnect_breakage,0.705,1gb_5d,14.99,0.75,2.13,12.86
+malta,Malta,weconnect_breakage,0.705,1gb_5d,14.99,1.0,2.31,12.68
+malta,Malta,weconnect_breakage,0.705,3gb_7d,19.99,0.25,2.13,17.86
+malta,Malta,weconnect_breakage,0.705,3gb_7d,19.99,0.5,2.66,17.33
+malta,Malta,weconnect_breakage,0.705,3gb_7d,19.99,0.75,3.19,16.8
+malta,Malta,weconnect_breakage,0.705,3gb_7d,19.99,1.0,3.72,16.27
+malta,Malta,weconnect_breakage,0.705,10gb_15d,29.99,0.25,3.36,26.63
+malta,Malta,weconnect_breakage,0.705,10gb_15d,29.99,0.5,5.13,24.86
+malta,Malta,weconnect_breakage,0.705,10gb_15d,29.99,0.75,6.89,23.1
+malta,Malta,weconnect_breakage,0.705,10gb_15d,29.99,1.0,8.65,21.34
+mauritania,Mauritania,catalog_cascade,9.0547,1gb_5d,14.99,0.25,3.86,11.13
+mauritania,Mauritania,catalog_cascade,9.0547,1gb_5d,14.99,0.5,6.13,8.86
+mauritania,Mauritania,catalog_cascade,9.0547,1gb_5d,14.99,0.75,8.39,6.6
+mauritania,Mauritania,catalog_cascade,9.0547,1gb_5d,14.99,1.0,10.65,4.34
+mauritania,Mauritania,catalog_cascade,9.0547,3gb_7d,19.99,0.25,8.39,11.6
+mauritania,Mauritania,catalog_cascade,9.0547,3gb_7d,19.99,0.5,15.18,4.81
+mauritania,Mauritania,catalog_cascade,9.0547,3gb_7d,19.99,0.75,21.97,-1.98
+mauritania,Mauritania,catalog_cascade,9.0547,3gb_7d,19.99,1.0,28.76,-8.77
+mauritania,Mauritania,catalog_cascade,9.0547,10gb_15d,29.99,0.25,24.24,5.75
+mauritania,Mauritania,catalog_cascade,9.0547,10gb_15d,29.99,0.5,46.87,-16.88
+mauritania,Mauritania,catalog_cascade,9.0547,10gb_15d,29.99,0.75,69.51,-39.52
+mauritania,Mauritania,catalog_cascade,9.0547,10gb_15d,29.99,1.0,92.15,-62.16
+mauritius,Mauritius,catalog_cascade,5.0458,1gb_5d,14.99,0.25,2.86,12.13
+mauritius,Mauritius,catalog_cascade,5.0458,1gb_5d,14.99,0.5,4.12,10.87
+mauritius,Mauritius,catalog_cascade,5.0458,1gb_5d,14.99,0.75,5.38,9.61
+mauritius,Mauritius,catalog_cascade,5.0458,1gb_5d,14.99,1.0,6.65,8.34
+mauritius,Mauritius,catalog_cascade,5.0458,3gb_7d,19.99,0.25,5.38,14.61
+mauritius,Mauritius,catalog_cascade,5.0458,3gb_7d,19.99,0.5,9.17,10.82
+mauritius,Mauritius,catalog_cascade,5.0458,3gb_7d,19.99,0.75,12.95,7.04
+mauritius,Mauritius,catalog_cascade,5.0458,3gb_7d,19.99,1.0,16.74,3.25
+mauritius,Mauritius,catalog_cascade,5.0458,10gb_15d,29.99,0.25,14.21,15.78
+mauritius,Mauritius,catalog_cascade,5.0458,10gb_15d,29.99,0.5,26.83,3.16
+mauritius,Mauritius,catalog_cascade,5.0458,10gb_15d,29.99,0.75,39.44,-9.45
+mauritius,Mauritius,catalog_cascade,5.0458,10gb_15d,29.99,1.0,52.06,-22.07
+mexico,Mexico,telna_fixed,3.1104,1gb_5d,14.99,0.25,2.38,12.61
+mexico,Mexico,telna_fixed,3.1104,1gb_5d,14.99,0.5,3.16,11.83
+mexico,Mexico,telna_fixed,3.1104,1gb_5d,14.99,0.75,3.93,11.06
+mexico,Mexico,telna_fixed,3.1104,1gb_5d,14.99,1.0,4.71,10.28
+mexico,Mexico,telna_fixed,3.1104,3gb_7d,19.99,0.25,3.93,16.06
+mexico,Mexico,telna_fixed,3.1104,3gb_7d,19.99,0.5,6.27,13.72
+mexico,Mexico,telna_fixed,3.1104,3gb_7d,19.99,0.75,8.6,11.39
+mexico,Mexico,telna_fixed,3.1104,3gb_7d,19.99,1.0,10.93,9.06
+mexico,Mexico,telna_fixed,3.1104,10gb_15d,29.99,0.25,9.38,20.61
+mexico,Mexico,telna_fixed,3.1104,10gb_15d,29.99,0.5,17.15,12.84
+mexico,Mexico,telna_fixed,3.1104,10gb_15d,29.99,0.75,24.93,5.06
+mexico,Mexico,telna_fixed,3.1104,10gb_15d,29.99,1.0,32.7,-2.71
+moldova,Moldova,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+moldova,Moldova,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+moldova,Moldova,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+moldova,Moldova,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+moldova,Moldova,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+moldova,Moldova,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+moldova,Moldova,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+moldova,Moldova,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+moldova,Moldova,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+moldova,Moldova,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+moldova,Moldova,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+moldova,Moldova,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+monaco,Monaco,catalog_cascade,18.8698,1gb_5d,14.99,0.25,6.32,8.67
+monaco,Monaco,catalog_cascade,18.8698,1gb_5d,14.99,0.5,11.03,3.96
+monaco,Monaco,catalog_cascade,18.8698,1gb_5d,14.99,0.75,15.75,-0.76
+monaco,Monaco,catalog_cascade,18.8698,1gb_5d,14.99,1.0,20.47,-5.48
+monaco,Monaco,catalog_cascade,18.8698,3gb_7d,19.99,0.25,15.75,4.24
+monaco,Monaco,catalog_cascade,18.8698,3gb_7d,19.99,0.5,29.9,-9.91
+monaco,Monaco,catalog_cascade,18.8698,3gb_7d,19.99,0.75,44.06,-24.07
+monaco,Monaco,catalog_cascade,18.8698,3gb_7d,19.99,1.0,58.21,-38.22
+monaco,Monaco,catalog_cascade,18.8698,10gb_15d,29.99,0.25,48.77,-18.78
+monaco,Monaco,catalog_cascade,18.8698,10gb_15d,29.99,0.5,95.95,-65.96
+monaco,Monaco,catalog_cascade,18.8698,10gb_15d,29.99,0.75,143.12,-113.13
+monaco,Monaco,catalog_cascade,18.8698,10gb_15d,29.99,1.0,190.3,-160.31
+mongolia,Mongolia,catalog_cascade,5.9305,1gb_5d,14.99,0.25,3.08,11.91
+mongolia,Mongolia,catalog_cascade,5.9305,1gb_5d,14.99,0.5,4.57,10.42
+mongolia,Mongolia,catalog_cascade,5.9305,1gb_5d,14.99,0.75,6.05,8.94
+mongolia,Mongolia,catalog_cascade,5.9305,1gb_5d,14.99,1.0,7.53,7.46
+mongolia,Mongolia,catalog_cascade,5.9305,3gb_7d,19.99,0.25,6.05,13.94
+mongolia,Mongolia,catalog_cascade,5.9305,3gb_7d,19.99,0.5,10.5,9.49
+mongolia,Mongolia,catalog_cascade,5.9305,3gb_7d,19.99,0.75,14.94,5.05
+mongolia,Mongolia,catalog_cascade,5.9305,3gb_7d,19.99,1.0,19.39,0.6
+mongolia,Mongolia,catalog_cascade,5.9305,10gb_15d,29.99,0.25,16.43,13.56
+mongolia,Mongolia,catalog_cascade,5.9305,10gb_15d,29.99,0.5,31.25,-1.26
+mongolia,Mongolia,catalog_cascade,5.9305,10gb_15d,29.99,0.75,46.08,-16.09
+mongolia,Mongolia,catalog_cascade,5.9305,10gb_15d,29.99,1.0,60.9,-30.91
+montenegro,Montenegro,weconnect_breakage,0.9124,1gb_5d,14.99,0.25,1.83,13.16
+montenegro,Montenegro,weconnect_breakage,0.9124,1gb_5d,14.99,0.5,2.06,12.93
+montenegro,Montenegro,weconnect_breakage,0.9124,1gb_5d,14.99,0.75,2.28,12.71
+montenegro,Montenegro,weconnect_breakage,0.9124,1gb_5d,14.99,1.0,2.51,12.48
+montenegro,Montenegro,weconnect_breakage,0.9124,3gb_7d,19.99,0.25,2.28,17.71
+montenegro,Montenegro,weconnect_breakage,0.9124,3gb_7d,19.99,0.5,2.97,17.02
+montenegro,Montenegro,weconnect_breakage,0.9124,3gb_7d,19.99,0.75,3.65,16.34
+montenegro,Montenegro,weconnect_breakage,0.9124,3gb_7d,19.99,1.0,4.34,15.65
+montenegro,Montenegro,weconnect_breakage,0.9124,10gb_15d,29.99,0.25,3.88,26.11
+montenegro,Montenegro,weconnect_breakage,0.9124,10gb_15d,29.99,0.5,6.16,23.83
+montenegro,Montenegro,weconnect_breakage,0.9124,10gb_15d,29.99,0.75,8.44,21.55
+montenegro,Montenegro,weconnect_breakage,0.9124,10gb_15d,29.99,1.0,10.72,19.27
+montserrat,Montserrat,telna_fixed,6.2899,1gb_5d,14.99,0.25,3.17,11.82
+montserrat,Montserrat,telna_fixed,6.2899,1gb_5d,14.99,0.5,4.74,10.25
+montserrat,Montserrat,telna_fixed,6.2899,1gb_5d,14.99,0.75,6.32,8.67
+montserrat,Montserrat,telna_fixed,6.2899,1gb_5d,14.99,1.0,7.89,7.1
+montserrat,Montserrat,telna_fixed,6.2899,3gb_7d,19.99,0.25,6.32,13.67
+montserrat,Montserrat,telna_fixed,6.2899,3gb_7d,19.99,0.5,11.03,8.96
+montserrat,Montserrat,telna_fixed,6.2899,3gb_7d,19.99,0.75,15.75,4.24
+montserrat,Montserrat,telna_fixed,6.2899,3gb_7d,19.99,1.0,20.47,-0.48
+montserrat,Montserrat,telna_fixed,6.2899,10gb_15d,29.99,0.25,17.32,12.67
+montserrat,Montserrat,telna_fixed,6.2899,10gb_15d,29.99,0.5,33.05,-3.06
+montserrat,Montserrat,telna_fixed,6.2899,10gb_15d,29.99,0.75,48.77,-18.78
+montserrat,Montserrat,telna_fixed,6.2899,10gb_15d,29.99,1.0,64.5,-34.51
+morocco,Morocco,weconnect_breakage,2.1704,1gb_5d,14.99,0.25,2.14,12.85
+morocco,Morocco,weconnect_breakage,2.1704,1gb_5d,14.99,0.5,2.69,12.3
+morocco,Morocco,weconnect_breakage,2.1704,1gb_5d,14.99,0.75,3.23,11.76
+morocco,Morocco,weconnect_breakage,2.1704,1gb_5d,14.99,1.0,3.77,11.22
+morocco,Morocco,weconnect_breakage,2.1704,3gb_7d,19.99,0.25,3.23,16.76
+morocco,Morocco,weconnect_breakage,2.1704,3gb_7d,19.99,0.5,4.86,15.13
+morocco,Morocco,weconnect_breakage,2.1704,3gb_7d,19.99,0.75,6.48,13.51
+morocco,Morocco,weconnect_breakage,2.1704,3gb_7d,19.99,1.0,8.11,11.88
+morocco,Morocco,weconnect_breakage,2.1704,10gb_15d,29.99,0.25,7.03,22.96
+morocco,Morocco,weconnect_breakage,2.1704,10gb_15d,29.99,0.5,12.45,17.54
+morocco,Morocco,weconnect_breakage,2.1704,10gb_15d,29.99,0.75,17.88,12.11
+morocco,Morocco,weconnect_breakage,2.1704,10gb_15d,29.99,1.0,23.3,6.69
+mozambique,Mozambique,catalog_cascade,20.4872,1gb_5d,14.99,0.25,6.72,8.27
+mozambique,Mozambique,catalog_cascade,20.4872,1gb_5d,14.99,0.5,11.84,3.15
+mozambique,Mozambique,catalog_cascade,20.4872,1gb_5d,14.99,0.75,16.97,-1.98
+mozambique,Mozambique,catalog_cascade,20.4872,1gb_5d,14.99,1.0,22.09,-7.1
+mozambique,Mozambique,catalog_cascade,20.4872,3gb_7d,19.99,0.25,16.97,3.02
+mozambique,Mozambique,catalog_cascade,20.4872,3gb_7d,19.99,0.5,32.33,-12.34
+mozambique,Mozambique,catalog_cascade,20.4872,3gb_7d,19.99,0.75,47.7,-27.71
+mozambique,Mozambique,catalog_cascade,20.4872,3gb_7d,19.99,1.0,63.06,-43.07
+mozambique,Mozambique,catalog_cascade,20.4872,10gb_15d,29.99,0.25,52.82,-22.83
+mozambique,Mozambique,catalog_cascade,20.4872,10gb_15d,29.99,0.5,104.04,-74.05
+mozambique,Mozambique,catalog_cascade,20.4872,10gb_15d,29.99,0.75,155.25,-125.26
+mozambique,Mozambique,catalog_cascade,20.4872,10gb_15d,29.99,1.0,206.47,-176.48
+nepal,Nepal,catalog_cascade,5.0458,1gb_5d,14.99,0.25,2.86,12.13
+nepal,Nepal,catalog_cascade,5.0458,1gb_5d,14.99,0.5,4.12,10.87
+nepal,Nepal,catalog_cascade,5.0458,1gb_5d,14.99,0.75,5.38,9.61
+nepal,Nepal,catalog_cascade,5.0458,1gb_5d,14.99,1.0,6.65,8.34
+nepal,Nepal,catalog_cascade,5.0458,3gb_7d,19.99,0.25,5.38,14.61
+nepal,Nepal,catalog_cascade,5.0458,3gb_7d,19.99,0.5,9.17,10.82
+nepal,Nepal,catalog_cascade,5.0458,3gb_7d,19.99,0.75,12.95,7.04
+nepal,Nepal,catalog_cascade,5.0458,3gb_7d,19.99,1.0,16.74,3.25
+nepal,Nepal,catalog_cascade,5.0458,10gb_15d,29.99,0.25,14.21,15.78
+nepal,Nepal,catalog_cascade,5.0458,10gb_15d,29.99,0.5,26.83,3.16
+nepal,Nepal,catalog_cascade,5.0458,10gb_15d,29.99,0.75,39.44,-9.45
+nepal,Nepal,catalog_cascade,5.0458,10gb_15d,29.99,1.0,52.06,-22.07
+netherlands,Netherlands,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+netherlands,Netherlands,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+netherlands,Netherlands,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+netherlands,Netherlands,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+netherlands,Netherlands,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+netherlands,Netherlands,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+netherlands,Netherlands,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+netherlands,Netherlands,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+netherlands,Netherlands,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+netherlands,Netherlands,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+netherlands,Netherlands,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+netherlands,Netherlands,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,1gb_5d,14.99,0.25,3.14,11.85
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,1gb_5d,14.99,0.5,4.69,10.3
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,1gb_5d,14.99,0.75,6.23,8.76
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,1gb_5d,14.99,1.0,7.78,7.21
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,3gb_7d,19.99,0.25,6.23,13.76
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,3gb_7d,19.99,0.5,10.87,9.12
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,3gb_7d,19.99,0.75,15.5,4.49
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,3gb_7d,19.99,1.0,20.14,-0.15
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,10gb_15d,29.99,0.25,17.05,12.94
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,10gb_15d,29.99,0.5,32.5,-2.51
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,10gb_15d,29.99,0.75,47.94,-17.95
+netherlands-antilles,Netherlands Antilles,catalog_cascade,6.1793,10gb_15d,29.99,1.0,63.39,-33.4
+new-zealand,New Zealand,weconnect_breakage,1.1197,1gb_5d,14.99,0.25,1.88,13.11
+new-zealand,New Zealand,weconnect_breakage,1.1197,1gb_5d,14.99,0.5,2.16,12.83
+new-zealand,New Zealand,weconnect_breakage,1.1197,1gb_5d,14.99,0.75,2.44,12.55
+new-zealand,New Zealand,weconnect_breakage,1.1197,1gb_5d,14.99,1.0,2.72,12.27
+new-zealand,New Zealand,weconnect_breakage,1.1197,3gb_7d,19.99,0.25,2.44,17.55
+new-zealand,New Zealand,weconnect_breakage,1.1197,3gb_7d,19.99,0.5,3.28,16.71
+new-zealand,New Zealand,weconnect_breakage,1.1197,3gb_7d,19.99,0.75,4.12,15.87
+new-zealand,New Zealand,weconnect_breakage,1.1197,3gb_7d,19.99,1.0,4.96,15.03
+new-zealand,New Zealand,weconnect_breakage,1.1197,10gb_15d,29.99,0.25,4.4,25.59
+new-zealand,New Zealand,weconnect_breakage,1.1197,10gb_15d,29.99,0.5,7.2,22.79
+new-zealand,New Zealand,weconnect_breakage,1.1197,10gb_15d,29.99,0.75,10.0,19.99
+new-zealand,New Zealand,weconnect_breakage,1.1197,10gb_15d,29.99,1.0,12.8,17.19
+nicaragua,Nicaragua,telna_fixed,7.7829,1gb_5d,14.99,0.25,3.55,11.44
+nicaragua,Nicaragua,telna_fixed,7.7829,1gb_5d,14.99,0.5,5.49,9.5
+nicaragua,Nicaragua,telna_fixed,7.7829,1gb_5d,14.99,0.75,7.44,7.55
+nicaragua,Nicaragua,telna_fixed,7.7829,1gb_5d,14.99,1.0,9.38,5.61
+nicaragua,Nicaragua,telna_fixed,7.7829,3gb_7d,19.99,0.25,7.44,12.55
+nicaragua,Nicaragua,telna_fixed,7.7829,3gb_7d,19.99,0.5,13.27,6.72
+nicaragua,Nicaragua,telna_fixed,7.7829,3gb_7d,19.99,0.75,19.11,0.88
+nicaragua,Nicaragua,telna_fixed,7.7829,3gb_7d,19.99,1.0,24.95,-4.96
+nicaragua,Nicaragua,telna_fixed,7.7829,10gb_15d,29.99,0.25,21.06,8.93
+nicaragua,Nicaragua,telna_fixed,7.7829,10gb_15d,29.99,0.5,40.51,-10.52
+nicaragua,Nicaragua,telna_fixed,7.7829,10gb_15d,29.99,0.75,59.97,-29.98
+nicaragua,Nicaragua,telna_fixed,7.7829,10gb_15d,29.99,1.0,79.43,-49.44
+niger,Niger,catalog_cascade,5.3775,1gb_5d,14.99,0.25,2.94,12.05
+niger,Niger,catalog_cascade,5.3775,1gb_5d,14.99,0.5,4.29,10.7
+niger,Niger,catalog_cascade,5.3775,1gb_5d,14.99,0.75,5.63,9.36
+niger,Niger,catalog_cascade,5.3775,1gb_5d,14.99,1.0,6.98,8.01
+niger,Niger,catalog_cascade,5.3775,3gb_7d,19.99,0.25,5.63,14.36
+niger,Niger,catalog_cascade,5.3775,3gb_7d,19.99,0.5,9.67,10.32
+niger,Niger,catalog_cascade,5.3775,3gb_7d,19.99,0.75,13.7,6.29
+niger,Niger,catalog_cascade,5.3775,3gb_7d,19.99,1.0,17.73,2.26
+niger,Niger,catalog_cascade,5.3775,10gb_15d,29.99,0.25,15.04,14.95
+niger,Niger,catalog_cascade,5.3775,10gb_15d,29.99,0.5,28.49,1.5
+niger,Niger,catalog_cascade,5.3775,10gb_15d,29.99,0.75,41.93,-11.94
+niger,Niger,catalog_cascade,5.3775,10gb_15d,29.99,1.0,55.38,-25.39
+nigeria,Nigeria,catalog_cascade,4.0228,1gb_5d,14.99,0.25,2.61,12.38
+nigeria,Nigeria,catalog_cascade,4.0228,1gb_5d,14.99,0.5,3.61,11.38
+nigeria,Nigeria,catalog_cascade,4.0228,1gb_5d,14.99,0.75,4.62,10.37
+nigeria,Nigeria,catalog_cascade,4.0228,1gb_5d,14.99,1.0,5.62,9.37
+nigeria,Nigeria,catalog_cascade,4.0228,3gb_7d,19.99,0.25,4.62,15.37
+nigeria,Nigeria,catalog_cascade,4.0228,3gb_7d,19.99,0.5,7.63,12.36
+nigeria,Nigeria,catalog_cascade,4.0228,3gb_7d,19.99,0.75,10.65,9.34
+nigeria,Nigeria,catalog_cascade,4.0228,3gb_7d,19.99,1.0,13.67,6.32
+nigeria,Nigeria,catalog_cascade,4.0228,10gb_15d,29.99,0.25,11.66,18.33
+nigeria,Nigeria,catalog_cascade,4.0228,10gb_15d,29.99,0.5,21.71,8.28
+nigeria,Nigeria,catalog_cascade,4.0228,10gb_15d,29.99,0.75,31.77,-1.78
+nigeria,Nigeria,catalog_cascade,4.0228,10gb_15d,29.99,1.0,41.83,-11.84
+norway,Norway,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+norway,Norway,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+norway,Norway,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+norway,Norway,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+norway,Norway,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+norway,Norway,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+norway,Norway,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+norway,Norway,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+norway,Norway,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+norway,Norway,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+norway,Norway,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+norway,Norway,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+oman,Oman,weconnect_breakage,1.8386,1gb_5d,14.99,0.25,2.06,12.93
+oman,Oman,weconnect_breakage,1.8386,1gb_5d,14.99,0.5,2.52,12.47
+oman,Oman,weconnect_breakage,1.8386,1gb_5d,14.99,0.75,2.98,12.01
+oman,Oman,weconnect_breakage,1.8386,1gb_5d,14.99,1.0,3.44,11.55
+oman,Oman,weconnect_breakage,1.8386,3gb_7d,19.99,0.25,2.98,17.01
+oman,Oman,weconnect_breakage,1.8386,3gb_7d,19.99,0.5,4.36,15.63
+oman,Oman,weconnect_breakage,1.8386,3gb_7d,19.99,0.75,5.74,14.25
+oman,Oman,weconnect_breakage,1.8386,3gb_7d,19.99,1.0,7.12,12.87
+oman,Oman,weconnect_breakage,1.8386,10gb_15d,29.99,0.25,6.2,23.79
+oman,Oman,weconnect_breakage,1.8386,10gb_15d,29.99,0.5,10.79,19.2
+oman,Oman,weconnect_breakage,1.8386,10gb_15d,29.99,0.75,15.39,14.6
+oman,Oman,weconnect_breakage,1.8386,10gb_15d,29.99,1.0,19.99,10.0
+pakistan,Pakistan,weconnect_breakage,0.9262,1gb_5d,14.99,0.25,1.83,13.16
+pakistan,Pakistan,weconnect_breakage,0.9262,1gb_5d,14.99,0.5,2.06,12.93
+pakistan,Pakistan,weconnect_breakage,0.9262,1gb_5d,14.99,0.75,2.29,12.7
+pakistan,Pakistan,weconnect_breakage,0.9262,1gb_5d,14.99,1.0,2.53,12.46
+pakistan,Pakistan,weconnect_breakage,0.9262,3gb_7d,19.99,0.25,2.29,17.7
+pakistan,Pakistan,weconnect_breakage,0.9262,3gb_7d,19.99,0.5,2.99,17.0
+pakistan,Pakistan,weconnect_breakage,0.9262,3gb_7d,19.99,0.75,3.68,16.31
+pakistan,Pakistan,weconnect_breakage,0.9262,3gb_7d,19.99,1.0,4.38,15.61
+pakistan,Pakistan,weconnect_breakage,0.9262,10gb_15d,29.99,0.25,3.92,26.07
+pakistan,Pakistan,weconnect_breakage,0.9262,10gb_15d,29.99,0.5,6.23,23.76
+pakistan,Pakistan,weconnect_breakage,0.9262,10gb_15d,29.99,0.75,8.55,21.44
+pakistan,Pakistan,weconnect_breakage,0.9262,10gb_15d,29.99,1.0,10.86,19.13
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,1gb_5d,14.99,0.25,4.19,10.8
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,1gb_5d,14.99,0.5,6.77,8.22
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,1gb_5d,14.99,0.75,9.36,5.63
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,1gb_5d,14.99,1.0,11.94,3.05
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,3gb_7d,19.99,0.25,9.36,10.63
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,3gb_7d,19.99,0.5,17.11,2.88
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,3gb_7d,19.99,0.75,24.87,-4.88
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,3gb_7d,19.99,1.0,32.62,-12.63
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,10gb_15d,29.99,0.25,27.45,2.54
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,10gb_15d,29.99,0.5,53.3,-23.31
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,10gb_15d,29.99,0.75,79.15,-49.16
+palestinian-territory,Palestinian Territory,catalog_cascade,10.3404,10gb_15d,29.99,1.0,105.0,-75.01
+panama,Panama,telna_fixed,5.8199,1gb_5d,14.99,0.25,3.05,11.94
+panama,Panama,telna_fixed,5.8199,1gb_5d,14.99,0.5,4.51,10.48
+panama,Panama,telna_fixed,5.8199,1gb_5d,14.99,0.75,5.96,9.03
+panama,Panama,telna_fixed,5.8199,1gb_5d,14.99,1.0,7.42,7.57
+panama,Panama,telna_fixed,5.8199,3gb_7d,19.99,0.25,5.96,14.03
+panama,Panama,telna_fixed,5.8199,3gb_7d,19.99,0.5,10.33,9.66
+panama,Panama,telna_fixed,5.8199,3gb_7d,19.99,0.75,14.69,5.3
+panama,Panama,telna_fixed,5.8199,3gb_7d,19.99,1.0,19.06,0.93
+panama,Panama,telna_fixed,5.8199,10gb_15d,29.99,0.25,16.15,13.84
+panama,Panama,telna_fixed,5.8199,10gb_15d,29.99,0.5,30.7,-0.71
+panama,Panama,telna_fixed,5.8199,10gb_15d,29.99,0.75,45.25,-15.26
+panama,Panama,telna_fixed,5.8199,10gb_15d,29.99,1.0,59.8,-29.81
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,1gb_5d,14.99,0.25,3.41,11.58
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,1gb_5d,14.99,0.5,5.22,9.77
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,1gb_5d,14.99,0.75,7.03,7.96
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,1gb_5d,14.99,1.0,8.84,6.15
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,3gb_7d,19.99,0.25,7.03,12.96
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,3gb_7d,19.99,0.5,12.47,7.52
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,3gb_7d,19.99,0.75,17.9,2.09
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,3gb_7d,19.99,1.0,23.33,-3.34
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,10gb_15d,29.99,0.25,19.71,10.28
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,10gb_15d,29.99,0.5,37.82,-7.83
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,10gb_15d,29.99,0.75,55.93,-25.94
+papua-new-guinea,Papua New Guinea,catalog_cascade,7.2438,10gb_15d,29.99,1.0,74.04,-44.05
+paraguay,Paraguay,telna_fixed,5.0458,1gb_5d,14.99,0.25,2.86,12.13
+paraguay,Paraguay,telna_fixed,5.0458,1gb_5d,14.99,0.5,4.12,10.87
+paraguay,Paraguay,telna_fixed,5.0458,1gb_5d,14.99,0.75,5.38,9.61
+paraguay,Paraguay,telna_fixed,5.0458,1gb_5d,14.99,1.0,6.65,8.34
+paraguay,Paraguay,telna_fixed,5.0458,3gb_7d,19.99,0.25,5.38,14.61
+paraguay,Paraguay,telna_fixed,5.0458,3gb_7d,19.99,0.5,9.17,10.82
+paraguay,Paraguay,telna_fixed,5.0458,3gb_7d,19.99,0.75,12.95,7.04
+paraguay,Paraguay,telna_fixed,5.0458,3gb_7d,19.99,1.0,16.74,3.25
+paraguay,Paraguay,telna_fixed,5.0458,10gb_15d,29.99,0.25,14.21,15.78
+paraguay,Paraguay,telna_fixed,5.0458,10gb_15d,29.99,0.5,26.83,3.16
+paraguay,Paraguay,telna_fixed,5.0458,10gb_15d,29.99,0.75,39.44,-9.45
+paraguay,Paraguay,telna_fixed,5.0458,10gb_15d,29.99,1.0,52.06,-22.07
+peru,Peru,telna_fixed,3.1933,1gb_5d,14.99,0.25,2.4,12.59
+peru,Peru,telna_fixed,3.1933,1gb_5d,14.99,0.5,3.2,11.79
+peru,Peru,telna_fixed,3.1933,1gb_5d,14.99,0.75,4.0,10.99
+peru,Peru,telna_fixed,3.1933,1gb_5d,14.99,1.0,4.79,10.2
+peru,Peru,telna_fixed,3.1933,3gb_7d,19.99,0.25,4.0,15.99
+peru,Peru,telna_fixed,3.1933,3gb_7d,19.99,0.5,6.39,13.6
+peru,Peru,telna_fixed,3.1933,3gb_7d,19.99,0.75,8.79,11.2
+peru,Peru,telna_fixed,3.1933,3gb_7d,19.99,1.0,11.18,8.81
+peru,Peru,telna_fixed,3.1933,10gb_15d,29.99,0.25,9.58,20.41
+peru,Peru,telna_fixed,3.1933,10gb_15d,29.99,0.5,17.57,12.42
+peru,Peru,telna_fixed,3.1933,10gb_15d,29.99,0.75,25.55,4.44
+peru,Peru,telna_fixed,3.1933,10gb_15d,29.99,1.0,33.53,-3.54
+philippines,Philippines,weconnect_breakage,1.6865,1gb_5d,14.99,0.25,2.02,12.97
+philippines,Philippines,weconnect_breakage,1.6865,1gb_5d,14.99,0.5,2.44,12.55
+philippines,Philippines,weconnect_breakage,1.6865,1gb_5d,14.99,0.75,2.86,12.13
+philippines,Philippines,weconnect_breakage,1.6865,1gb_5d,14.99,1.0,3.29,11.7
+philippines,Philippines,weconnect_breakage,1.6865,3gb_7d,19.99,0.25,2.86,17.13
+philippines,Philippines,weconnect_breakage,1.6865,3gb_7d,19.99,0.5,4.13,15.86
+philippines,Philippines,weconnect_breakage,1.6865,3gb_7d,19.99,0.75,5.39,14.6
+philippines,Philippines,weconnect_breakage,1.6865,3gb_7d,19.99,1.0,6.66,13.33
+philippines,Philippines,weconnect_breakage,1.6865,10gb_15d,29.99,0.25,5.82,24.17
+philippines,Philippines,weconnect_breakage,1.6865,10gb_15d,29.99,0.5,10.03,19.96
+philippines,Philippines,weconnect_breakage,1.6865,10gb_15d,29.99,0.75,14.25,15.74
+philippines,Philippines,weconnect_breakage,1.6865,10gb_15d,29.99,1.0,18.47,11.52
+poland,Poland,weconnect_breakage,0.705,1gb_5d,14.99,0.25,1.78,13.21
+poland,Poland,weconnect_breakage,0.705,1gb_5d,14.99,0.5,1.95,13.04
+poland,Poland,weconnect_breakage,0.705,1gb_5d,14.99,0.75,2.13,12.86
+poland,Poland,weconnect_breakage,0.705,1gb_5d,14.99,1.0,2.31,12.68
+poland,Poland,weconnect_breakage,0.705,3gb_7d,19.99,0.25,2.13,17.86
+poland,Poland,weconnect_breakage,0.705,3gb_7d,19.99,0.5,2.66,17.33
+poland,Poland,weconnect_breakage,0.705,3gb_7d,19.99,0.75,3.19,16.8
+poland,Poland,weconnect_breakage,0.705,3gb_7d,19.99,1.0,3.72,16.27
+poland,Poland,weconnect_breakage,0.705,10gb_15d,29.99,0.25,3.36,26.63
+poland,Poland,weconnect_breakage,0.705,10gb_15d,29.99,0.5,5.13,24.86
+poland,Poland,weconnect_breakage,0.705,10gb_15d,29.99,0.75,6.89,23.1
+poland,Poland,weconnect_breakage,0.705,10gb_15d,29.99,1.0,8.65,21.34
+portugal,Portugal,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+portugal,Portugal,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+portugal,Portugal,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+portugal,Portugal,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+portugal,Portugal,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+portugal,Portugal,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+portugal,Portugal,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+portugal,Portugal,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+portugal,Portugal,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+portugal,Portugal,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+portugal,Portugal,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+portugal,Portugal,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+puerto-rico,Puerto Rico,telna_fixed,5.8752,1gb_5d,14.99,0.25,3.07,11.92
+puerto-rico,Puerto Rico,telna_fixed,5.8752,1gb_5d,14.99,0.5,4.54,10.45
+puerto-rico,Puerto Rico,telna_fixed,5.8752,1gb_5d,14.99,0.75,6.01,8.98
+puerto-rico,Puerto Rico,telna_fixed,5.8752,1gb_5d,14.99,1.0,7.48,7.51
+puerto-rico,Puerto Rico,telna_fixed,5.8752,3gb_7d,19.99,0.25,6.01,13.98
+puerto-rico,Puerto Rico,telna_fixed,5.8752,3gb_7d,19.99,0.5,10.41,9.58
+puerto-rico,Puerto Rico,telna_fixed,5.8752,3gb_7d,19.99,0.75,14.82,5.17
+puerto-rico,Puerto Rico,telna_fixed,5.8752,3gb_7d,19.99,1.0,19.23,0.76
+puerto-rico,Puerto Rico,telna_fixed,5.8752,10gb_15d,29.99,0.25,16.29,13.7
+puerto-rico,Puerto Rico,telna_fixed,5.8752,10gb_15d,29.99,0.5,30.98,-0.99
+puerto-rico,Puerto Rico,telna_fixed,5.8752,10gb_15d,29.99,0.75,45.66,-15.67
+puerto-rico,Puerto Rico,telna_fixed,5.8752,10gb_15d,29.99,1.0,60.35,-30.36
+qatar,Qatar,weconnect_breakage,1.7971,1gb_5d,14.99,0.25,2.05,12.94
+qatar,Qatar,weconnect_breakage,1.7971,1gb_5d,14.99,0.5,2.5,12.49
+qatar,Qatar,weconnect_breakage,1.7971,1gb_5d,14.99,0.75,2.95,12.04
+qatar,Qatar,weconnect_breakage,1.7971,1gb_5d,14.99,1.0,3.4,11.59
+qatar,Qatar,weconnect_breakage,1.7971,3gb_7d,19.99,0.25,2.95,17.04
+qatar,Qatar,weconnect_breakage,1.7971,3gb_7d,19.99,0.5,4.3,15.69
+qatar,Qatar,weconnect_breakage,1.7971,3gb_7d,19.99,0.75,5.64,14.35
+qatar,Qatar,weconnect_breakage,1.7971,3gb_7d,19.99,1.0,6.99,13.0
+qatar,Qatar,weconnect_breakage,1.7971,10gb_15d,29.99,0.25,6.09,23.9
+qatar,Qatar,weconnect_breakage,1.7971,10gb_15d,29.99,0.5,10.59,19.4
+qatar,Qatar,weconnect_breakage,1.7971,10gb_15d,29.99,0.75,15.08,14.91
+qatar,Qatar,weconnect_breakage,1.7971,10gb_15d,29.99,1.0,19.57,10.42
+reunion,Reunion,weconnect_breakage,0.94,1gb_5d,14.99,0.25,1.84,13.15
+reunion,Reunion,weconnect_breakage,0.94,1gb_5d,14.99,0.5,2.07,12.92
+reunion,Reunion,weconnect_breakage,0.94,1gb_5d,14.99,0.75,2.31,12.68
+reunion,Reunion,weconnect_breakage,0.94,1gb_5d,14.99,1.0,2.54,12.45
+reunion,Reunion,weconnect_breakage,0.94,3gb_7d,19.99,0.25,2.31,17.68
+reunion,Reunion,weconnect_breakage,0.94,3gb_7d,19.99,0.5,3.01,16.98
+reunion,Reunion,weconnect_breakage,0.94,3gb_7d,19.99,0.75,3.72,16.27
+reunion,Reunion,weconnect_breakage,0.94,3gb_7d,19.99,1.0,4.42,15.57
+reunion,Reunion,weconnect_breakage,0.94,10gb_15d,29.99,0.25,3.95,26.04
+reunion,Reunion,weconnect_breakage,0.94,10gb_15d,29.99,0.5,6.3,23.69
+reunion,Reunion,weconnect_breakage,0.94,10gb_15d,29.99,0.75,8.65,21.34
+reunion,Reunion,weconnect_breakage,0.94,10gb_15d,29.99,1.0,11.0,18.99
+romania,Romania,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+romania,Romania,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+romania,Romania,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+romania,Romania,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+romania,Romania,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+romania,Romania,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+romania,Romania,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+romania,Romania,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+romania,Romania,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+romania,Romania,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+romania,Romania,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+romania,Romania,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+russian-federation,Russian Federation,weconnect_breakage,1.0092,1gb_5d,14.99,0.25,1.85,13.14
+russian-federation,Russian Federation,weconnect_breakage,1.0092,1gb_5d,14.99,0.5,2.1,12.89
+russian-federation,Russian Federation,weconnect_breakage,1.0092,1gb_5d,14.99,0.75,2.36,12.63
+russian-federation,Russian Federation,weconnect_breakage,1.0092,1gb_5d,14.99,1.0,2.61,12.38
+russian-federation,Russian Federation,weconnect_breakage,1.0092,3gb_7d,19.99,0.25,2.36,17.63
+russian-federation,Russian Federation,weconnect_breakage,1.0092,3gb_7d,19.99,0.5,3.11,16.88
+russian-federation,Russian Federation,weconnect_breakage,1.0092,3gb_7d,19.99,0.75,3.87,16.12
+russian-federation,Russian Federation,weconnect_breakage,1.0092,3gb_7d,19.99,1.0,4.63,15.36
+russian-federation,Russian Federation,weconnect_breakage,1.0092,10gb_15d,29.99,0.25,4.12,25.87
+russian-federation,Russian Federation,weconnect_breakage,1.0092,10gb_15d,29.99,0.5,6.65,23.34
+russian-federation,Russian Federation,weconnect_breakage,1.0092,10gb_15d,29.99,0.75,9.17,20.82
+russian-federation,Russian Federation,weconnect_breakage,1.0092,10gb_15d,29.99,1.0,11.69,18.3
+rwanda,Rwanda,catalog_cascade,5.3222,1gb_5d,14.99,0.25,2.93,12.06
+rwanda,Rwanda,catalog_cascade,5.3222,1gb_5d,14.99,0.5,4.26,10.73
+rwanda,Rwanda,catalog_cascade,5.3222,1gb_5d,14.99,0.75,5.59,9.4
+rwanda,Rwanda,catalog_cascade,5.3222,1gb_5d,14.99,1.0,6.92,8.07
+rwanda,Rwanda,catalog_cascade,5.3222,3gb_7d,19.99,0.25,5.59,14.4
+rwanda,Rwanda,catalog_cascade,5.3222,3gb_7d,19.99,0.5,9.58,10.41
+rwanda,Rwanda,catalog_cascade,5.3222,3gb_7d,19.99,0.75,13.58,6.41
+rwanda,Rwanda,catalog_cascade,5.3222,3gb_7d,19.99,1.0,17.57,2.42
+rwanda,Rwanda,catalog_cascade,5.3222,10gb_15d,29.99,0.25,14.91,15.08
+rwanda,Rwanda,catalog_cascade,5.3222,10gb_15d,29.99,0.5,28.21,1.78
+rwanda,Rwanda,catalog_cascade,5.3222,10gb_15d,29.99,0.75,41.52,-11.53
+rwanda,Rwanda,catalog_cascade,5.3222,10gb_15d,29.99,1.0,54.82,-24.83
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,1gb_5d,14.99,0.25,3.27,11.72
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,1gb_5d,14.99,0.5,4.95,10.04
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,1gb_5d,14.99,0.75,6.62,8.37
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,1gb_5d,14.99,1.0,8.29,6.7
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,3gb_7d,19.99,0.25,6.62,13.37
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,3gb_7d,19.99,0.5,11.64,8.35
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,3gb_7d,19.99,0.75,16.65,3.34
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,3gb_7d,19.99,1.0,21.67,-1.68
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,10gb_15d,29.99,0.25,18.33,11.66
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,10gb_15d,29.99,0.5,35.05,-5.06
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,10gb_15d,29.99,0.75,51.78,-21.79
+saint-kitts-and-nevis,Saint Kitts and Nevis,telna_fixed,6.6908,10gb_15d,29.99,1.0,68.51,-38.52
+saint-lucia,Saint Lucia,telna_fixed,6.6908,1gb_5d,14.99,0.25,3.27,11.72
+saint-lucia,Saint Lucia,telna_fixed,6.6908,1gb_5d,14.99,0.5,4.95,10.04
+saint-lucia,Saint Lucia,telna_fixed,6.6908,1gb_5d,14.99,0.75,6.62,8.37
+saint-lucia,Saint Lucia,telna_fixed,6.6908,1gb_5d,14.99,1.0,8.29,6.7
+saint-lucia,Saint Lucia,telna_fixed,6.6908,3gb_7d,19.99,0.25,6.62,13.37
+saint-lucia,Saint Lucia,telna_fixed,6.6908,3gb_7d,19.99,0.5,11.64,8.35
+saint-lucia,Saint Lucia,telna_fixed,6.6908,3gb_7d,19.99,0.75,16.65,3.34
+saint-lucia,Saint Lucia,telna_fixed,6.6908,3gb_7d,19.99,1.0,21.67,-1.68
+saint-lucia,Saint Lucia,telna_fixed,6.6908,10gb_15d,29.99,0.25,18.33,11.66
+saint-lucia,Saint Lucia,telna_fixed,6.6908,10gb_15d,29.99,0.5,35.05,-5.06
+saint-lucia,Saint Lucia,telna_fixed,6.6908,10gb_15d,29.99,0.75,51.78,-21.79
+saint-lucia,Saint Lucia,telna_fixed,6.6908,10gb_15d,29.99,1.0,68.51,-38.52
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,1gb_5d,14.99,0.25,3.27,11.72
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,1gb_5d,14.99,0.5,4.95,10.04
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,1gb_5d,14.99,0.75,6.62,8.37
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,1gb_5d,14.99,1.0,8.29,6.7
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,3gb_7d,19.99,0.25,6.62,13.37
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,3gb_7d,19.99,0.5,11.64,8.35
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,3gb_7d,19.99,0.75,16.65,3.34
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,3gb_7d,19.99,1.0,21.67,-1.68
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,10gb_15d,29.99,0.25,18.33,11.66
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,10gb_15d,29.99,0.5,35.05,-5.06
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,10gb_15d,29.99,0.75,51.78,-21.79
+saint-vincent-and-grenadines,Saint Vincent and Grenadines,catalog_cascade,6.6908,10gb_15d,29.99,1.0,68.51,-38.52
+samoa,Samoa,catalog_cascade,19.948,1gb_5d,14.99,0.25,6.59,8.4
+samoa,Samoa,catalog_cascade,19.948,1gb_5d,14.99,0.5,11.57,3.42
+samoa,Samoa,catalog_cascade,19.948,1gb_5d,14.99,0.75,16.56,-1.57
+samoa,Samoa,catalog_cascade,19.948,1gb_5d,14.99,1.0,21.55,-6.56
+samoa,Samoa,catalog_cascade,19.948,3gb_7d,19.99,0.25,16.56,3.43
+samoa,Samoa,catalog_cascade,19.948,3gb_7d,19.99,0.5,31.52,-11.53
+samoa,Samoa,catalog_cascade,19.948,3gb_7d,19.99,0.75,46.48,-26.49
+samoa,Samoa,catalog_cascade,19.948,3gb_7d,19.99,1.0,61.44,-41.45
+samoa,Samoa,catalog_cascade,19.948,10gb_15d,29.99,0.25,51.47,-21.48
+samoa,Samoa,catalog_cascade,19.948,10gb_15d,29.99,0.5,101.34,-71.35
+samoa,Samoa,catalog_cascade,19.948,10gb_15d,29.99,0.75,151.21,-121.22
+samoa,Samoa,catalog_cascade,19.948,10gb_15d,29.99,1.0,201.08,-171.09
+satellite-networks,Satellite Networks,exclude,87.34,1gb_5d,14.99,0.25,23.44,-8.45
+satellite-networks,Satellite Networks,exclude,87.34,1gb_5d,14.99,0.5,45.27,-30.28
+satellite-networks,Satellite Networks,exclude,87.34,1gb_5d,14.99,0.75,67.11,-52.12
+satellite-networks,Satellite Networks,exclude,87.34,1gb_5d,14.99,1.0,88.94,-73.95
+satellite-networks,Satellite Networks,exclude,87.34,3gb_7d,19.99,0.25,67.11,-47.12
+satellite-networks,Satellite Networks,exclude,87.34,3gb_7d,19.99,0.5,132.61,-112.62
+satellite-networks,Satellite Networks,exclude,87.34,3gb_7d,19.99,0.75,198.12,-178.13
+satellite-networks,Satellite Networks,exclude,87.34,3gb_7d,19.99,1.0,263.62,-243.63
+satellite-networks,Satellite Networks,exclude,87.34,10gb_15d,29.99,0.25,219.95,-189.96
+satellite-networks,Satellite Networks,exclude,87.34,10gb_15d,29.99,0.5,438.3,-408.31
+satellite-networks,Satellite Networks,exclude,87.34,10gb_15d,29.99,0.75,656.65,-626.66
+satellite-networks,Satellite Networks,exclude,87.34,10gb_15d,29.99,1.0,875.0,-845.01
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,1gb_5d,14.99,0.25,2.2,12.79
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,1gb_5d,14.99,0.5,2.8,12.19
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,1gb_5d,14.99,0.75,3.39,11.6
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,1gb_5d,14.99,1.0,3.99,11.0
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,3gb_7d,19.99,0.25,3.39,16.6
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,3gb_7d,19.99,0.5,5.19,14.8
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,3gb_7d,19.99,0.75,6.98,13.01
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,3gb_7d,19.99,1.0,8.77,11.22
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,10gb_15d,29.99,0.25,7.58,22.41
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,10gb_15d,29.99,0.5,13.56,16.43
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,10gb_15d,29.99,0.75,19.54,10.45
+saudi-arabia,Saudi Arabia,access_fixed,2.3916,10gb_15d,29.99,1.0,25.52,4.47
+senegal,Senegal,catalog_cascade,11.5845,1gb_5d,14.99,0.25,4.5,10.49
+senegal,Senegal,catalog_cascade,11.5845,1gb_5d,14.99,0.5,7.39,7.6
+senegal,Senegal,catalog_cascade,11.5845,1gb_5d,14.99,0.75,10.29,4.7
+senegal,Senegal,catalog_cascade,11.5845,1gb_5d,14.99,1.0,13.18,1.81
+senegal,Senegal,catalog_cascade,11.5845,3gb_7d,19.99,0.25,10.29,9.7
+senegal,Senegal,catalog_cascade,11.5845,3gb_7d,19.99,0.5,18.98,1.01
+senegal,Senegal,catalog_cascade,11.5845,3gb_7d,19.99,0.75,27.67,-7.68
+senegal,Senegal,catalog_cascade,11.5845,3gb_7d,19.99,1.0,36.35,-16.36
+senegal,Senegal,catalog_cascade,11.5845,10gb_15d,29.99,0.25,30.56,-0.57
+senegal,Senegal,catalog_cascade,11.5845,10gb_15d,29.99,0.5,59.52,-29.53
+senegal,Senegal,catalog_cascade,11.5845,10gb_15d,29.99,0.75,88.48,-58.49
+senegal,Senegal,catalog_cascade,11.5845,10gb_15d,29.99,1.0,117.45,-87.46
+serbia,Serbia,weconnect_breakage,1.023,1gb_5d,14.99,0.25,1.86,13.13
+serbia,Serbia,weconnect_breakage,1.023,1gb_5d,14.99,0.5,2.11,12.88
+serbia,Serbia,weconnect_breakage,1.023,1gb_5d,14.99,0.75,2.37,12.62
+serbia,Serbia,weconnect_breakage,1.023,1gb_5d,14.99,1.0,2.62,12.37
+serbia,Serbia,weconnect_breakage,1.023,3gb_7d,19.99,0.25,2.37,17.62
+serbia,Serbia,weconnect_breakage,1.023,3gb_7d,19.99,0.5,3.13,16.86
+serbia,Serbia,weconnect_breakage,1.023,3gb_7d,19.99,0.75,3.9,16.09
+serbia,Serbia,weconnect_breakage,1.023,3gb_7d,19.99,1.0,4.67,15.32
+serbia,Serbia,weconnect_breakage,1.023,10gb_15d,29.99,0.25,4.16,25.83
+serbia,Serbia,weconnect_breakage,1.023,10gb_15d,29.99,0.5,6.71,23.28
+serbia,Serbia,weconnect_breakage,1.023,10gb_15d,29.99,0.75,9.27,20.72
+serbia,Serbia,weconnect_breakage,1.023,10gb_15d,29.99,1.0,11.83,18.16
+seychelles,Seychelles,catalog_cascade,199.4803,1gb_5d,14.99,0.25,51.47,-36.48
+seychelles,Seychelles,catalog_cascade,199.4803,1gb_5d,14.99,0.5,101.34,-86.35
+seychelles,Seychelles,catalog_cascade,199.4803,1gb_5d,14.99,0.75,151.21,-136.22
+seychelles,Seychelles,catalog_cascade,199.4803,1gb_5d,14.99,1.0,201.08,-186.09
+seychelles,Seychelles,catalog_cascade,199.4803,3gb_7d,19.99,0.25,151.21,-131.22
+seychelles,Seychelles,catalog_cascade,199.4803,3gb_7d,19.99,0.5,300.82,-280.83
+seychelles,Seychelles,catalog_cascade,199.4803,3gb_7d,19.99,0.75,450.43,-430.44
+seychelles,Seychelles,catalog_cascade,199.4803,3gb_7d,19.99,1.0,600.04,-580.05
+seychelles,Seychelles,catalog_cascade,199.4803,10gb_15d,29.99,0.25,500.3,-470.31
+seychelles,Seychelles,catalog_cascade,199.4803,10gb_15d,29.99,0.5,999.0,-969.01
+seychelles,Seychelles,catalog_cascade,199.4803,10gb_15d,29.99,0.75,1497.7,-1467.71
+seychelles,Seychelles,catalog_cascade,199.4803,10gb_15d,29.99,1.0,1996.4,-1966.41
+singapore,Singapore,weconnect_breakage,1.1336,1gb_5d,14.99,0.25,1.88,13.11
+singapore,Singapore,weconnect_breakage,1.1336,1gb_5d,14.99,0.5,2.17,12.82
+singapore,Singapore,weconnect_breakage,1.1336,1gb_5d,14.99,0.75,2.45,12.54
+singapore,Singapore,weconnect_breakage,1.1336,1gb_5d,14.99,1.0,2.73,12.26
+singapore,Singapore,weconnect_breakage,1.1336,3gb_7d,19.99,0.25,2.45,17.54
+singapore,Singapore,weconnect_breakage,1.1336,3gb_7d,19.99,0.5,3.3,16.69
+singapore,Singapore,weconnect_breakage,1.1336,3gb_7d,19.99,0.75,4.15,15.84
+singapore,Singapore,weconnect_breakage,1.1336,3gb_7d,19.99,1.0,5.0,14.99
+singapore,Singapore,weconnect_breakage,1.1336,10gb_15d,29.99,0.25,4.43,25.56
+singapore,Singapore,weconnect_breakage,1.1336,10gb_15d,29.99,0.5,7.27,22.72
+singapore,Singapore,weconnect_breakage,1.1336,10gb_15d,29.99,0.75,10.1,19.89
+singapore,Singapore,weconnect_breakage,1.1336,10gb_15d,29.99,1.0,12.94,17.05
+slovakia,Slovakia,weconnect_breakage,0.705,1gb_5d,14.99,0.25,1.78,13.21
+slovakia,Slovakia,weconnect_breakage,0.705,1gb_5d,14.99,0.5,1.95,13.04
+slovakia,Slovakia,weconnect_breakage,0.705,1gb_5d,14.99,0.75,2.13,12.86
+slovakia,Slovakia,weconnect_breakage,0.705,1gb_5d,14.99,1.0,2.31,12.68
+slovakia,Slovakia,weconnect_breakage,0.705,3gb_7d,19.99,0.25,2.13,17.86
+slovakia,Slovakia,weconnect_breakage,0.705,3gb_7d,19.99,0.5,2.66,17.33
+slovakia,Slovakia,weconnect_breakage,0.705,3gb_7d,19.99,0.75,3.19,16.8
+slovakia,Slovakia,weconnect_breakage,0.705,3gb_7d,19.99,1.0,3.72,16.27
+slovakia,Slovakia,weconnect_breakage,0.705,10gb_15d,29.99,0.25,3.36,26.63
+slovakia,Slovakia,weconnect_breakage,0.705,10gb_15d,29.99,0.5,5.13,24.86
+slovakia,Slovakia,weconnect_breakage,0.705,10gb_15d,29.99,0.75,6.89,23.1
+slovakia,Slovakia,weconnect_breakage,0.705,10gb_15d,29.99,1.0,8.65,21.34
+slovenia,Slovenia,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+slovenia,Slovenia,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+slovenia,Slovenia,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+slovenia,Slovenia,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+slovenia,Slovenia,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+slovenia,Slovenia,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+slovenia,Slovenia,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+slovenia,Slovenia,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+slovenia,Slovenia,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+slovenia,Slovenia,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+slovenia,Slovenia,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+slovenia,Slovenia,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+south-africa,South Africa,weconnect_breakage,2.1012,1gb_5d,14.99,0.25,2.13,12.86
+south-africa,South Africa,weconnect_breakage,2.1012,1gb_5d,14.99,0.5,2.65,12.34
+south-africa,South Africa,weconnect_breakage,2.1012,1gb_5d,14.99,0.75,3.18,11.81
+south-africa,South Africa,weconnect_breakage,2.1012,1gb_5d,14.99,1.0,3.7,11.29
+south-africa,South Africa,weconnect_breakage,2.1012,3gb_7d,19.99,0.25,3.18,16.81
+south-africa,South Africa,weconnect_breakage,2.1012,3gb_7d,19.99,0.5,4.75,15.24
+south-africa,South Africa,weconnect_breakage,2.1012,3gb_7d,19.99,0.75,6.33,13.66
+south-africa,South Africa,weconnect_breakage,2.1012,3gb_7d,19.99,1.0,7.9,12.09
+south-africa,South Africa,weconnect_breakage,2.1012,10gb_15d,29.99,0.25,6.85,23.14
+south-africa,South Africa,weconnect_breakage,2.1012,10gb_15d,29.99,0.5,12.11,17.88
+south-africa,South Africa,weconnect_breakage,2.1012,10gb_15d,29.99,0.75,17.36,12.63
+south-africa,South Africa,weconnect_breakage,2.1012,10gb_15d,29.99,1.0,22.61,7.38
+south-korea,South Korea,weconnect_breakage,2.2533,1gb_5d,14.99,0.25,2.16,12.83
+south-korea,South Korea,weconnect_breakage,2.2533,1gb_5d,14.99,0.5,2.73,12.26
+south-korea,South Korea,weconnect_breakage,2.2533,1gb_5d,14.99,0.75,3.29,11.7
+south-korea,South Korea,weconnect_breakage,2.2533,1gb_5d,14.99,1.0,3.85,11.14
+south-korea,South Korea,weconnect_breakage,2.2533,3gb_7d,19.99,0.25,3.29,16.7
+south-korea,South Korea,weconnect_breakage,2.2533,3gb_7d,19.99,0.5,4.98,15.01
+south-korea,South Korea,weconnect_breakage,2.2533,3gb_7d,19.99,0.75,6.67,13.32
+south-korea,South Korea,weconnect_breakage,2.2533,3gb_7d,19.99,1.0,8.36,11.63
+south-korea,South Korea,weconnect_breakage,2.2533,10gb_15d,29.99,0.25,7.23,22.76
+south-korea,South Korea,weconnect_breakage,2.2533,10gb_15d,29.99,0.5,12.87,17.12
+south-korea,South Korea,weconnect_breakage,2.2533,10gb_15d,29.99,0.75,18.5,11.49
+south-korea,South Korea,weconnect_breakage,2.2533,10gb_15d,29.99,1.0,24.13,5.86
+south-sudan,South Sudan,catalog_cascade,134.784,1gb_5d,14.99,0.25,35.3,-20.31
+south-sudan,South Sudan,catalog_cascade,134.784,1gb_5d,14.99,0.5,68.99,-54.0
+south-sudan,South Sudan,catalog_cascade,134.784,1gb_5d,14.99,0.75,102.69,-87.7
+south-sudan,South Sudan,catalog_cascade,134.784,1gb_5d,14.99,1.0,136.38,-121.39
+south-sudan,South Sudan,catalog_cascade,134.784,3gb_7d,19.99,0.25,102.69,-82.7
+south-sudan,South Sudan,catalog_cascade,134.784,3gb_7d,19.99,0.5,203.78,-183.79
+south-sudan,South Sudan,catalog_cascade,134.784,3gb_7d,19.99,0.75,304.86,-284.87
+south-sudan,South Sudan,catalog_cascade,134.784,3gb_7d,19.99,1.0,405.95,-385.96
+south-sudan,South Sudan,catalog_cascade,134.784,10gb_15d,29.99,0.25,338.56,-308.57
+south-sudan,South Sudan,catalog_cascade,134.784,10gb_15d,29.99,0.5,675.52,-645.53
+south-sudan,South Sudan,catalog_cascade,134.784,10gb_15d,29.99,0.75,1012.48,-982.49
+south-sudan,South Sudan,catalog_cascade,134.784,10gb_15d,29.99,1.0,1349.44,-1319.45
+spain,Spain,weconnect_breakage,0.705,1gb_5d,14.99,0.25,1.78,13.21
+spain,Spain,weconnect_breakage,0.705,1gb_5d,14.99,0.5,1.95,13.04
+spain,Spain,weconnect_breakage,0.705,1gb_5d,14.99,0.75,2.13,12.86
+spain,Spain,weconnect_breakage,0.705,1gb_5d,14.99,1.0,2.31,12.68
+spain,Spain,weconnect_breakage,0.705,3gb_7d,19.99,0.25,2.13,17.86
+spain,Spain,weconnect_breakage,0.705,3gb_7d,19.99,0.5,2.66,17.33
+spain,Spain,weconnect_breakage,0.705,3gb_7d,19.99,0.75,3.19,16.8
+spain,Spain,weconnect_breakage,0.705,3gb_7d,19.99,1.0,3.72,16.27
+spain,Spain,weconnect_breakage,0.705,10gb_15d,29.99,0.25,3.36,26.63
+spain,Spain,weconnect_breakage,0.705,10gb_15d,29.99,0.5,5.13,24.86
+spain,Spain,weconnect_breakage,0.705,10gb_15d,29.99,0.75,6.89,23.1
+spain,Spain,weconnect_breakage,0.705,10gb_15d,29.99,1.0,8.65,21.34
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,1gb_5d,14.99,0.25,1.95,13.04
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,1gb_5d,14.99,0.5,2.3,12.69
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,1gb_5d,14.99,0.75,2.65,12.34
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,1gb_5d,14.99,1.0,3.0,11.99
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,3gb_7d,19.99,0.25,2.65,17.34
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,3gb_7d,19.99,0.5,3.69,16.3
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,3gb_7d,19.99,0.75,4.74,15.25
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,3gb_7d,19.99,1.0,5.79,14.2
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,10gb_15d,29.99,0.25,5.09,24.9
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,10gb_15d,29.99,0.5,8.58,21.41
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,10gb_15d,29.99,0.75,12.07,17.92
+sri-lanka,Sri Lanka,weconnect_breakage,1.3962,10gb_15d,29.99,1.0,15.56,14.43
+sudan,Sudan,catalog_cascade,15.0958,1gb_5d,14.99,0.25,5.37,9.62
+sudan,Sudan,catalog_cascade,15.0958,1gb_5d,14.99,0.5,9.15,5.84
+sudan,Sudan,catalog_cascade,15.0958,1gb_5d,14.99,0.75,12.92,2.07
+sudan,Sudan,catalog_cascade,15.0958,1gb_5d,14.99,1.0,16.7,-1.71
+sudan,Sudan,catalog_cascade,15.0958,3gb_7d,19.99,0.25,12.92,7.07
+sudan,Sudan,catalog_cascade,15.0958,3gb_7d,19.99,0.5,24.24,-4.25
+sudan,Sudan,catalog_cascade,15.0958,3gb_7d,19.99,0.75,35.57,-15.58
+sudan,Sudan,catalog_cascade,15.0958,3gb_7d,19.99,1.0,46.89,-26.9
+sudan,Sudan,catalog_cascade,15.0958,10gb_15d,29.99,0.25,39.34,-9.35
+sudan,Sudan,catalog_cascade,15.0958,10gb_15d,29.99,0.5,77.08,-47.09
+sudan,Sudan,catalog_cascade,15.0958,10gb_15d,29.99,0.75,114.82,-84.83
+sudan,Sudan,catalog_cascade,15.0958,10gb_15d,29.99,1.0,152.56,-122.57
+suriname,Suriname,catalog_cascade,19.7683,1gb_5d,14.99,0.25,6.54,8.45
+suriname,Suriname,catalog_cascade,19.7683,1gb_5d,14.99,0.5,11.48,3.51
+suriname,Suriname,catalog_cascade,19.7683,1gb_5d,14.99,0.75,16.43,-1.44
+suriname,Suriname,catalog_cascade,19.7683,1gb_5d,14.99,1.0,21.37,-6.38
+suriname,Suriname,catalog_cascade,19.7683,3gb_7d,19.99,0.25,16.43,3.56
+suriname,Suriname,catalog_cascade,19.7683,3gb_7d,19.99,0.5,31.25,-11.26
+suriname,Suriname,catalog_cascade,19.7683,3gb_7d,19.99,0.75,46.08,-26.09
+suriname,Suriname,catalog_cascade,19.7683,3gb_7d,19.99,1.0,60.9,-40.91
+suriname,Suriname,catalog_cascade,19.7683,10gb_15d,29.99,0.25,51.02,-21.03
+suriname,Suriname,catalog_cascade,19.7683,10gb_15d,29.99,0.5,100.44,-70.45
+suriname,Suriname,catalog_cascade,19.7683,10gb_15d,29.99,0.75,149.86,-119.87
+suriname,Suriname,catalog_cascade,19.7683,10gb_15d,29.99,1.0,199.28,-169.29
+sweden,Sweden,weconnect_breakage,0.6912,1gb_5d,14.99,0.25,1.77,13.22
+sweden,Sweden,weconnect_breakage,0.6912,1gb_5d,14.99,0.5,1.95,13.04
+sweden,Sweden,weconnect_breakage,0.6912,1gb_5d,14.99,0.75,2.12,12.87
+sweden,Sweden,weconnect_breakage,0.6912,1gb_5d,14.99,1.0,2.29,12.7
+sweden,Sweden,weconnect_breakage,0.6912,3gb_7d,19.99,0.25,2.12,17.87
+sweden,Sweden,weconnect_breakage,0.6912,3gb_7d,19.99,0.5,2.64,17.35
+sweden,Sweden,weconnect_breakage,0.6912,3gb_7d,19.99,0.75,3.16,16.83
+sweden,Sweden,weconnect_breakage,0.6912,3gb_7d,19.99,1.0,3.67,16.32
+sweden,Sweden,weconnect_breakage,0.6912,10gb_15d,29.99,0.25,3.33,26.66
+sweden,Sweden,weconnect_breakage,0.6912,10gb_15d,29.99,0.5,5.06,24.93
+sweden,Sweden,weconnect_breakage,0.6912,10gb_15d,29.99,0.75,6.78,23.21
+sweden,Sweden,weconnect_breakage,0.6912,10gb_15d,29.99,1.0,8.51,21.48
+switzerland,Switzerland,weconnect_breakage,0.7603,1gb_5d,14.99,0.25,1.79,13.2
+switzerland,Switzerland,weconnect_breakage,0.7603,1gb_5d,14.99,0.5,1.98,13.01
+switzerland,Switzerland,weconnect_breakage,0.7603,1gb_5d,14.99,0.75,2.17,12.82
+switzerland,Switzerland,weconnect_breakage,0.7603,1gb_5d,14.99,1.0,2.36,12.63
+switzerland,Switzerland,weconnect_breakage,0.7603,3gb_7d,19.99,0.25,2.17,17.82
+switzerland,Switzerland,weconnect_breakage,0.7603,3gb_7d,19.99,0.5,2.74,17.25
+switzerland,Switzerland,weconnect_breakage,0.7603,3gb_7d,19.99,0.75,3.31,16.68
+switzerland,Switzerland,weconnect_breakage,0.7603,3gb_7d,19.99,1.0,3.88,16.11
+switzerland,Switzerland,weconnect_breakage,0.7603,10gb_15d,29.99,0.25,3.5,26.49
+switzerland,Switzerland,weconnect_breakage,0.7603,10gb_15d,29.99,0.5,5.4,24.59
+switzerland,Switzerland,weconnect_breakage,0.7603,10gb_15d,29.99,0.75,7.3,22.69
+switzerland,Switzerland,weconnect_breakage,0.7603,10gb_15d,29.99,1.0,9.2,20.79
+taiwan,Taiwan,weconnect_breakage,2.0736,1gb_5d,14.99,0.25,2.12,12.87
+taiwan,Taiwan,weconnect_breakage,2.0736,1gb_5d,14.99,0.5,2.64,12.35
+taiwan,Taiwan,weconnect_breakage,2.0736,1gb_5d,14.99,0.75,3.16,11.83
+taiwan,Taiwan,weconnect_breakage,2.0736,1gb_5d,14.99,1.0,3.67,11.32
+taiwan,Taiwan,weconnect_breakage,2.0736,3gb_7d,19.99,0.25,3.16,16.83
+taiwan,Taiwan,weconnect_breakage,2.0736,3gb_7d,19.99,0.5,4.71,15.28
+taiwan,Taiwan,weconnect_breakage,2.0736,3gb_7d,19.99,0.75,6.27,13.72
+taiwan,Taiwan,weconnect_breakage,2.0736,3gb_7d,19.99,1.0,7.82,12.17
+taiwan,Taiwan,weconnect_breakage,2.0736,10gb_15d,29.99,0.25,6.78,23.21
+taiwan,Taiwan,weconnect_breakage,2.0736,10gb_15d,29.99,0.5,11.97,18.02
+taiwan,Taiwan,weconnect_breakage,2.0736,10gb_15d,29.99,0.75,17.15,12.84
+taiwan,Taiwan,weconnect_breakage,2.0736,10gb_15d,29.99,1.0,22.34,7.65
+tajikistan,Tajikistan,weconnect_breakage,1.4653,1gb_5d,14.99,0.25,1.97,13.02
+tajikistan,Tajikistan,weconnect_breakage,1.4653,1gb_5d,14.99,0.5,2.33,12.66
+tajikistan,Tajikistan,weconnect_breakage,1.4653,1gb_5d,14.99,0.75,2.7,12.29
+tajikistan,Tajikistan,weconnect_breakage,1.4653,1gb_5d,14.99,1.0,3.07,11.92
+tajikistan,Tajikistan,weconnect_breakage,1.4653,3gb_7d,19.99,0.25,2.7,17.29
+tajikistan,Tajikistan,weconnect_breakage,1.4653,3gb_7d,19.99,0.5,3.8,16.19
+tajikistan,Tajikistan,weconnect_breakage,1.4653,3gb_7d,19.99,0.75,4.9,15.09
+tajikistan,Tajikistan,weconnect_breakage,1.4653,3gb_7d,19.99,1.0,6.0,13.99
+tajikistan,Tajikistan,weconnect_breakage,1.4653,10gb_15d,29.99,0.25,5.26,24.73
+tajikistan,Tajikistan,weconnect_breakage,1.4653,10gb_15d,29.99,0.5,8.93,21.06
+tajikistan,Tajikistan,weconnect_breakage,1.4653,10gb_15d,29.99,0.75,12.59,17.4
+tajikistan,Tajikistan,weconnect_breakage,1.4653,10gb_15d,29.99,1.0,16.25,13.74
+tanzania,Tanzania,catalog_cascade,5.1287,1gb_5d,14.99,0.25,2.88,12.11
+tanzania,Tanzania,catalog_cascade,5.1287,1gb_5d,14.99,0.5,4.16,10.83
+tanzania,Tanzania,catalog_cascade,5.1287,1gb_5d,14.99,0.75,5.45,9.54
+tanzania,Tanzania,catalog_cascade,5.1287,1gb_5d,14.99,1.0,6.73,8.26
+tanzania,Tanzania,catalog_cascade,5.1287,3gb_7d,19.99,0.25,5.45,14.54
+tanzania,Tanzania,catalog_cascade,5.1287,3gb_7d,19.99,0.5,9.29,10.7
+tanzania,Tanzania,catalog_cascade,5.1287,3gb_7d,19.99,0.75,13.14,6.85
+tanzania,Tanzania,catalog_cascade,5.1287,3gb_7d,19.99,1.0,16.99,3.0
+tanzania,Tanzania,catalog_cascade,5.1287,10gb_15d,29.99,0.25,14.42,15.57
+tanzania,Tanzania,catalog_cascade,5.1287,10gb_15d,29.99,0.5,27.24,2.75
+tanzania,Tanzania,catalog_cascade,5.1287,10gb_15d,29.99,0.75,40.07,-10.08
+tanzania,Tanzania,catalog_cascade,5.1287,10gb_15d,29.99,1.0,52.89,-22.9
+thailand,Thailand,weconnect_breakage,1.0506,1gb_5d,14.99,0.25,1.86,13.13
+thailand,Thailand,weconnect_breakage,1.0506,1gb_5d,14.99,0.5,2.13,12.86
+thailand,Thailand,weconnect_breakage,1.0506,1gb_5d,14.99,0.75,2.39,12.6
+thailand,Thailand,weconnect_breakage,1.0506,1gb_5d,14.99,1.0,2.65,12.34
+thailand,Thailand,weconnect_breakage,1.0506,3gb_7d,19.99,0.25,2.39,17.6
+thailand,Thailand,weconnect_breakage,1.0506,3gb_7d,19.99,0.5,3.18,16.81
+thailand,Thailand,weconnect_breakage,1.0506,3gb_7d,19.99,0.75,3.96,16.03
+thailand,Thailand,weconnect_breakage,1.0506,3gb_7d,19.99,1.0,4.75,15.24
+thailand,Thailand,weconnect_breakage,1.0506,10gb_15d,29.99,0.25,4.23,25.76
+thailand,Thailand,weconnect_breakage,1.0506,10gb_15d,29.99,0.5,6.85,23.14
+thailand,Thailand,weconnect_breakage,1.0506,10gb_15d,29.99,0.75,9.48,20.51
+thailand,Thailand,weconnect_breakage,1.0506,10gb_15d,29.99,1.0,12.11,17.88
+tonga,Tonga,catalog_cascade,88.4183,1gb_5d,14.99,0.25,23.7,-8.71
+tonga,Tonga,catalog_cascade,88.4183,1gb_5d,14.99,0.5,45.81,-30.82
+tonga,Tonga,catalog_cascade,88.4183,1gb_5d,14.99,0.75,67.91,-52.92
+tonga,Tonga,catalog_cascade,88.4183,1gb_5d,14.99,1.0,90.02,-75.03
+tonga,Tonga,catalog_cascade,88.4183,3gb_7d,19.99,0.25,67.91,-47.92
+tonga,Tonga,catalog_cascade,88.4183,3gb_7d,19.99,0.5,134.23,-114.24
+tonga,Tonga,catalog_cascade,88.4183,3gb_7d,19.99,0.75,200.54,-180.55
+tonga,Tonga,catalog_cascade,88.4183,3gb_7d,19.99,1.0,266.85,-246.86
+tonga,Tonga,catalog_cascade,88.4183,10gb_15d,29.99,0.25,222.65,-192.66
+tonga,Tonga,catalog_cascade,88.4183,10gb_15d,29.99,0.5,443.69,-413.7
+tonga,Tonga,catalog_cascade,88.4183,10gb_15d,29.99,0.75,664.74,-634.75
+tonga,Tonga,catalog_cascade,88.4183,10gb_15d,29.99,1.0,885.78,-855.79
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,1gb_5d,14.99,0.25,6.54,8.45
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,1gb_5d,14.99,0.5,11.48,3.51
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,1gb_5d,14.99,0.75,16.43,-1.44
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,1gb_5d,14.99,1.0,21.37,-6.38
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,3gb_7d,19.99,0.25,16.43,3.56
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,3gb_7d,19.99,0.5,31.25,-11.26
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,3gb_7d,19.99,0.75,46.08,-26.09
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,3gb_7d,19.99,1.0,60.9,-40.91
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,10gb_15d,29.99,0.25,51.02,-21.03
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,10gb_15d,29.99,0.5,100.44,-70.45
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,10gb_15d,29.99,0.75,149.86,-119.87
+trinidad-and-tobago,Trinidad and Tobago,telna_fixed,19.7683,10gb_15d,29.99,1.0,199.28,-169.29
+tunisia,Tunisia,weconnect_breakage,1.175,1gb_5d,14.99,0.25,1.89,13.1
+tunisia,Tunisia,weconnect_breakage,1.175,1gb_5d,14.99,0.5,2.19,12.8
+tunisia,Tunisia,weconnect_breakage,1.175,1gb_5d,14.99,0.75,2.48,12.51
+tunisia,Tunisia,weconnect_breakage,1.175,1gb_5d,14.99,1.0,2.78,12.21
+tunisia,Tunisia,weconnect_breakage,1.175,3gb_7d,19.99,0.25,2.48,17.51
+tunisia,Tunisia,weconnect_breakage,1.175,3gb_7d,19.99,0.5,3.36,16.63
+tunisia,Tunisia,weconnect_breakage,1.175,3gb_7d,19.99,0.75,4.24,15.75
+tunisia,Tunisia,weconnect_breakage,1.175,3gb_7d,19.99,1.0,5.13,14.86
+tunisia,Tunisia,weconnect_breakage,1.175,10gb_15d,29.99,0.25,4.54,25.45
+tunisia,Tunisia,weconnect_breakage,1.175,10gb_15d,29.99,0.5,7.48,22.51
+tunisia,Tunisia,weconnect_breakage,1.175,10gb_15d,29.99,0.75,10.41,19.58
+tunisia,Tunisia,weconnect_breakage,1.175,10gb_15d,29.99,1.0,13.35,16.64
+turkey,Turkey,weconnect_breakage,0.6221,1gb_5d,14.99,0.25,1.76,13.23
+turkey,Turkey,weconnect_breakage,0.6221,1gb_5d,14.99,0.5,1.91,13.08
+turkey,Turkey,weconnect_breakage,0.6221,1gb_5d,14.99,0.75,2.07,12.92
+turkey,Turkey,weconnect_breakage,0.6221,1gb_5d,14.99,1.0,2.22,12.77
+turkey,Turkey,weconnect_breakage,0.6221,3gb_7d,19.99,0.25,2.07,17.92
+turkey,Turkey,weconnect_breakage,0.6221,3gb_7d,19.99,0.5,2.53,17.46
+turkey,Turkey,weconnect_breakage,0.6221,3gb_7d,19.99,0.75,3.0,16.99
+turkey,Turkey,weconnect_breakage,0.6221,3gb_7d,19.99,1.0,3.47,16.52
+turkey,Turkey,weconnect_breakage,0.6221,10gb_15d,29.99,0.25,3.16,26.83
+turkey,Turkey,weconnect_breakage,0.6221,10gb_15d,29.99,0.5,4.71,25.28
+turkey,Turkey,weconnect_breakage,0.6221,10gb_15d,29.99,0.75,6.27,23.72
+turkey,Turkey,weconnect_breakage,0.6221,10gb_15d,29.99,1.0,7.82,22.17
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,1gb_5d,14.99,0.25,3.27,11.72
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,1gb_5d,14.99,0.5,4.95,10.04
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,1gb_5d,14.99,0.75,6.62,8.37
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,1gb_5d,14.99,1.0,8.29,6.7
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,3gb_7d,19.99,0.25,6.62,13.37
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,3gb_7d,19.99,0.5,11.64,8.35
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,3gb_7d,19.99,0.75,16.65,3.34
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,3gb_7d,19.99,1.0,21.67,-1.68
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,10gb_15d,29.99,0.25,18.33,11.66
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,10gb_15d,29.99,0.5,35.05,-5.06
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,10gb_15d,29.99,0.75,51.78,-21.79
+turks-and-caicos-islands,Turks and Caicos Islands,telna_fixed,6.6908,10gb_15d,29.99,1.0,68.51,-38.52
+uganda,Uganda,catalog_cascade,5.2808,1gb_5d,14.99,0.25,2.92,12.07
+uganda,Uganda,catalog_cascade,5.2808,1gb_5d,14.99,0.5,4.24,10.75
+uganda,Uganda,catalog_cascade,5.2808,1gb_5d,14.99,0.75,5.56,9.43
+uganda,Uganda,catalog_cascade,5.2808,1gb_5d,14.99,1.0,6.88,8.11
+uganda,Uganda,catalog_cascade,5.2808,3gb_7d,19.99,0.25,5.56,14.43
+uganda,Uganda,catalog_cascade,5.2808,3gb_7d,19.99,0.5,9.52,10.47
+uganda,Uganda,catalog_cascade,5.2808,3gb_7d,19.99,0.75,13.48,6.51
+uganda,Uganda,catalog_cascade,5.2808,3gb_7d,19.99,1.0,17.44,2.55
+uganda,Uganda,catalog_cascade,5.2808,10gb_15d,29.99,0.25,14.8,15.19
+uganda,Uganda,catalog_cascade,5.2808,10gb_15d,29.99,0.5,28.0,1.99
+uganda,Uganda,catalog_cascade,5.2808,10gb_15d,29.99,0.75,41.21,-11.22
+uganda,Uganda,catalog_cascade,5.2808,10gb_15d,29.99,1.0,54.41,-24.42
+ukraine,Ukraine,weconnect_breakage,0.6497,1gb_5d,14.99,0.25,1.76,13.23
+ukraine,Ukraine,weconnect_breakage,0.6497,1gb_5d,14.99,0.5,1.92,13.07
+ukraine,Ukraine,weconnect_breakage,0.6497,1gb_5d,14.99,0.75,2.09,12.9
+ukraine,Ukraine,weconnect_breakage,0.6497,1gb_5d,14.99,1.0,2.25,12.74
+ukraine,Ukraine,weconnect_breakage,0.6497,3gb_7d,19.99,0.25,2.09,17.9
+ukraine,Ukraine,weconnect_breakage,0.6497,3gb_7d,19.99,0.5,2.57,17.42
+ukraine,Ukraine,weconnect_breakage,0.6497,3gb_7d,19.99,0.75,3.06,16.93
+ukraine,Ukraine,weconnect_breakage,0.6497,3gb_7d,19.99,1.0,3.55,16.44
+ukraine,Ukraine,weconnect_breakage,0.6497,10gb_15d,29.99,0.25,3.22,26.77
+ukraine,Ukraine,weconnect_breakage,0.6497,10gb_15d,29.99,0.5,4.85,25.14
+ukraine,Ukraine,weconnect_breakage,0.6497,10gb_15d,29.99,0.75,6.47,23.52
+ukraine,Ukraine,weconnect_breakage,0.6497,10gb_15d,29.99,1.0,8.1,21.89
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,1gb_5d,14.99,0.25,2.78,12.21
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,1gb_5d,14.99,0.5,3.96,11.03
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,1gb_5d,14.99,0.75,5.14,9.85
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,1gb_5d,14.99,1.0,6.31,8.68
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,3gb_7d,19.99,0.25,5.14,14.85
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,3gb_7d,19.99,0.5,8.67,11.32
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,3gb_7d,19.99,0.75,12.21,7.78
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,3gb_7d,19.99,1.0,15.74,4.25
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,10gb_15d,29.99,0.25,13.38,16.61
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,10gb_15d,29.99,0.5,25.17,4.82
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,10gb_15d,29.99,0.75,36.95,-6.96
+united-arab-emirates,United Arab Emirates,catalog_cascade,4.714,10gb_15d,29.99,1.0,48.74,-18.75
+united-kingdom,United Kingdom,weconnect_breakage,0.705,1gb_5d,14.99,0.25,1.78,13.21
+united-kingdom,United Kingdom,weconnect_breakage,0.705,1gb_5d,14.99,0.5,1.95,13.04
+united-kingdom,United Kingdom,weconnect_breakage,0.705,1gb_5d,14.99,0.75,2.13,12.86
+united-kingdom,United Kingdom,weconnect_breakage,0.705,1gb_5d,14.99,1.0,2.31,12.68
+united-kingdom,United Kingdom,weconnect_breakage,0.705,3gb_7d,19.99,0.25,2.13,17.86
+united-kingdom,United Kingdom,weconnect_breakage,0.705,3gb_7d,19.99,0.5,2.66,17.33
+united-kingdom,United Kingdom,weconnect_breakage,0.705,3gb_7d,19.99,0.75,3.19,16.8
+united-kingdom,United Kingdom,weconnect_breakage,0.705,3gb_7d,19.99,1.0,3.72,16.27
+united-kingdom,United Kingdom,weconnect_breakage,0.705,10gb_15d,29.99,0.25,3.36,26.63
+united-kingdom,United Kingdom,weconnect_breakage,0.705,10gb_15d,29.99,0.5,5.13,24.86
+united-kingdom,United Kingdom,weconnect_breakage,0.705,10gb_15d,29.99,0.75,6.89,23.1
+united-kingdom,United Kingdom,weconnect_breakage,0.705,10gb_15d,29.99,1.0,8.65,21.34
+united-states,United States,weconnect_breakage,1.2165,1gb_5d,14.99,0.25,1.9,13.09
+united-states,United States,weconnect_breakage,1.2165,1gb_5d,14.99,0.5,2.21,12.78
+united-states,United States,weconnect_breakage,1.2165,1gb_5d,14.99,0.75,2.51,12.48
+united-states,United States,weconnect_breakage,1.2165,1gb_5d,14.99,1.0,2.82,12.17
+united-states,United States,weconnect_breakage,1.2165,3gb_7d,19.99,0.25,2.51,17.48
+united-states,United States,weconnect_breakage,1.2165,3gb_7d,19.99,0.5,3.42,16.57
+united-states,United States,weconnect_breakage,1.2165,3gb_7d,19.99,0.75,4.34,15.65
+united-states,United States,weconnect_breakage,1.2165,3gb_7d,19.99,1.0,5.25,14.74
+united-states,United States,weconnect_breakage,1.2165,10gb_15d,29.99,0.25,4.64,25.35
+united-states,United States,weconnect_breakage,1.2165,10gb_15d,29.99,0.5,7.68,22.31
+united-states,United States,weconnect_breakage,1.2165,10gb_15d,29.99,0.75,10.72,19.27
+united-states,United States,weconnect_breakage,1.2165,10gb_15d,29.99,1.0,13.77,16.22
+uruguay,Uruguay,telna_fixed,2.8616,1gb_5d,14.99,0.25,2.32,12.67
+uruguay,Uruguay,telna_fixed,2.8616,1gb_5d,14.99,0.5,3.03,11.96
+uruguay,Uruguay,telna_fixed,2.8616,1gb_5d,14.99,0.75,3.75,11.24
+uruguay,Uruguay,telna_fixed,2.8616,1gb_5d,14.99,1.0,4.46,10.53
+uruguay,Uruguay,telna_fixed,2.8616,3gb_7d,19.99,0.25,3.75,16.24
+uruguay,Uruguay,telna_fixed,2.8616,3gb_7d,19.99,0.5,5.89,14.1
+uruguay,Uruguay,telna_fixed,2.8616,3gb_7d,19.99,0.75,8.04,11.95
+uruguay,Uruguay,telna_fixed,2.8616,3gb_7d,19.99,1.0,10.18,9.81
+uruguay,Uruguay,telna_fixed,2.8616,10gb_15d,29.99,0.25,8.75,21.24
+uruguay,Uruguay,telna_fixed,2.8616,10gb_15d,29.99,0.5,15.91,14.08
+uruguay,Uruguay,telna_fixed,2.8616,10gb_15d,29.99,0.75,23.06,6.93
+uruguay,Uruguay,telna_fixed,2.8616,10gb_15d,29.99,1.0,30.22,-0.23
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,1gb_5d,14.99,0.25,1.82,13.17
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,1gb_5d,14.99,0.5,2.04,12.95
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,1gb_5d,14.99,0.75,2.26,12.73
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,1gb_5d,14.99,1.0,2.48,12.51
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,3gb_7d,19.99,0.25,2.26,17.73
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,3gb_7d,19.99,0.5,2.93,17.06
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,3gb_7d,19.99,0.75,3.59,16.4
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,3gb_7d,19.99,1.0,4.25,15.74
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,10gb_15d,29.99,0.25,3.81,26.18
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,10gb_15d,29.99,0.5,6.02,23.97
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,10gb_15d,29.99,0.75,8.24,21.75
+uzbekistan,Uzbekistan,weconnect_breakage,0.8847,10gb_15d,29.99,1.0,10.45,19.54
+vanuatu,Vanuatu,catalog_cascade,78.3544,1gb_5d,14.99,0.25,21.19,-6.2
+vanuatu,Vanuatu,catalog_cascade,78.3544,1gb_5d,14.99,0.5,40.78,-25.79
+vanuatu,Vanuatu,catalog_cascade,78.3544,1gb_5d,14.99,0.75,60.37,-45.38
+vanuatu,Vanuatu,catalog_cascade,78.3544,1gb_5d,14.99,1.0,79.95,-64.96
+vanuatu,Vanuatu,catalog_cascade,78.3544,3gb_7d,19.99,0.25,60.37,-40.38
+vanuatu,Vanuatu,catalog_cascade,78.3544,3gb_7d,19.99,0.5,119.13,-99.14
+vanuatu,Vanuatu,catalog_cascade,78.3544,3gb_7d,19.99,0.75,177.9,-157.91
+vanuatu,Vanuatu,catalog_cascade,78.3544,3gb_7d,19.99,1.0,236.66,-216.67
+vanuatu,Vanuatu,catalog_cascade,78.3544,10gb_15d,29.99,0.25,197.49,-167.5
+vanuatu,Vanuatu,catalog_cascade,78.3544,10gb_15d,29.99,0.5,393.37,-363.38
+vanuatu,Vanuatu,catalog_cascade,78.3544,10gb_15d,29.99,0.75,589.26,-559.27
+vanuatu,Vanuatu,catalog_cascade,78.3544,10gb_15d,29.99,1.0,785.14,-755.15
+venezuela,Venezuela,telna_fixed,9.3865,1gb_5d,14.99,0.25,3.95,11.04
+venezuela,Venezuela,telna_fixed,9.3865,1gb_5d,14.99,0.5,6.29,8.7
+venezuela,Venezuela,telna_fixed,9.3865,1gb_5d,14.99,0.75,8.64,6.35
+venezuela,Venezuela,telna_fixed,9.3865,1gb_5d,14.99,1.0,10.99,4.0
+venezuela,Venezuela,telna_fixed,9.3865,3gb_7d,19.99,0.25,8.64,11.35
+venezuela,Venezuela,telna_fixed,9.3865,3gb_7d,19.99,0.5,15.68,4.31
+venezuela,Venezuela,telna_fixed,9.3865,3gb_7d,19.99,0.75,22.72,-2.73
+venezuela,Venezuela,telna_fixed,9.3865,3gb_7d,19.99,1.0,29.76,-9.77
+venezuela,Venezuela,telna_fixed,9.3865,10gb_15d,29.99,0.25,25.07,4.92
+venezuela,Venezuela,telna_fixed,9.3865,10gb_15d,29.99,0.5,48.53,-18.54
+venezuela,Venezuela,telna_fixed,9.3865,10gb_15d,29.99,0.75,72.0,-42.01
+venezuela,Venezuela,telna_fixed,9.3865,10gb_15d,29.99,1.0,95.46,-65.47
+vietnam,Vietnam,weconnect_breakage,1.0921,1gb_5d,14.99,0.25,1.87,13.12
+vietnam,Vietnam,weconnect_breakage,1.0921,1gb_5d,14.99,0.5,2.15,12.84
+vietnam,Vietnam,weconnect_breakage,1.0921,1gb_5d,14.99,0.75,2.42,12.57
+vietnam,Vietnam,weconnect_breakage,1.0921,1gb_5d,14.99,1.0,2.69,12.3
+vietnam,Vietnam,weconnect_breakage,1.0921,3gb_7d,19.99,0.25,2.42,17.57
+vietnam,Vietnam,weconnect_breakage,1.0921,3gb_7d,19.99,0.5,3.24,16.75
+vietnam,Vietnam,weconnect_breakage,1.0921,3gb_7d,19.99,0.75,4.06,15.93
+vietnam,Vietnam,weconnect_breakage,1.0921,3gb_7d,19.99,1.0,4.88,15.11
+vietnam,Vietnam,weconnect_breakage,1.0921,10gb_15d,29.99,0.25,4.33,25.66
+vietnam,Vietnam,weconnect_breakage,1.0921,10gb_15d,29.99,0.5,7.06,22.93
+vietnam,Vietnam,weconnect_breakage,1.0921,10gb_15d,29.99,0.75,9.79,20.2
+vietnam,Vietnam,weconnect_breakage,1.0921,10gb_15d,29.99,1.0,12.52,17.47
+zambia,Zambia,catalog_cascade,5.2393,1gb_5d,14.99,0.25,2.91,12.08
+zambia,Zambia,catalog_cascade,5.2393,1gb_5d,14.99,0.5,4.22,10.77
+zambia,Zambia,catalog_cascade,5.2393,1gb_5d,14.99,0.75,5.53,9.46
+zambia,Zambia,catalog_cascade,5.2393,1gb_5d,14.99,1.0,6.84,8.15
+zambia,Zambia,catalog_cascade,5.2393,3gb_7d,19.99,0.25,5.53,14.46
+zambia,Zambia,catalog_cascade,5.2393,3gb_7d,19.99,0.5,9.46,10.53
+zambia,Zambia,catalog_cascade,5.2393,3gb_7d,19.99,0.75,13.39,6.6
+zambia,Zambia,catalog_cascade,5.2393,3gb_7d,19.99,1.0,17.32,2.67
+zambia,Zambia,catalog_cascade,5.2393,10gb_15d,29.99,0.25,14.7,15.29
+zambia,Zambia,catalog_cascade,5.2393,10gb_15d,29.99,0.5,27.8,2.19
+zambia,Zambia,catalog_cascade,5.2393,10gb_15d,29.99,0.75,40.89,-10.9
+zambia,Zambia,catalog_cascade,5.2393,10gb_15d,29.99,1.0,53.99,-24.0
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,1gb_5d,14.99,0.25,40.42,-25.43
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,1gb_5d,14.99,0.5,79.24,-64.25
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,1gb_5d,14.99,0.75,118.05,-103.06
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,1gb_5d,14.99,1.0,156.87,-141.88
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,3gb_7d,19.99,0.25,118.05,-98.06
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,3gb_7d,19.99,0.5,234.51,-214.52
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,3gb_7d,19.99,0.75,350.96,-330.97
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,3gb_7d,19.99,1.0,467.41,-447.42
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,10gb_15d,29.99,0.25,389.78,-359.79
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,10gb_15d,29.99,0.5,777.96,-747.97
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,10gb_15d,29.99,0.75,1166.13,-1136.14
+zimbabwe,Zimbabwe,catalog_cascade,155.2712,10gb_15d,29.99,1.0,1554.31,-1524.32

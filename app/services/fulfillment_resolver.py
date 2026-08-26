@@ -212,6 +212,11 @@ def explain_fulfillment(
     wants_topup: bool = False,
 ) -> Dict[str, Any]:
     """Debug helper for admin /api/fulfillment/resolve."""
+    from app.services.breakage_strategy import (
+        estimate_breakage_margin,
+        fulfillment_mode_for_order,
+        resolve_country_policy,
+    )
     from app.services.fulfillment_map import resolve_fulfillment_target
 
     probe = {
@@ -231,6 +236,14 @@ def explain_fulfillment(
         mapped=mapped,
         wants_topup=wants_topup,
     )
+    policy = resolve_country_policy(country)
+    mode = fulfillment_mode_for_order(
+        country=country,
+        data_gb=data_gb,
+        validity_days=validity_days,
+        wants_topup=wants_topup,
+    )
+    retail_guess = 29.99 if data_gb >= 10 else 19.99 if data_gb >= 3 else 14.99
     return {
         "country": normalize_country_slug(country),
         "data_gb": data_gb,
@@ -239,4 +252,25 @@ def explain_fulfillment(
         "mapped": mapped.__dict__ if mapped else None,
         "chosen": chosen.__dict__ if chosen else None,
         "ladder": "country → regional → global",
+        "breakage_policy": {
+            "mode": policy.policy,
+            "reason": policy.policy_reason,
+            "price_gb_usd": policy.price_gb_usd,
+            "breakage_score": policy.breakage_score,
+        },
+        "fulfillment_mode": mode,
+        "breakage_margin_estimates": {
+            "at_50pct_usage": estimate_breakage_margin(
+                country=country,
+                data_gb=data_gb,
+                retail_usd=retail_guess,
+                usage_pct=0.5,
+            ),
+            "at_100pct_usage": estimate_breakage_margin(
+                country=country,
+                data_gb=data_gb,
+                retail_usd=retail_guess,
+                usage_pct=1.0,
+            ),
+        },
     }

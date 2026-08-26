@@ -17,6 +17,10 @@ from app.services.email_service import (
     send_fulfillment_email,
 )
 from app.services.esim_provision import provision_esim
+from app.services.breakage_allowance import (
+    prepare_allowance_record,
+    should_create_allowance,
+)
 from app.services.fulfillment_map import (
     FulfillmentMapError,
     enforce_saudi_access_policy,
@@ -29,6 +33,55 @@ logger = logging.getLogger(__name__)
 
 class FulfillmentError(Exception):
     """Fulfillment pipeline failed."""
+
+
+def _maybe_create_breakage_allowance(
+    order_row: Dict[str, Any],
+    *,
+    esim: Dict[str, Any],
+) -> None:
+    """Create virtual-bundle ledger row when country policy is weconnect_breakage."""
+    data_gb = order_row.get("data_total_gb")
+    metadata = order_row.get("metadata") or {}
+    validity_days = metadata.get("validity_days") or metadata.get("duration_days")
+    wants_topup = bool(metadata.get("wants_topup") or metadata.get("wantsTopUp"))
+
+    if not should_create_allowance(
+        country=str(order_row.get("country") or ""),
+        data_gb=float(data_gb) if data_gb is not None else None,
+        validity_days=int(validity_days) if validity_days is not None else None,
+        wants_topup=wants_topup,
+    ):
+        return
+
+    if db.get_breakage_allowance_by_order_id(str(order_row["id"])):
+        return
+
+    retail_usd = float(order_row.get("amount_cents") or 0) / 100.0
+    record = prepare_allowance_record(
+        order_id=str(order_row["id"]),
+        order_number=str(order_row["order_number"]),
+        country=str(order_row.get("country") or ""),
+        data_gb=float(data_gb),
+        validity_days=int(validity_days),
+        retail_usd=retail_usd,
+        plan_key=str(metadata.get("plan_key") or "traveler"),
+        provider_profile_id=esim.get("iccid"),
+    )
+    try:
+        db.create_breakage_allowance(record)
+        logger.info(
+            "Breakage allowance created for %s (%s MB)",
+            order_row["order_number"],
+            record["allowance_mb"],
+        )
+    except db.SupabaseRepositoryError as exc:
+        # Non-fatal until migration applied on production Supabase
+        logger.warning(
+            "Breakage allowance not persisted for %s: %s",
+            order_row["order_number"],
+            exc,
+        )
 
 
 def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
@@ -68,6 +121,8 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
             raise FulfillmentError(str(exc)) from exc
         raise
     travel_guide = enrich_order_with_travel_assistant(order_row)
+
+    _maybe_create_breakage_allowance(order_row, esim=esim)
 
     metadata_patch = {
         "fulfillment": {
