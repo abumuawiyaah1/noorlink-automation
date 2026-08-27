@@ -15,6 +15,7 @@ from uuid import uuid4
 from supabase import Client, create_client
 
 from app.core.config import get_settings
+from app.services.order_customer_view import enrich_order_row
 from app.services.pricing_engine import (
     has_global_pricing_rule,
     normalize_plan_category,
@@ -624,6 +625,8 @@ def create_order(
         metadata["phone"] = phone_value
     if wants_topup:
         metadata["wants_topup"] = True
+    if validity_days is not None:
+        metadata["validity_days"] = validity_days
 
     if fulfillment_target:
         metadata["fulfillment_plan"] = {
@@ -1026,7 +1029,20 @@ def lookup_order(order_id: str, email: str) -> Optional[Order]:
 
     if not result.data:
         return None
-    return _row_to_order(result.data[0])
+    row = result.data[0]
+    allowance = get_breakage_allowance_by_order_id(str(row["id"]))
+    _, order = enrich_order_row(row, allowance_row=allowance)
+    return order
+
+
+def lookup_order_by_stripe_session(session_id: str) -> Optional[Order]:
+    """Resolve order after Stripe redirect (success page). Session id acts as lookup token."""
+    row = get_order_row_by_stripe_session(session_id.strip())
+    if not row:
+        return None
+    allowance = get_breakage_allowance_by_order_id(str(row["id"]))
+    _, order = enrich_order_row(row, allowance_row=allowance)
+    return order
 
 
 # Supabase UI label: "Mobile Data Plans" → PostgreSQL table name:

@@ -27,12 +27,49 @@ from app.services.fulfillment_map import (
     resolve_fulfillment_target,
 )
 from app.services.travel_assistant_service import enrich_order_with_travel_assistant
+from app.services.ops_alerts import notify_fulfillment_failure
 
 logger = logging.getLogger(__name__)
 
 
 class FulfillmentError(Exception):
     """Fulfillment pipeline failed."""
+
+
+def _notify_failure(order_row: Dict[str, Any], error: str, *, context: str) -> None:
+    try:
+        notify_fulfillment_failure(
+            order_number=str(order_row.get("order_number") or ""),
+            email=str(order_row.get("email") or ""),
+            country=str(order_row.get("country") or ""),
+            package_name=str(order_row.get("package_name") or "Travel eSIM"),
+            error=error,
+            context=context,
+            order_status=str(order_row.get("status") or "paid"),
+        )
+    except Exception:
+        logger.exception(
+            "Ops alert failed for order %s", order_row.get("order_number")
+        )
+
+
+def _validity_days_from_order_row(order_row: Dict[str, Any]) -> Optional[int]:
+    metadata = order_row.get("metadata") or {}
+    if not isinstance(metadata, dict):
+        return None
+    raw = metadata.get("validity_days") or metadata.get("duration_days")
+    if raw is not None:
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            pass
+    plan = metadata.get("fulfillment_plan")
+    if isinstance(plan, dict) and plan.get("validity_days") is not None:
+        try:
+            return int(plan["validity_days"])
+        except (TypeError, ValueError):
+            pass
+    return None
 
 
 def _maybe_create_breakage_allowance(
@@ -43,7 +80,7 @@ def _maybe_create_breakage_allowance(
     """Create virtual-bundle ledger row when country policy is weconnect_breakage."""
     data_gb = order_row.get("data_total_gb")
     metadata = order_row.get("metadata") or {}
-    validity_days = metadata.get("validity_days") or metadata.get("duration_days")
+    validity_days = _validity_days_from_order_row(order_row)
     wants_topup = bool(metadata.get("wants_topup") or metadata.get("wantsTopUp"))
 
     if not should_create_allowance(
@@ -103,11 +140,13 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
             order_number,
             {"fulfillment": {"error": str(exc), "blocked": True}},
         )
+        _notify_failure(order_row, str(exc), context="fulfillment_map_blocked")
         raise FulfillmentError(str(exc)) from exc
 
     try:
         esim = provision_esim(order_row)
     except FulfillmentMapError as exc:
+        _notify_failure(order_row, str(exc), context="provision_map")
         raise FulfillmentError(str(exc)) from exc
     except Exception as exc:
         # Surface provider wallet / API failures as fulfillment errors
@@ -118,6 +157,7 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
                 order_number,
                 {"fulfillment": {"error": str(exc), "provider_error": name}},
             )
+            _notify_failure(order_row, str(exc), context=f"provider:{name}")
             raise FulfillmentError(str(exc)) from exc
         raise
     travel_guide = enrich_order_with_travel_assistant(order_row)
@@ -192,6 +232,7 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
             order_number,
             {"fulfillment": {**metadata_patch.get("fulfillment", {}), "email_error": str(exc)}},
         )
+        _notify_failure(order_row, str(exc), context="fulfillment_email")
         raise FulfillmentError(f"Email failed for {order_number}") from exc
 
     db.merge_order_metadata(

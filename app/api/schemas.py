@@ -118,6 +118,13 @@ class Order(BaseModel):
     )
     data_used_gb: Optional[float] = Field(None, serialization_alias="dataUsedGb")
     data_total_gb: Optional[float] = Field(None, serialization_alias="dataTotalGb")
+    validity_days: Optional[int] = Field(None, serialization_alias="validityDays")
+    days_remaining: Optional[int] = Field(None, serialization_alias="daysRemaining")
+    data_remaining_gb: Optional[float] = Field(
+        None, serialization_alias="dataRemainingGb"
+    )
+    fulfillment_pending: bool = Field(False, serialization_alias="fulfillmentPending")
+    allowance_status: Optional[str] = Field(None, serialization_alias="allowanceStatus")
 
     model_config = {"populate_by_name": True}
 
@@ -125,6 +132,7 @@ class Order(BaseModel):
 class OrderLookupResponse(BaseModel):
     order: Optional[Order] = None
     found: bool
+    message: Optional[str] = None
 
 
 class CheckoutSessionRequest(BaseModel):

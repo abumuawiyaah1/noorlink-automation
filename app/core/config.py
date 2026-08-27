@@ -81,6 +81,10 @@ class Settings(BaseSettings):
     resend_api_key: str
     resend_from_email: str = "NoorLink <noreply@noorlink.co>"
 
+    # Ops alerts when Stripe is paid but fulfillment/QR delivery fails
+    ops_alert_email: str = ""
+    slack_webhook_url: str = ""
+
     # Protected bearer token for scheduled cron hits (Insider release + promo expiry)
     cron_secret: str = ""
 

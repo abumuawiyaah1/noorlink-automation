@@ -13,6 +13,7 @@ from app.services.email_service import (
     send_support_ticket_confirmation,
 )
 from app.services.fulfillment import FulfillmentError, process_paid_order
+from app.services.ops_alerts import notify_fulfillment_failure
 from app.services.insider_release import expire_finished_promos, release_due_insider_issues
 from app.services.promo_codes import PromoCodeError, normalize_code, validate_promo_row
 
@@ -474,6 +475,24 @@ async def orders_lookup(
     return OrderLookupResponse(found=True, order=order)
 
 
+@app.get("/api/orders/by-session", response_model=OrderLookupResponse)
+async def orders_by_stripe_session(
+    session_id: str = Query(..., alias="sessionId", min_length=8),
+):
+    """Post-checkout success page — resolve order from Stripe session_id."""
+    try:
+        order = db.lookup_order_by_stripe_session(session_id)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not order:
+        return OrderLookupResponse(
+            found=False,
+            order=None,
+            message="Order not found yet. Refresh in a minute or use My eSIMs.",
+        )
+    return OrderLookupResponse(found=True, order=order)
+
+
 @app.post("/api/checkout/session", response_model=CheckoutSessionResponse)
 async def checkout_session(body: CheckoutSessionRequest):
     subtotal_cents = int(round(body.price * 100))
@@ -648,6 +667,22 @@ async def stripe_webhook(
         )
     except FulfillmentError as exc:
         logger.error("Fulfillment failed after payment for %s: %s", order_number, exc)
+        try:
+            row = db.get_order_row_by_order_number(order_number) if order_number else None
+            if row is None and session_id:
+                row = db.get_order_row_by_stripe_session(session_id)
+            if row:
+                notify_fulfillment_failure(
+                    order_number=str(row.get("order_number") or order_number or ""),
+                    email=str(row.get("email") or ""),
+                    country=str(row.get("country") or ""),
+                    package_name=str(row.get("package_name") or "Travel eSIM"),
+                    error=str(exc),
+                    context="stripe_webhook",
+                    order_status=str(row.get("status") or "paid"),
+                )
+        except Exception:
+            logger.exception("Ops alert failed in stripe webhook for %s", order_number)
         # Payment is recorded; Stripe should not retry indefinitely on email failures
         return JSONResponse(
             {
