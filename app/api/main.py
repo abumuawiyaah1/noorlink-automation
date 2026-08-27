@@ -23,16 +23,23 @@ from .devices_router import router as devices_router
 from .plans_router import router as plans_router
 from .webhooks import router as webhooks_router
 from . import supabase_repository as db
-from .stripe_checkout import StripeCheckoutError, create_stripe_checkout_session
+from .stripe_checkout import (
+    StripeCheckoutError,
+    create_stripe_checkout_session,
+    create_stripe_payment_intent,
+)
 from .stripe_webhook import (
     StripeWebhookError,
     construct_stripe_event,
     extract_checkout_session_completed,
+    extract_payment_intent_succeeded,
 )
 from .schemas import (
     ApiTestResponse,
+    CheckoutConfigResponse,
     CheckoutSessionRequest,
     CheckoutSessionResponse,
+    ExpressPaymentIntentResponse,
     ContactFormRequest,
     ContactFormResponse,
     CronRunResponse,
@@ -503,6 +510,111 @@ async def orders_by_stripe_session(
     return OrderLookupResponse(found=True, order=order)
 
 
+@app.get("/api/orders/by-payment-intent", response_model=OrderLookupResponse)
+async def orders_by_stripe_payment_intent(
+    payment_intent_id: str = Query(..., alias="paymentIntentId", min_length=8),
+):
+    """Success page after Express Checkout (Apple Pay / Google Pay / Link)."""
+    try:
+        order = db.lookup_order_by_stripe_payment_intent(payment_intent_id)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not order:
+        return OrderLookupResponse(
+            found=False,
+            order=None,
+            message="Order not found yet. Refresh in a minute or use My eSIMs.",
+        )
+    return OrderLookupResponse(found=True, order=order)
+
+
+@app.get("/api/checkout/config", response_model=CheckoutConfigResponse)
+async def checkout_config():
+    """Publishable key for on-page Express Checkout Element."""
+    settings = get_settings()
+    key = (settings.stripe_publishable_key or "").strip()
+    if not key:
+        raise HTTPException(status_code=503, detail="Stripe publishable key not configured")
+    return CheckoutConfigResponse(publishable_key=key)
+
+
+@app.post("/api/checkout/payment-intent", response_model=ExpressPaymentIntentResponse)
+async def checkout_payment_intent(body: CheckoutSessionRequest):
+    """Create order + PaymentIntent for Apple Pay / Google Pay / Link on-page."""
+    subtotal_cents = int(round(body.price * 100))
+    promo_discount = None
+
+    if body.promo_code and body.promo_code.strip():
+        try:
+            db.expire_promo_codes()
+        except db.SupabaseRepositoryError:
+            pass
+        try:
+            row = db.get_promo_code(normalize_code(body.promo_code))
+            promo_discount = validate_promo_row(row, subtotal_cents=subtotal_cents)
+        except PromoCodeError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    try:
+        created = db.create_order(
+            email=str(body.email),
+            country=body.country,
+            price=body.price,
+            flag=body.flag,
+            travel_date=body.travel_date,
+            package_id=body.package_id,
+            phone=body.phone,
+            promo_code=promo_discount.code if promo_discount else None,
+            promo_discount_cents=promo_discount.discount_cents if promo_discount else None,
+            promo_subtotal_cents=subtotal_cents if promo_discount else None,
+            wants_topup=bool(body.wants_topup),
+        )
+    except db.ManagedPackagePriceMismatchError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Package price does not match our catalog. Refresh and try again.",
+        ) from exc
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    except Exception as exc:
+        logger.exception("Unexpected express checkout order failure")
+        raise HTTPException(
+            status_code=503,
+            detail="Checkout is temporarily unavailable. Please try again.",
+        ) from exc
+
+    order = created.order
+    amount_cents = int(round(order.price * 100))
+
+    try:
+        intent = create_stripe_payment_intent(
+            order_number=order.order_number,
+            order_id=created.order_id,
+            email=str(body.email),
+            amount_cents=amount_cents,
+            currency=order.currency,
+            package_name=order.package_name,
+        )
+        db.update_order_stripe_payment_intent(order.order_number, intent.id)
+    except StripeCheckoutError as exc:
+        logger.error("Stripe PaymentIntent failed: %s", exc)
+        raise HTTPException(
+            status_code=502,
+            detail="Payment could not be started. Please try again.",
+        ) from exc
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    return ExpressPaymentIntentResponse(
+        success=True,
+        client_secret=intent.client_secret,
+        payment_intent_id=intent.id,
+        order_id=order.order_number,
+        final_price=float(order.price),
+        message="PaymentIntent created for express wallets.",
+    )
+
+
 @app.post("/api/checkout/session", response_model=CheckoutSessionResponse)
 async def checkout_session(body: CheckoutSessionRequest):
     subtotal_cents = int(round(body.price * 100))
@@ -646,6 +758,66 @@ async def stripe_webhook(
     except StripeWebhookError as exc:
         logger.warning("Stripe webhook rejected: %s", exc)
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    if event.type == "payment_intent.succeeded":
+        intent_data = extract_payment_intent_succeeded(event)
+        if not intent_data:
+            return JSONResponse({"received": True, "handled": False})
+
+        order_number = intent_data.get("order_number")
+        payment_intent_id = intent_data.get("payment_intent_id")
+
+        if not order_number and payment_intent_id:
+            try:
+                row = db.get_order_row_by_stripe_payment_intent(payment_intent_id)
+                if row:
+                    order_number = row.get("order_number")
+            except db.SupabaseRepositoryError as exc:
+                raise _db_error(exc) from exc
+
+        if not order_number:
+            logger.error("payment_intent.succeeded missing order identifiers")
+            return JSONResponse({"received": True, "handled": False})
+
+        try:
+            process_paid_order(
+                order_number=order_number,
+                stripe_payment_intent_id=payment_intent_id,
+            )
+        except FulfillmentError as exc:
+            logger.error(
+                "Fulfillment failed after express payment for %s: %s",
+                order_number,
+                exc,
+            )
+            try:
+                row = db.get_order_row_by_order_number(order_number)
+                if row is None and payment_intent_id:
+                    row = db.get_order_row_by_stripe_payment_intent(payment_intent_id)
+                if row:
+                    notify_fulfillment_failure(
+                        order_number=str(row.get("order_number") or order_number or ""),
+                        email=str(row.get("email") or ""),
+                        country=str(row.get("country") or ""),
+                        package_name=str(row.get("package_name") or "Travel eSIM"),
+                        error=str(exc),
+                        context="stripe_webhook_express",
+                        order_status=str(row.get("status") or "paid"),
+                    )
+            except Exception:
+                logger.exception(
+                    "Ops alert failed in express stripe webhook for %s", order_number
+                )
+            return JSONResponse(
+                {
+                    "received": True,
+                    "handled": True,
+                    "fulfillment": "partial",
+                    "order_number": order_number,
+                }
+            )
+
+        return JSONResponse({"received": True, "handled": True})
 
     if event.type != "checkout.session.completed":
         return JSONResponse({"received": True, "handled": False})

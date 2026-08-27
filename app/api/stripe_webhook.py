@@ -63,3 +63,25 @@ def extract_checkout_session_completed(
         "payment_intent_id": payment_intent_id,
         "customer_email": getattr(session, "customer_email", None),
     }
+
+
+def extract_payment_intent_succeeded(
+    event: stripe.Event,
+) -> Optional[Dict[str, Any]]:
+    if event.type != "payment_intent.succeeded":
+        return None
+
+    intent = event.data.object
+    metadata = getattr(intent, "metadata", None) or {}
+    if hasattr(metadata, "to_dict"):
+        metadata = metadata.to_dict()
+
+    order_number = metadata.get("order_number") if isinstance(metadata, dict) else None
+    order_id = metadata.get("order_id") if isinstance(metadata, dict) else None
+
+    return {
+        "payment_intent_id": getattr(intent, "id", None),
+        "order_number": order_number,
+        "order_id": order_id,
+        "customer_email": getattr(intent, "receipt_email", None),
+    }

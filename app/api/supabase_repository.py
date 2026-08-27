@@ -954,6 +954,57 @@ def update_order_stripe_session(
         raise SupabaseRepositoryError(str(exc)) from exc
 
 
+def update_order_stripe_payment_intent(
+    order_number: str,
+    stripe_payment_intent_id: str,
+) -> None:
+    client = get_supabase_client()
+    try:
+        client.table("orders").update(
+            {"stripe_payment_intent_id": stripe_payment_intent_id}
+        ).eq("order_number", order_number).execute()
+    except Exception as exc:
+        logger.exception(
+            "orders stripe_payment_intent_id update failed for %s",
+            order_number,
+        )
+        raise SupabaseRepositoryError(str(exc)) from exc
+
+
+def get_order_row_by_stripe_payment_intent(
+    payment_intent_id: str,
+) -> Optional[Dict[str, Any]]:
+    client = get_supabase_client()
+    normalized = (payment_intent_id or "").strip()
+    if not normalized:
+        return None
+    try:
+        result = (
+            client.table("orders")
+            .select("*")
+            .eq("stripe_payment_intent_id", normalized)
+            .limit(1)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("Order fetch by Stripe payment intent failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    if not result.data:
+        return None
+    return result.data[0]
+
+
+def lookup_order_by_stripe_payment_intent(
+    payment_intent_id: str,
+) -> Optional[Order]:
+    row = get_order_row_by_stripe_payment_intent(payment_intent_id.strip())
+    if not row:
+        return None
+    allowance = get_breakage_allowance_by_order_id(str(row["id"]))
+    _, order = enrich_order_row(row, allowance_row=allowance)
+    return order
+
+
 def get_order_row_by_iccid(iccid: str) -> Optional[Dict[str, Any]]:
     """Fetch an order by Simbase ICCID."""
     client = get_supabase_client()

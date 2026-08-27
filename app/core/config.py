@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     stripe_secret_key: str
     stripe_publishable_key: str
     stripe_webhook_secret: str
+    # Optional Dashboard payment method configuration id (pmc_...) for wallets/Link
+    stripe_payment_method_configuration: str = ""
 
     # —— Simbase (eSIM provisioning + usage guard) ——
     simbase_api_key: str = ""

@@ -236,6 +236,23 @@ class CheckoutSessionResponse(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class CheckoutConfigResponse(BaseModel):
+    publishable_key: str = Field(..., serialization_alias="publishableKey")
+
+    model_config = {"populate_by_name": True}
+
+
+class ExpressPaymentIntentResponse(BaseModel):
+    success: bool
+    client_secret: Optional[str] = Field(None, serialization_alias="clientSecret")
+    payment_intent_id: Optional[str] = Field(None, serialization_alias="paymentIntentId")
+    order_id: Optional[str] = Field(None, serialization_alias="orderId")
+    final_price: Optional[float] = Field(None, serialization_alias="finalPrice")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
 class SearchLogRequest(BaseModel):
     destination: str = Field(..., min_length=1, max_length=120)
 
