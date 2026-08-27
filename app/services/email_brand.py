@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import html
 from typing import Optional
+from urllib.parse import quote
 
 # Brand tokens (aligned with noorlink.co CSS)
 PRIMARY = "#0F3D3E"
@@ -73,6 +74,65 @@ def cta_button(*, href: str, label: str) -> str:
          style="display:inline-block;background:{ACCENT};color:{PRIMARY_DARK};padding:14px 28px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;">
         {html.escape(label)}
       </a>
+    """
+
+
+def review_request_block(
+    *,
+    app_url: str,
+    order_number: Optional[str] = None,
+    google_review_url: Optional[str] = None,
+) -> str:
+    """Post-trip review ask — matches NoorLink brand card styling."""
+    base = app_url.rstrip("/")
+    review_page = f"{base}/review"
+    if order_number:
+        review_page = f"{review_page}?orderId={quote(order_number.strip())}"
+    feedback_href = f"{base}/support?subject={quote('Service review')}"
+    if order_number:
+        feedback_href = (
+            f"{feedback_href}&orderId={quote(order_number.strip())}"
+            f"&message={quote(f'Hi NoorLink, here is my feedback on order {order_number.strip()}:')}"
+        )
+
+    google_btn = ""
+    if (google_review_url or "").strip():
+        google_btn = f"""
+          <a href="{html.escape(google_review_url.strip())}"
+             style="display:inline-block;background:{PRIMARY};color:#ffffff;padding:12px 22px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;margin-right:8px;margin-bottom:8px;">
+            Rate us on Google
+          </a>
+        """
+
+    return f"""
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;background:#FFF8F0;border:1px solid #FFE0B2;border-radius:12px;">
+        <tr>
+          <td style="padding:22px 24px;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:{ACCENT};font-weight:700;">
+              Your feedback matters
+            </p>
+            <h3 style="margin:0 0 10px;color:{PRIMARY};font-size:17px;font-weight:700;">
+              Leave us a review
+            </h3>
+            <p style="margin:0 0 16px;font-size:14px;line-height:1.55;color:{TEXT};">
+              If you choose to rate our service, you will have an opportunity to leave a
+              comment as well. Please tell us how we can help you on your next trip — and
+              any improvements we can make at NoorLink.
+            </p>
+            <p style="margin:0 0 16px;">
+              {google_btn}
+              <a href="{html.escape(review_page)}"
+                 style="display:inline-block;background:{ACCENT};color:{PRIMARY_DARK};padding:12px 22px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;margin-right:8px;margin-bottom:8px;">
+                Share your experience
+              </a>
+              <a href="{feedback_href}"
+                 style="display:inline-block;border:2px solid {PRIMARY};color:{PRIMARY};padding:10px 20px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;margin-bottom:8px;">
+                Send private feedback
+              </a>
+            </p>
+          </td>
+        </tr>
+      </table>
     """
 
 

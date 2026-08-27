@@ -85,6 +85,9 @@ class Settings(BaseSettings):
     ops_alert_email: str = ""
     slack_webhook_url: str = ""
 
+    # Optional public Google review link (shown in post-delivery emails)
+    google_review_url: str = ""
+
     # Protected bearer token for scheduled cron hits (Insider release + promo expiry)
     cron_secret: str = ""
 

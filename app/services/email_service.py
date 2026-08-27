@@ -16,6 +16,7 @@ from app.services.email_brand import (
     MUTED,
     PRIMARY,
     cta_button,
+    review_request_block,
     wrap_branded_email,
 )
 
@@ -270,6 +271,14 @@ def build_fulfillment_email_html(
     )
 
     dashboard_url = f"{app_url.rstrip('/')}/dashboard?orderId={html.escape(order_number)}"
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    review_block = review_request_block(
+        app_url=app_url,
+        order_number=order_number,
+        google_review_url=(settings.google_review_url or "").strip() or None,
+    )
 
     body = f"""
       <p style="margin:0 0 20px;">
@@ -306,6 +315,7 @@ def build_fulfillment_email_html(
       <p style="text-align:center;margin:0;">
         {cta_button(href=dashboard_url, label="View order in dashboard")}
       </p>
+      {review_block}
     """
     return wrap_branded_email(
         eyebrow="eSIM delivered",
