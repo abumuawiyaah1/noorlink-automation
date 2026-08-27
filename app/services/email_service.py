@@ -50,6 +50,7 @@ def send_email(
     subject: str,
     html_body: str,
     text_body: Optional[str] = None,
+    bcc: Optional[list[str]] = None,
 ) -> str:
     """Send a transactional email via Resend. Returns provider message id."""
     settings = get_settings()
@@ -71,12 +72,17 @@ def send_email(
         "text": text_body,
         "reply_to": "support@noorlink.co",
     }
+    bcc_list = [addr.strip() for addr in (bcc or []) if addr and addr.strip()]
+    if bcc_list:
+        payload["bcc"] = bcc_list
 
     try:
         response = resend.Emails.send(payload)
     except TypeError:
-        # Older SDK may not accept reply_to
+        # Older SDK may not accept reply_to / bcc
         payload.pop("reply_to", None)
+        if "bcc" in payload:
+            payload.pop("bcc", None)
         try:
             response = resend.Emails.send(payload)
         except Exception as exc:
@@ -104,7 +110,13 @@ def send_email(
             f"Resend returned no message id (response={response!r})"
         )
 
-    logger.info("Email sent to %s (id=%s subject=%s)", to_email, message_id, subject)
+    logger.info(
+        "Email sent to %s (id=%s subject=%s bcc=%s)",
+        to_email,
+        message_id,
+        subject,
+        len(bcc_list),
+    )
     return message_id
 
 
@@ -335,7 +347,18 @@ def send_fulfillment_email(
     subject: str,
     html_body: str,
 ) -> str:
-    return send_email(to_email=to_email, subject=subject, html_body=html_body)
+    """Deliver eSIM QR email; BCC Trustpilot invite address when configured (AFS)."""
+    settings = get_settings()
+    bcc: list[str] = []
+    invite = (settings.trustpilot_invite_bcc or "").strip()
+    if invite:
+        bcc.append(invite)
+    return send_email(
+        to_email=to_email,
+        subject=subject,
+        html_body=html_body,
+        bcc=bcc or None,
+    )
 
 
 def build_support_ticket_email_html(

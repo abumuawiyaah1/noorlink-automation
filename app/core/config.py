@@ -89,6 +89,9 @@ class Settings(BaseSettings):
     # Trustpilot preferred; Google optional secondary.
     trustpilot_review_url: str = ""
     google_review_url: str = ""
+    # Trustpilot Automatic Feedback Service — BCC on fulfillment emails only.
+    # Example: yourdomain.com+xxxxx@invite.trustpilot.com
+    trustpilot_invite_bcc: str = ""
 
     # Protected bearer token for scheduled cron hits (Insider release + promo expiry)
     cron_secret: str = ""
