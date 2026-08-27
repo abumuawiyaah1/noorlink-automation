@@ -189,6 +189,43 @@ def test_choose_prefers_cheaper_cascade_over_map(monkeypatch):
     assert chosen.provider_sku == "cheap-chile"
 
 
+def test_choose_keeps_silent_me_map_over_cheaper_country_sku():
+    from app.services.fulfillment_map import FulfillmentTarget
+
+    mapped = FulfillmentTarget(
+        catalog_key="turkey-10gb-30",
+        provider="telna",
+        provider_sku="67f6c112d07af55d502bef78",
+        wholesale_cents=2800,
+        data_gb=10.0,
+        validity_days=30,
+        source="db:country_data",
+    )
+    products = [
+        CatalogProduct(
+            provider="telna",
+            provider_sku="cheap-turkey",
+            name="Turkey-10 GB 30 Days",
+            scope="country",
+            country_slugs=("turkey",),
+            data_gb=10.0,
+            validity_days=30,
+            wholesale_cents=900,
+        )
+    ]
+    chosen = choose_fulfillment_target(
+        country="turkey",
+        data_gb=10.0,
+        validity_days=30,
+        mapped=mapped,
+        wants_topup=False,
+        products=products,
+    )
+    assert chosen is not None
+    assert chosen.provider_sku == mapped.provider_sku
+    assert chosen.catalog_key == "turkey-10gb-30"
+
+
 def test_topup_prefers_citrus_when_configured():
     chosen = choose_fulfillment_target(
         country="chile",

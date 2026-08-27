@@ -133,20 +133,50 @@ BUILTIN_TELNA_SEED: List[Dict[str, Any]] = [
     {"provider_sku": "690b2b5e7aff111b7539f7bd", "name": "Caribbean Bundle-3 GB 7 Days", "wholesale_cents": 1600},
     {"provider_sku": "690b2b5e7aff111b7539f7be", "name": "Caribbean Bundle-5 GB 15 Days", "wholesale_cents": 2300},
     {"provider_sku": "690b2b5f7aff111b7539f7c3", "name": "Caribbean Bundle-10 GB 30 Days", "wholesale_cents": 4000},
-    # Latin America (17-country)
+    # Latin America
     {"provider_sku": "67f6c112d07af55d502bef74", "name": "Latin America Bundle-1 GB 5 Days", "wholesale_cents": 330},
     {"provider_sku": "67f6c112d07af55d502bef76", "name": "Latin America Bundle-3 GB 7 Days", "wholesale_cents": 850},
     {"provider_sku": "67f6c112d07af55d502bef77", "name": "Latin America Bundle-5 GB 15 Days", "wholesale_cents": 1400},
     {"provider_sku": "67f6c112d07af55d502bef75", "name": "Latin America Bundle-10 GB 30 Days", "wholesale_cents": 2500},
+    # Europe
+    {"provider_sku": "66b5db0b899f794eccc7fee7", "name": "Europe Bundle-1 GB 5 Days", "wholesale_cents": 150},
+    {"provider_sku": "66b5db0b899f794eccc7fefc", "name": "Europe Bundle-3 GB 7 Days", "wholesale_cents": 325},
+    {"provider_sku": "66b5db0b899f794eccc7fedf", "name": "Europe Bundle-5 GB 15 Days", "wholesale_cents": 500},
+    {"provider_sku": "66b5db0b899f794eccc7fed8", "name": "Europe Bundle-10 GB 30 Days", "wholesale_cents": 900},
+    # Asia Bundle 2
+    {"provider_sku": "690b2b5f7aff111b7539f7c2", "name": "Asia Bundle 2-1 GB 5 Days", "wholesale_cents": 275},
+    {"provider_sku": "690b2b5f7aff111b7539f7c1", "name": "Asia Bundle 2-3 GB 7 Days", "wholesale_cents": 725},
+    {"provider_sku": "690b2b5e7aff111b7539f7c0", "name": "Asia Bundle 2-5 GB 15 Days", "wholesale_cents": 1175},
+    {"provider_sku": "690b2b5e7aff111b7539f7bf", "name": "Asia Bundle 2-10 GB 30 Days", "wholesale_cents": 2125},
+    # Middle East
+    {"provider_sku": "67f6c112d07af55d502bef7a", "name": "Middle East Bundle-1 GB 5 Days", "wholesale_cents": 370},
+    {"provider_sku": "67f6c112d07af55d502bef79", "name": "Middle East Bundle-3 GB 7 Days", "wholesale_cents": 1000},
+    {"provider_sku": "67f6c112d07af55d502bef7b", "name": "Middle East Bundle-5 GB 15 Days", "wholesale_cents": 1620},
+    {"provider_sku": "67f6c112d07af55d502bef78", "name": "Middle East Bundle-10 GB 30 Days", "wholesale_cents": 2800},
+    # Africa
+    {"provider_sku": "690b2b5f7aff111b7539f7c9", "name": "Africa Bundle-1 GB 5 Days", "wholesale_cents": 675},
+    {"provider_sku": "690b2b5f7aff111b7539f7cd", "name": "Africa Bundle-3 GB 7 Days", "wholesale_cents": 1825},
+    {"provider_sku": "690b2b5f7aff111b7539f7d6", "name": "Africa Bundle-5 GB 15 Days", "wholesale_cents": 3025},
+    {"provider_sku": "690b2b5f7aff111b7539f7d8", "name": "Africa Bundle-10 GB 30 Days", "wholesale_cents": 5525},
+    # North America
+    {"provider_sku": "66b5db0b899f794eccc7fff2", "name": "North America Bundle-1 GB 5 Days", "wholesale_cents": 250},
+    {"provider_sku": "66b5db0b899f794eccc80043", "name": "North America Bundle-3 GB 7 Days", "wholesale_cents": 660},
+    {"provider_sku": "66b5db0b899f794eccc7fffa", "name": "North America Bundle-5 GB 15 Days", "wholesale_cents": 1000},
+    {"provider_sku": "66b5db0b899f794eccc80016", "name": "North America Bundle-10 GB 30 Days", "wholesale_cents": 1800},
     # Global
     {"provider_sku": "690b2b5f7aff111b7539f7d7", "name": "Global Bundle-1 GB 5 Days", "wholesale_cents": 775},
     {"provider_sku": "690b2b5f7aff111b7539f7d2", "name": "Global Bundle-3 GB 7 Days", "wholesale_cents": 2150},
-    # Africa regional
-    {"provider_sku": "690b2b5f7aff111b7539f7d6", "name": "Africa Bundle-5 GB 15 Days", "wholesale_cents": 3025},
-    {"provider_sku": "690b2b5f7aff111b7539f7d8", "name": "Africa Bundle-10 GB 30 Days", "wholesale_cents": 5525},
-    # North America regional
-    {"provider_sku": "66b5db0b899f794eccc80043", "name": "North America Bundle-3 GB 7 Days", "wholesale_cents": 660},
-    {"provider_sku": "66b5db0b899f794eccc80016", "name": "North America Bundle-10 GB 30 Days", "wholesale_cents": 1800},
+    {"provider_sku": "690b2b5f7aff111b7539f7c6", "name": "Global Bundle-5 GB 15 Days", "wholesale_cents": 3500},
+    {"provider_sku": "690b2b5f7aff111b7539f7cc", "name": "Global Bundle-10 GB 30 Days", "wholesale_cents": 6000},
+    # Gap-fill countries
+    {"provider_sku": "66b5db0b899f794eccc7fe26", "name": "Australia-1 GB 5 Days", "wholesale_cents": 150},
+    {"provider_sku": "66b5db0b899f794eccc7fe3d", "name": "Australia-3 GB 7 Days", "wholesale_cents": 400},
+    {"provider_sku": "66b5db0b899f794eccc7fe54", "name": "Australia-5 GB 15 Days", "wholesale_cents": 600},
+    {"provider_sku": "66b5db0b899f794eccc7fe25", "name": "Australia-10 GB 30 Days", "wholesale_cents": 1100},
+    {"provider_sku": "66b5db0b899f794eccc7ffaa", "name": "Mexico-1 GB 5 Days", "wholesale_cents": 300},
+    {"provider_sku": "66b5db0b899f794eccc7ffcc", "name": "Mexico-3 GB 7 Days", "wholesale_cents": 750},
+    {"provider_sku": "66b5db0b899f794eccc7fff5", "name": "Mexico-5 GB 15 Days", "wholesale_cents": 1100},
+    {"provider_sku": "66b5db0b899f794eccc7ffb4", "name": "Mexico-10 GB 30 Days", "wholesale_cents": 2000},
 ]
 
 
@@ -304,7 +334,8 @@ async def sync_telna_catalog(*, use_builtin_on_failure: bool = True) -> Dict[str
     source = "api"
     try:
         async with TelnaClient() as client:
-            raw_products = await client.list_products(count=500)
+            # Telna Ordering API allows count 1–100 only; paginate the full catalog.
+            raw_products = await client.list_all_products(page_size=100)
         products: List[CatalogProduct] = []
         for raw in raw_products:
             if not isinstance(raw, dict):

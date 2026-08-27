@@ -185,6 +185,20 @@ def choose_fulfillment_target(
     if mapped and is_regional_destination(country):
         return mapped
 
+    # Saudi / Umrah / Hajj single-country: never cascade onto Telna regional ME.
+    # Access map + enforce_saudi_access_policy remain authoritative.
+    if is_saudi_destination(country):
+        return mapped
+
+    # Silent ME country storefronts (UAE/Turkey/Egypt/…): keep hand-wired
+    # Telna Middle East Bundle map. Do not undercut with cheaper single-country
+    # catalog SKUs — customers bought a country plan; we fulfill regionally.
+    from app.services.fulfillment_map import ME_SILENT_TELNA_COUNTRY_SLUGS
+
+    silent_slug = "uae" if slug == "united-arab-emirates" else slug
+    if mapped and silent_slug in ME_SILENT_TELNA_COUNTRY_SLUGS:
+        return mapped
+
     if data_gb is None or validity_days is None:
         return mapped
 

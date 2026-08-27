@@ -156,6 +156,7 @@ def normalize_country_slug(value: Optional[str]) -> str:
         "europe regional": "regional-europe",
         "asia pacific": "regional-asia-pacific",
         "asia-pacific": "regional-asia-pacific",
+        "asia": "regional-asia-pacific",
         "north america": "regional-north-america",
         "north-america": "regional-north-america",
         "africa": "regional-africa",
@@ -165,9 +166,16 @@ def normalize_country_slug(value: Optional[str]) -> str:
         "west indies": "regional-caribbean",
         "south america": "regional-south-america",
         "south-america": "regional-south-america",
+        "latin america": "regional-south-america",
+        "latam": "regional-south-america",
         "global": "regional-global",
         "global regional": "regional-global",
         "worldwide": "regional-global",
+        "australia": "australia",
+        "mexico": "mexico",
+        "uae": "uae",
+        "united arab emirates": "uae",
+        "united-arab-emirates": "uae",
     }
     if raw in aliases:
         return aliases[raw]
@@ -178,6 +186,104 @@ def is_saudi_destination(country: Optional[str], country_code: Optional[str] = N
     if (country_code or "").strip().upper() == "SA":
         return True
     return normalize_country_slug(country) == "saudi-arabia"
+
+
+# Country storefront pages that silently fulfill on Telna Middle East Bundle.
+# Customers still see "UAE 10GB" / "Turkey 10GB" — not a regional promo.
+# Saudi / Umrah stays on Access (never listed here).
+ME_SILENT_TELNA_COUNTRY_SLUGS = frozenset(
+    {
+        "uae",
+        "united-arab-emirates",
+        "turkey",
+        "egypt",
+        "qatar",
+        "kuwait",
+        "bahrain",
+        "oman",
+        "jordan",
+        "israel",
+        "morocco",
+        "tunisia",
+        "cyprus",
+    }
+)
+
+# Telna Middle East Bundle ladder (shared SKUs for silent country fulfillment).
+ME_SILENT_TELNA_LADDER: List[Dict[str, Any]] = [
+    {
+        "data_gb": 1.0,
+        "validity_days": 5,
+        "provider_sku": "67f6c112d07af55d502bef7a",
+        "provider_slug": "telna-me-1gb-5d",
+        "wholesale_cents": 370,
+        "key_suffix": "1gb-5",
+    },
+    {
+        "data_gb": 3.0,
+        "validity_days": 7,
+        "provider_sku": "67f6c112d07af55d502bef79",
+        "provider_slug": "telna-me-3gb-7d",
+        "wholesale_cents": 1000,
+        "key_suffix": "3gb-7",
+    },
+    {
+        "data_gb": 5.0,
+        "validity_days": 15,
+        "provider_sku": "67f6c112d07af55d502bef7b",
+        "provider_slug": "telna-me-5gb-15d",
+        "wholesale_cents": 1620,
+        "key_suffix": "5gb-15",
+    },
+    {
+        "data_gb": 10.0,
+        "validity_days": 30,
+        "provider_sku": "67f6c112d07af55d502bef78",
+        "provider_slug": "telna-me-10gb-30d",
+        "wholesale_cents": 2800,
+        "key_suffix": "10gb-30",
+    },
+]
+
+
+def _me_silent_lookup_slugs(slug: str) -> List[str]:
+    """Country slugs that should match silent ME Telna fulfillment map rows."""
+    normalized = normalize_country_slug(slug)
+    if normalized == "united-arab-emirates":
+        normalized = "uae"
+    if normalized in ME_SILENT_TELNA_COUNTRY_SLUGS or slug in ME_SILENT_TELNA_COUNTRY_SLUGS:
+        return [normalized]
+    return []
+
+
+def _me_silent_static_seeds() -> List[Dict[str, Any]]:
+    """Per-country Telna ME maps so UAE/Turkey/Egypt resolve without regional promo."""
+    seeds: List[Dict[str, Any]] = []
+    for country_slug in sorted(ME_SILENT_TELNA_COUNTRY_SLUGS):
+        if country_slug == "united-arab-emirates":
+            continue  # alias of uae
+        for rung in ME_SILENT_TELNA_LADDER:
+            seeds.append(
+                {
+                    "catalog_key": f"{country_slug}-{rung['key_suffix']}",
+                    "country_code": None,
+                    "country_slug": country_slug,
+                    "data_gb": rung["data_gb"],
+                    "validity_days": rung["validity_days"],
+                    "provider": "telna",
+                    "provider_sku": rung["provider_sku"],
+                    "provider_slug": rung["provider_slug"],
+                    "wholesale_cents": rung["wholesale_cents"],
+                    "period_num": None,
+                    "is_active": True,
+                }
+            )
+    return seeds
+
+
+STATIC_FULFILLMENT_MAP: List[Dict[str, Any]] = (
+    STATIC_SA_MAP + _regional_fulfillment_seeds() + _me_silent_static_seeds()
+)
 
 
 def _row_to_target(row: Dict[str, Any], *, source: str) -> FulfillmentTarget:
@@ -209,10 +315,18 @@ def _match_static(
     validity_days: Optional[int],
 ) -> Optional[FulfillmentTarget]:
     slug = normalize_country_slug(country)
+    if slug == "united-arab-emirates":
+        slug = "uae"
+    lookup_slugs = set(_me_silent_lookup_slugs(slug or ""))
+    if slug:
+        lookup_slugs.add(slug)
     for row in STATIC_FULFILLMENT_MAP:
         if not row.get("is_active"):
             continue
-        if slug and row.get("country_slug") and slug != row["country_slug"]:
+        row_slug = normalize_country_slug(row.get("country_slug"))
+        if row_slug == "united-arab-emirates":
+            row_slug = "uae"
+        if lookup_slugs and row_slug and row_slug not in lookup_slugs:
             continue
         if data_gb is None or not _gb_close(data_gb, float(row["data_gb"])):
             continue
@@ -291,11 +405,18 @@ def resolve_fulfillment_target(
 
         if mapped is None:
             slug = normalize_country_slug(country)
+            if slug == "united-arab-emirates":
+                slug = "uae"
+            lookup_slugs = set(_me_silent_lookup_slugs(slug or ""))
+            if slug:
+                lookup_slugs.add(slug)
             for row in rows:
                 row_slug = normalize_country_slug(row.get("country_slug"))
+                if row_slug == "united-arab-emirates":
+                    row_slug = "uae"
                 row_code = (row.get("country_code") or "").upper()
                 country_ok = False
-                if slug and row_slug and slug == row_slug:
+                if slug and row_slug and row_slug in lookup_slugs:
                     country_ok = True
                 if is_saudi_destination(country) and row_code == "SA":
                     country_ok = True

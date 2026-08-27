@@ -17,6 +17,45 @@ auth failure. Our client always sends `User-Agent: NoorLink/1.0 (+https://noorli
 Docs hub (same API): https://ppov10.readme.io/reference  
 (= https://flex-developer.telna.com)
 
+### Fulfillment maps (live)
+
+All major regional ladders + Australia/Mexico gap-fill are in `plan_fulfillment_map`
+(provider=`telna`), verified against the live catalog:
+
+| Region / country | catalog_key prefix |
+| --- | --- |
+| Caribbean | `cb-*` |
+| Latin America | `la-*` |
+| Europe | `eu-*` |
+| Asia Pacific (Bundle 2) | `as-*` |
+| Middle East | `me-*` |
+| Africa | `af-*` |
+| North America (US+CA) | `na-*` |
+| Global | `gl-*` |
+| Australia (country) | `au-*` |
+| Mexico (country) | `mx-*` |
+
+Saudi / Umrah single-country packs stay on **eSIM Access**.
+
+### Silent ME country fulfillment
+
+These **country storefronts** still sell as UAE / Turkey / Egypt / etc.
+They fulfill on the same Telna Middle East Bundle SKUs (`me-*`) — customers
+never see “regional” on the page. Smart cascade must **not** undercut these
+maps with cheaper single-country catalog hits.
+
+| Storefront slug | Fulfills as |
+| --- | --- |
+| `uae`, `turkey`, `egypt`, `qatar`, `kuwait`, `bahrain`, `oman`, `jordan`, `israel`, `morocco`, `tunisia`, `cyprus` | Telna `me-*` ladder |
+| `saudi-arabia` / Umrah / Hajj | **eSIM Access only** (never silent ME) |
+
+Maps live in `plan_fulfillment_map` as `uae-10gb-30`, `turkey-10gb-30`, … and
+in code as `ME_SILENT_TELNA_COUNTRY_SLUGS` + `ME_SILENT_TELNA_LADDER`.
+
+### Next: paid E2E
+
+Buy a regional plan (Europe or Caribbean) on noorlink.co to prove Telna work-order → QR email.
+
 ## Auth format (confirmed)
 
 Telna accepts **either**:
