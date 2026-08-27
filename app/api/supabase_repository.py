@@ -746,6 +746,10 @@ def merge_order_metadata(order_number: str, patch: Dict[str, Any]) -> Dict[str, 
     if not isinstance(metadata, dict):
         metadata = {}
     merged = {**metadata, **patch}
+    # Deep-merge reminder flags so cron jobs don't wipe each other
+    if isinstance(patch.get("reminders"), dict):
+        existing = metadata.get("reminders") if isinstance(metadata.get("reminders"), dict) else {}
+        merged["reminders"] = {**existing, **patch["reminders"]}
 
     try:
         client.table("orders").update({"metadata": merged}).eq(
@@ -1462,3 +1466,27 @@ def record_breakage_usage_event(payload: Dict[str, Any]) -> Dict[str, Any]:
     if not result.data:
         raise SupabaseRepositoryError("breakage_usage_events insert returned no data")
     return result.data[0]
+
+
+def list_orders_for_expiry_reminders(
+    *,
+    since_iso: str,
+    limit: int = 100,
+) -> list[Dict[str, Any]]:
+    """Recent delivered/active orders that may need validity reminder emails."""
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("orders")
+            .select("*")
+            .in_("status", ["delivered", "active", "paid", "expired", "suspended"])
+            .gte("created_at", since_iso)
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("list_orders_for_expiry_reminders failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    return list(result.data or [])
+

@@ -537,3 +537,147 @@ def send_insider_issue_email(
     )
     email_subject = f"NoorLink Insider — {subject}"
     return send_email(to_email=to_email, subject=email_subject, html_body=html_body)
+
+
+def build_esim_expired_email_html(
+    *,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    plans_url: str,
+    dashboard_url: str,
+    app_url: str,
+) -> str:
+    flag = flag_emoji or ""
+    body = f"""
+      <p style="margin:0 0 16px;">
+        Your <strong style="color:{PRIMARY};">{html.escape(package_name)}</strong> plan for
+        {flag} <strong>{html.escape(country)}</strong> has reached the end of its validity period.
+      </p>
+      <p style="margin:0 0 16px;">
+        Order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong> —
+        unused data does not roll over. To stay connected, add a new plan for your next days abroad.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF8F0;border:1px solid #FFE0B2;border-radius:12px;margin:0 0 24px;">
+        <tr><td style="padding:18px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:{PRIMARY};">
+          <strong>Quick tip:</strong> Install your next eSIM on Wi‑Fi before you need data again —
+          then turn on Data Roaming when you land.
+        </td></tr>
+      </table>
+      <p style="text-align:center;margin:0 0 12px;">
+        {cta_button(href=plans_url, label="Add data to stay connected")}
+      </p>
+      <p style="text-align:center;margin:0;">
+        <a href="{html.escape(dashboard_url)}" style="color:{PRIMARY};font-weight:700;text-decoration:none;">
+          View order in My eSIMs
+        </a>
+      </p>
+    """
+    return wrap_branded_email(
+        eyebrow="Plan ended",
+        title="Your eSIM has expired — add data to stay connected",
+        body_html=body,
+        app_url=app_url,
+        tip="Reply to this email or WhatsApp support if you need help choosing the right plan.",
+    )
+
+
+def send_esim_expired_email(
+    *,
+    to_email: str,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    plans_url: str,
+    dashboard_url: str,
+    app_url: str,
+) -> str:
+    html_body = build_esim_expired_email_html(
+        order_number=order_number,
+        country=country,
+        package_name=package_name,
+        flag_emoji=flag_emoji,
+        plans_url=plans_url,
+        dashboard_url=dashboard_url,
+        app_url=app_url,
+    )
+    subject = "Your eSIM Has Expired — Add Data to Stay Connected"
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)
+
+
+def build_esim_expiring_soon_email_html(
+    *,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    days_remaining: int,
+    data_remaining_gb: Optional[float],
+    plans_url: str,
+    dashboard_url: str,
+    app_url: str,
+) -> str:
+    flag = flag_emoji or ""
+    data_line = ""
+    if data_remaining_gb is not None:
+        data_line = (
+            f"<p style=\"margin:0 0 16px;\">Estimated data left: "
+            f"<strong style=\"color:{PRIMARY};\">{html.escape(str(data_remaining_gb))} GB</strong>.</p>"
+        )
+    body = f"""
+      <p style="margin:0 0 16px;">
+        A quick heads-up: your <strong style="color:{PRIMARY};">{html.escape(package_name)}</strong>
+        for {flag} <strong>{html.escape(country)}</strong> has about
+        <strong style="color:{ACCENT};">{int(days_remaining)} day</strong> of validity left.
+      </p>
+      <p style="margin:0 0 16px;">
+        Order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong>.
+        When validity ends, unused data expires — no rollover.
+      </p>
+      {data_line}
+      <p style="text-align:center;margin:0 0 12px;">
+        {cta_button(href=plans_url, label="Get more data before it ends")}
+      </p>
+      <p style="text-align:center;margin:0;">
+        <a href="{html.escape(dashboard_url)}" style="color:{PRIMARY};font-weight:700;text-decoration:none;">
+          Check My eSIMs
+        </a>
+      </p>
+    """
+    return wrap_branded_email(
+        eyebrow="Validity reminder",
+        title="Your eSIM expires soon — stay connected",
+        body_html=body,
+        app_url=app_url,
+        tip="Buying a follow-up plan early means you can install on Wi‑Fi with zero stress.",
+    )
+
+
+def send_esim_expiring_soon_email(
+    *,
+    to_email: str,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    days_remaining: int,
+    data_remaining_gb: Optional[float],
+    plans_url: str,
+    dashboard_url: str,
+    app_url: str,
+) -> str:
+    html_body = build_esim_expiring_soon_email_html(
+        order_number=order_number,
+        country=country,
+        package_name=package_name,
+        flag_emoji=flag_emoji,
+        days_remaining=days_remaining,
+        data_remaining_gb=data_remaining_gb,
+        plans_url=plans_url,
+        dashboard_url=dashboard_url,
+        app_url=app_url,
+    )
+    subject = "Your eSIM Expires Soon — Stay Connected"
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)

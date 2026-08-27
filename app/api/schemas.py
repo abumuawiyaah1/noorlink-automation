@@ -174,6 +174,7 @@ class CronRunResponse(BaseModel):
     expired_promos: int = Field(0, serialization_alias="expiredPromos")
     insider: Optional[dict] = None
     catalog_sync: Optional[dict] = Field(None, serialization_alias="catalogSync")
+    expiry_reminders: Optional[dict] = Field(None, serialization_alias="expiryReminders")
     message: Optional[str] = None
 
     model_config = {"populate_by_name": True}

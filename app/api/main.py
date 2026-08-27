@@ -266,7 +266,7 @@ def _require_cron_secret(authorization: Optional[str]) -> None:
 
 @app.post("/api/cron/run", response_model=CronRunResponse)
 async def cron_run(authorization: Optional[str] = Header(None)):
-    """Expire promos, send Insider issues, sync provider catalog. Requires CRON_SECRET."""
+    """Expire promos, send Insider issues, sync catalog, eSIM expiry reminders. Requires CRON_SECRET."""
     _require_cron_secret(authorization)
 
     expired = 0
@@ -292,11 +292,21 @@ async def cron_run(authorization: Optional[str] = Header(None)):
         logger.warning("Provider catalog sync failed during cron: %s", exc)
         catalog_sync = {"success": False, "error": str(exc)[:240]}
 
+    expiry_reminders = None
+    try:
+        from app.services.expiry_reminders import process_esim_expiry_reminders
+
+        expiry_reminders = process_esim_expiry_reminders()
+    except Exception as exc:
+        logger.warning("eSIM expiry reminders failed during cron: %s", exc)
+        expiry_reminders = {"success": False, "error": str(exc)[:240]}
+
     return CronRunResponse(
         success=True,
         expired_promos=expired,
         insider=insider_result,
         catalog_sync=catalog_sync,
+        expiry_reminders=expiry_reminders,
         message="Cron tasks completed.",
     )
 
