@@ -681,3 +681,89 @@ def send_esim_expiring_soon_email(
     )
     subject = "Your eSIM Expires Soon — Stay Connected"
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
+
+
+def build_esim_low_data_email_html(
+    *,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    usage_pct: float,
+    used_gb: Optional[float],
+    total_gb: Optional[float],
+    plans_url: str,
+    dashboard_url: str,
+    app_url: str,
+) -> str:
+    flag = flag_emoji or ""
+    country_label = html.escape(country)
+    usage_label = f"{int(round(usage_pct))}%"
+    usage_detail = ""
+    if used_gb is not None and total_gb is not None:
+        usage_detail = (
+            f" You’ve used about <strong style=\"color:{PRIMARY};\">"
+            f"{html.escape(str(used_gb))} GB</strong> of "
+            f"<strong style=\"color:{PRIMARY};\">{html.escape(str(total_gb))} GB</strong>."
+        )
+
+    body = f"""
+      <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
+        <strong style="color:{PRIMARY};">Recharge now to keep using your eSIM.</strong>
+      </p>
+      <p style="margin:0 0 16px;">
+        This is a friendly reminder that your {flag} <strong>{country_label}</strong> eSIM
+        has used <strong style="color:{ACCENT};">{usage_label}</strong> of the available data.
+        {usage_detail}
+      </p>
+      <p style="margin:0 0 16px;">
+        You can recharge your data any time by choosing a top-up package below.
+        Order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong>
+        · Plan <em>{html.escape(package_name)}</em>.
+      </p>
+      <p style="text-align:center;margin:0 0 12px;">
+        {cta_button(href=plans_url, label="Choose a top-up package")}
+      </p>
+      <p style="text-align:center;margin:0;">
+        <a href="{html.escape(dashboard_url)}" style="color:{PRIMARY};font-weight:700;text-decoration:none;">
+          Check data in My eSIMs
+        </a>
+      </p>
+    """
+    return wrap_branded_email(
+        eyebrow="Data reminder",
+        title="Recharge now to keep using your eSIM",
+        body_html=body,
+        app_url=app_url,
+        tip="Top up before you hit 100% so maps, rides, and messages stay online.",
+    )
+
+
+def send_esim_low_data_email(
+    *,
+    to_email: str,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    usage_pct: float,
+    used_gb: Optional[float],
+    total_gb: Optional[float],
+    plans_url: str,
+    dashboard_url: str,
+    app_url: str,
+) -> str:
+    html_body = build_esim_low_data_email_html(
+        order_number=order_number,
+        country=country,
+        package_name=package_name,
+        flag_emoji=flag_emoji,
+        usage_pct=usage_pct,
+        used_gb=used_gb,
+        total_gb=total_gb,
+        plans_url=plans_url,
+        dashboard_url=dashboard_url,
+        app_url=app_url,
+    )
+    subject = "Recharge now to keep using your eSIM"
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)

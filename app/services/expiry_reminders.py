@@ -1,7 +1,7 @@
 """
-eSIM validity reminders: expiring soon + expired → repurchase / add-data CTA.
+eSIM reminders: low data (70%), expiring soon, expired → top-up / repurchase CTA.
 
-Uses order metadata.validity_days (and breakage_allowances.valid_until when present).
+Uses order data usage + metadata.validity_days (and breakage_allowances when present).
 Reminders are tracked in orders.metadata.reminders so we never spam.
 """
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote
 
 from app.api import supabase_repository as db
@@ -18,19 +18,16 @@ from app.services.email_service import (
     EmailDeliveryError,
     send_esim_expired_email,
     send_esim_expiring_soon_email,
+    send_esim_low_data_email,
 )
-from app.services.order_customer_view import (
-    enrich_order_row,
-)
+from app.services.order_customer_view import enrich_order_row
 
 logger = logging.getLogger(__name__)
 
-# Look back this far for delivered orders that may have expired
 CANDIDATE_LOOKBACK_DAYS = 90
-# Only send "expired" email within this window after expiry (avoid old orders)
 EXPIRED_NOTIFY_WINDOW_DAYS = 3
-# "Expiring soon" when this many calendar days remain
 EXPIRING_SOON_DAYS = 1
+LOW_DATA_USAGE_PCT = 70.0
 
 
 def _utc_now() -> datetime:
@@ -65,9 +62,50 @@ def _country_plans_url(app_url: str, country: str) -> str:
     return f"{base}/plans/{quote(slug)}"
 
 
+def _usage_stats(
+    row: Dict[str, Any],
+    extras: Dict[str, Any],
+    allowance: Optional[Dict[str, Any]],
+) -> Tuple[Optional[float], Optional[float], Optional[float]]:
+    """Return (used_gb, total_gb, usage_pct) or Nones if unknown."""
+    total: Optional[float] = None
+    used: Optional[float] = None
+
+    if allowance and allowance.get("allowance_mb") is not None:
+        try:
+            total = float(allowance["allowance_mb"]) / 1024.0
+            used = float(allowance.get("used_mb") or 0) / 1024.0
+        except (TypeError, ValueError):
+            total = None
+            used = None
+
+    if total is None and row.get("data_total_gb") is not None:
+        try:
+            total = float(row["data_total_gb"])
+        except (TypeError, ValueError):
+            total = None
+    if used is None and row.get("data_used_gb") is not None:
+        try:
+            used = float(row["data_used_gb"])
+        except (TypeError, ValueError):
+            used = None
+
+    if used is None and extras.get("data_remaining_gb") is not None and total is not None:
+        try:
+            used = max(0.0, float(total) - float(extras["data_remaining_gb"]))
+        except (TypeError, ValueError):
+            used = None
+
+    if total is None or total <= 0 or used is None:
+        return used, total, None
+
+    pct = min(100.0, max(0.0, (float(used) / float(total)) * 100.0))
+    return round(used, 2), round(total, 2), round(pct, 1)
+
+
 def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
     """
-    Cron entry: send expiring-soon and expired emails for qualifying orders.
+    Cron entry: low-data, expiring-soon, and expired reminder emails.
     Returns counts for CronRunResponse.
     """
     settings = get_settings()
@@ -78,16 +116,18 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
     try:
         rows = db.list_orders_for_expiry_reminders(since_iso=since, limit=limit)
     except db.SupabaseRepositoryError as exc:
-        logger.exception("Failed to list orders for expiry reminders")
+        logger.exception("Failed to list orders for eSIM reminders")
         return {
             "success": False,
             "error": str(exc),
+            "low_data_sent": 0,
             "expiring_soon_sent": 0,
             "expired_sent": 0,
             "skipped": 0,
             "examined": 0,
         }
 
+    low_data_sent = 0
     expiring_soon_sent = 0
     expired_sent = 0
     skipped = 0
@@ -116,10 +156,7 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
         extras, _order = enrich_order_row(row, allowance_row=allowance)
         days_remaining = extras.get("days_remaining")
         validity_days = extras.get("validity_days")
-
-        if days_remaining is None or validity_days is None:
-            skipped += 1
-            continue
+        used_gb, total_gb, usage_pct = _usage_stats(row, extras, allowance)
 
         country = str(row.get("country") or "your destination")
         package_name = str(row.get("package_name") or "Travel eSIM")
@@ -129,15 +166,57 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
             f"{app_url}/dashboard?email={quote(email)}"
             f"&orderId={quote(order_number)}"
         )
+        acted = False
+
+        # —— Low data (70% used), while plan is still within validity ——
+        still_valid = days_remaining is None or int(days_remaining) > 0
+        if (
+            still_valid
+            and usage_pct is not None
+            and usage_pct >= LOW_DATA_USAGE_PCT
+            and not reminders.get("low_data_70_sent_at")
+            and not reminders.get("expiry_sent_at")
+        ):
+            try:
+                send_esim_low_data_email(
+                    to_email=email,
+                    order_number=order_number,
+                    country=country,
+                    package_name=package_name,
+                    flag_emoji=flag if isinstance(flag, str) else None,
+                    usage_pct=float(usage_pct),
+                    used_gb=used_gb,
+                    total_gb=total_gb,
+                    plans_url=plans_url,
+                    dashboard_url=dashboard_url,
+                    app_url=app_url,
+                )
+                reminders = {
+                    **reminders,
+                    "low_data_70_sent_at": now.isoformat(),
+                }
+                db.merge_order_metadata(
+                    order_number,
+                    {"reminders": reminders},
+                )
+                low_data_sent += 1
+                acted = True
+            except EmailDeliveryError as exc:
+                logger.error("Low-data reminder failed for %s: %s", order_number, exc)
+                errors.append(f"{order_number}: {exc}")
+                continue
 
         # —— Expired ——
-        if days_remaining <= 0 and not reminders.get("expiry_sent_at"):
-            # Avoid emailing ancient expiries if we never tracked them
+        if (
+            days_remaining is not None
+            and validity_days is not None
+            and int(days_remaining) <= 0
+            and not reminders.get("expiry_sent_at")
+        ):
             valid_until = None
             if allowance:
                 valid_until = _parse_dt(allowance.get("valid_until"))
             if valid_until is None:
-                # Approximate end from start + validity
                 start = (
                     _parse_dt(row.get("fulfilled_at"))
                     or _parse_dt(row.get("paid_at"))
@@ -149,7 +228,8 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
             if valid_until and (now - valid_until) > timedelta(
                 days=EXPIRED_NOTIFY_WINDOW_DAYS
             ):
-                skipped += 1
+                if not acted:
+                    skipped += 1
                 continue
 
             try:
@@ -184,6 +264,7 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
                     except db.SupabaseRepositoryError:
                         pass
                 expired_sent += 1
+                acted = True
             except EmailDeliveryError as exc:
                 logger.error("Expired reminder failed for %s: %s", order_number, exc)
                 errors.append(f"{order_number}: {exc}")
@@ -191,7 +272,8 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
 
         # —— Expiring soon (1 day left) ——
         if (
-            days_remaining == EXPIRING_SOON_DAYS
+            days_remaining is not None
+            and int(days_remaining) == EXPIRING_SOON_DAYS
             and not reminders.get("expiring_soon_sent_at")
             and not reminders.get("expiry_sent_at")
         ):
@@ -218,6 +300,7 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
                     },
                 )
                 expiring_soon_sent += 1
+                acted = True
             except EmailDeliveryError as exc:
                 logger.error(
                     "Expiring-soon reminder failed for %s: %s", order_number, exc
@@ -225,10 +308,12 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
                 errors.append(f"{order_number}: {exc}")
             continue
 
-        skipped += 1
+        if not acted:
+            skipped += 1
 
     return {
         "success": len(errors) == 0,
+        "low_data_sent": low_data_sent,
         "expiring_soon_sent": expiring_soon_sent,
         "expired_sent": expired_sent,
         "skipped": skipped,
