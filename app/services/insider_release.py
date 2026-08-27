@@ -22,17 +22,34 @@ def release_due_insider_issues() -> Dict[str, Any]:
     if not due:
         return {"sent": 0, "failed": 0, "issues": []}
 
-    subscribers = db.list_newsletter_subscribers(active_only=True)
-    if not subscribers:
-        logger.warning("Insider release skipped — no active subscribers")
-        return {"sent": 0, "failed": len(due), "issues": [], "reason": "no_subscribers"}
-
     sent_issues = 0
     failed_issues = 0
     results: List[Dict[str, Any]] = []
 
     for issue in due:
         slug = issue["slug"]
+        audience = str(issue.get("audience") or "all").strip().lower() or "all"
+        subscribers = db.list_newsletter_subscribers(
+            active_only=True,
+            audience=audience,
+        )
+        if not subscribers:
+            logger.warning(
+                "Insider release deferred for %s — no subscribers for audience=%s",
+                slug,
+                audience,
+            )
+            # Keep scheduled so later cron retries when the pilgrimage list grows.
+            results.append(
+                {
+                    "slug": slug,
+                    "status": "deferred",
+                    "reason": "no_subscribers",
+                    "audience": audience,
+                }
+            )
+            continue
+
         db.mark_insider_issue_status(slug, "sending")
         promo_row = None
         promo_code = issue.get("promo_code")
@@ -59,6 +76,24 @@ def release_due_insider_issues() -> Dict[str, Any]:
                     promo_code=str(promo_code) if promo_code else None,
                     promo_percent=int(promo_percent) if promo_percent else None,
                     promo_ends=promo_ends,
+                    email_highlight=(
+                        str(issue["email_highlight"])
+                        if issue.get("email_highlight")
+                        else None
+                    ),
+                    email_highlight_ref=(
+                        str(issue["email_highlight_ref"])
+                        if issue.get("email_highlight_ref")
+                        else None
+                    ),
+                    email_note=(
+                        str(issue["email_note"]) if issue.get("email_note") else None
+                    ),
+                    email_giving_note=(
+                        str(issue["email_giving_note"])
+                        if issue.get("email_giving_note")
+                        else None
+                    ),
                 )
             except EmailDeliveryError as exc:
                 issue_failures += 1
@@ -71,7 +106,7 @@ def release_due_insider_issues() -> Dict[str, Any]:
                 "failed",
                 error=f"All {issue_failures} sends failed",
             )
-            results.append({"slug": slug, "status": "failed"})
+            results.append({"slug": slug, "status": "failed", "audience": audience})
             continue
 
         sent_issues += 1
@@ -80,6 +115,7 @@ def release_due_insider_issues() -> Dict[str, Any]:
             {
                 "slug": slug,
                 "status": "sent",
+                "audience": audience,
                 "recipients": len(subscribers) - issue_failures,
                 "failed": issue_failures,
             }

@@ -15,6 +15,7 @@ from app.services.email_brand import (
     BG,
     MUTED,
     PRIMARY,
+    TEXT,
     cta_button,
     review_request_block,
     wrap_branded_email,
@@ -452,24 +453,74 @@ def build_insider_issue_email_html(
     promo_ends: Optional[str],
     app_url: str,
     unsubscribe_url: Optional[str] = None,
+    email_highlight: Optional[str] = None,
+    email_highlight_ref: Optional[str] = None,
+    email_note: Optional[str] = None,
+    email_giving_note: Optional[str] = None,
 ) -> str:
     issue_url = f"{app_url.rstrip('/')}{web_path}"
-    promo_block = ""
-    if promo_code and promo_percent:
-        ends_line = ""
-        if promo_ends:
-            ends_line = f"<p style=\"margin:8px 0 0;font-size:13px;color:rgba(255,255,255,0.75);\">Ends {html.escape(promo_ends[:10])} — code turns off automatically after.</p>"
-        deal_href = f"{app_url.rstrip('/')}/destinations?promo={html.escape(promo_code)}"
-        promo_block = f"""
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#05191A;border-radius:12px;">
-        <tr><td style="padding:20px 22px;text-align:center;">
-          <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:{ACCENT};font-weight:700;">Insider deal</p>
-          <p style="margin:0;font-family:ui-monospace,Menlo,monospace;font-size:24px;font-weight:800;color:{ACCENT};">{html.escape(promo_code)}</p>
-          <p style="margin:8px 0 0;font-size:15px;color:#fff;">{promo_percent}% off at checkout</p>
-          {ends_line}
-          <p style="margin:16px 0 0;">{cta_button(href=deal_href, label=f"Use {promo_code}")}</p>
+    give_url = f"{app_url.rstrip('/')}/give"
+
+    highlight_block = ""
+    if email_highlight:
+        ref_line = ""
+        if email_highlight_ref:
+            ref_line = (
+                f"<p style=\"margin:8px 0 0;font-size:13px;font-weight:700;color:{PRIMARY};\">"
+                f"{html.escape(email_highlight_ref)}</p>"
+            )
+        highlight_block = f"""
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;background:#FFF8F0;border:1px solid #FFE0B2;border-radius:12px;">
+        <tr><td style="padding:18px 20px;">
+          <p style="margin:0;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:{ACCENT};font-weight:700;">From the Sunnah</p>
+          <p style="margin:10px 0 0;font-size:16px;line-height:1.6;font-style:italic;color:{TEXT};">{html.escape(email_highlight)}</p>
+          {ref_line}
         </td></tr>
       </table>"""
+
+    note_block = ""
+    if email_note:
+        note_block = f"""
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:{TEXT};">{html.escape(email_note)}</p>
+    """
+
+    giving_block = ""
+    if email_giving_note:
+        giving_block = f"""
+      <p style="margin:0 0 20px;font-size:14px;line-height:1.55;color:{MUTED};">
+        {html.escape(email_giving_note)}
+        <a href="{html.escape(give_url)}" style="color:{PRIMARY};font-weight:700;text-decoration:underline;">Our pledge</a>
+      </p>
+    """
+
+    promo_block = ""
+    if promo_code and promo_percent:
+        ends_bit = ""
+        if promo_ends:
+            ends_bit = f" · ends {html.escape(str(promo_ends)[:10])}"
+        plans_href = f"{app_url.rstrip('/')}/hajj-umrah?promo={html.escape(promo_code)}"
+        # Soft note — not a hard-sell promo panel
+        promo_block = f"""
+      <p style="margin:0 0 22px;font-size:14px;line-height:1.55;color:{TEXT};">
+        If you need data for the journey:
+        <strong style="color:{PRIMARY};">{html.escape(promo_code)}</strong>
+        ({promo_percent}% off{ends_bit}).
+      </p>
+      <p style="text-align:center;margin:0 0 12px;">
+        {cta_button(href=issue_url, label="Read the full reminder")}
+      </p>
+      <p style="text-align:center;margin:0;">
+        <a href="{html.escape(plans_href)}" style="color:{PRIMARY};font-weight:700;text-decoration:none;font-size:14px;">
+          Hajj &amp; Umrah Connect
+        </a>
+      </p>
+    """
+    else:
+        promo_block = f"""
+      <p style="text-align:center;margin:24px 0 0;">
+        {cta_button(href=issue_url, label="Read this issue")}
+      </p>
+    """
 
     hero_block = ""
     if hero_image_url:
@@ -486,10 +537,39 @@ def build_insider_issue_email_html(
       </p>
     """
 
-    body = f"""
+    # Tight special layout when we have a highlight; otherwise classic monthly layout.
+    if email_highlight:
+        body = f"""
+      {hero_block}
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:{TEXT};">{html.escape(preview)}</p>
+      {highlight_block}
+      {note_block}
+      {giving_block}
+      {promo_block}
+      {unsub_block}
+    """
+        tip = "Install your eSIM on Wi‑Fi before you fly — then keep your focus on the journey."
+    else:
+        classic_promo = ""
+        if promo_code and promo_percent:
+            ends_line = ""
+            if promo_ends:
+                ends_line = f"<p style=\"margin:8px 0 0;font-size:13px;color:{MUTED};\">Ends {html.escape(str(promo_ends)[:10])} — code turns off automatically after.</p>"
+            deal_href = f"{app_url.rstrip('/')}/destinations?promo={html.escape(promo_code)}"
+            classic_promo = f"""
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#F3F7F7;border:3px solid {PRIMARY};border-radius:12px;">
+        <tr><td style="padding:20px 22px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:{ACCENT};font-weight:700;">Insider deal</p>
+          <p style="margin:0;font-family:ui-monospace,Menlo,monospace;font-size:24px;font-weight:800;color:{PRIMARY};">{html.escape(promo_code)}</p>
+          <p style="margin:8px 0 0;font-size:15px;color:{TEXT};">{promo_percent}% off at checkout</p>
+          {ends_line}
+          <p style="margin:16px 0 0;">{cta_button(href=deal_href, label=f"Use {promo_code}")}</p>
+        </td></tr>
+      </table>"""
+        body = f"""
       {hero_block}
       <p style="margin:0 0 16px;font-size:16px;line-height:1.65;">{html.escape(preview)}</p>
-      {promo_block}
+      {classic_promo}
       <p style="text-align:center;margin:28px 0 0;">
         {cta_button(href=issue_url, label="Read this issue")}
       </p>
@@ -498,12 +578,14 @@ def build_insider_issue_email_html(
       </p>
       {unsub_block}
     """
+        tip = "Install your eSIM on Wi‑Fi before you fly — it saves stress at the airport."
+
     return wrap_branded_email(
         eyebrow="NoorLink Insider",
         title=html.escape(subject),
         body_html=body,
         app_url=app_url,
-        tip="Install your eSIM on Wi‑Fi before you fly — it saves stress at the airport.",
+        tip=tip,
     )
 
 
@@ -517,6 +599,10 @@ def send_insider_issue_email(
     promo_code: Optional[str] = None,
     promo_percent: Optional[int] = None,
     promo_ends: Optional[str] = None,
+    email_highlight: Optional[str] = None,
+    email_highlight_ref: Optional[str] = None,
+    email_note: Optional[str] = None,
+    email_giving_note: Optional[str] = None,
 ) -> str:
     from urllib.parse import quote
 
@@ -534,6 +620,10 @@ def send_insider_issue_email(
         promo_ends=promo_ends,
         app_url=settings.app_url,
         unsubscribe_url=unsubscribe_url,
+        email_highlight=email_highlight,
+        email_highlight_ref=email_highlight_ref,
+        email_note=email_note,
+        email_giving_note=email_giving_note,
     )
     email_subject = f"NoorLink Insider — {subject}"
     return send_email(to_email=to_email, subject=email_subject, html_body=html_body)

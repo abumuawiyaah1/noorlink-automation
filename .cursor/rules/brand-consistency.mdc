@@ -1,0 +1,40 @@
+---
+description: Keep all customer-facing NoorLink brand surfaces consistent
+alwaysApply: true
+---
+
+# Brand consistency — everything customers see or receive
+
+Any surface a customer **sees or receives** must feel like the same NoorLink brand: website, Insider newsletter (web + email), transactional emails, support replies chrome, promo cards, and CTAs.
+
+## Tokens (single source of truth)
+
+| Role | Value | Use |
+| --- | --- | --- |
+| Primary teal | `#0F3D3E` | Headers, brand chrome, strong UI |
+| Ink / dark | `#05191A` | Text on orange CTAs, deep footer only |
+| Accent orange | `#FF9500` | CTAs, kickers, wordmark accent |
+| Page / email bg | `#F3F5F7` | Outer canvas |
+| Surface | `#FFFFFF` / light mist `#F3F7F7` | Cards with readable body copy |
+| Body text | `#111827` / `#334155` | Paragraphs on light surfaces |
+| Muted | `#6B7280` / `#5B6B6C` | Secondary lines |
+
+Frontend: `styles/tokens.css` + Insider vars in `styles/insider.css`.  
+Emails: `app/services/email_brand.py` in noorlink-automation — **do not invent new colors**.
+
+## Readability rule (non-negotiable)
+
+- **Never** put dark slate / teal body text on near-black cards.
+- Deal / promo / link cards that contain readable copy + CTAs use a **light surface** (white / mist), teal code text, orange primary CTA (`#FF9500` on `#05191A` text), outlined secondary links in teal.
+- Dark teal is for **headers / hero chrome / footers**, not for dense paragraph + multi-link blocks.
+
+## Tone & content
+
+- Calm, practical, trustworthy — travel advisor energy, not hype.
+- Same voice in monthly Insider, specials, order emails, reminders, and on-site copy.
+- Prefer “install before you fly” over fake urgency.
+- Wordmark: **Noor** (teal) + **Link** (orange).
+
+## When changing one surface
+
+If you restyle a deal card, CTA, or promo block on the **site**, mirror it in the **email** templates (and vice versa) in the same change set whenever possible.

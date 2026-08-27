@@ -410,10 +410,23 @@ def unsubscribe_newsletter_subscriber(email: str) -> bool:
         raise SupabaseRepositoryError(str(exc)) from exc
 
 
-def list_newsletter_subscribers(*, active_only: bool = True) -> List[str]:
+def list_newsletter_subscribers(
+    *,
+    active_only: bool = True,
+    audience: str = "all",
+) -> List[str]:
+    """Return Insider recipient emails.
+
+    audience:
+      - all: every active subscriber
+      - pilgrimage: dream_destination signals Umrah/Hajj/Saudi OR bought
+        Saudi / Umrah / Hajj packages
+    """
     client = get_supabase_client()
     try:
-        query = client.table("newsletter_subscribers").select("email, unsubscribed_at")
+        query = client.table("newsletter_subscribers").select(
+            "email, dream_destination, unsubscribed_at"
+        )
         if active_only:
             query = query.is_("unsubscribed_at", "null")
         result = query.execute()
@@ -421,11 +434,68 @@ def list_newsletter_subscribers(*, active_only: bool = True) -> List[str]:
         logger.exception("newsletter_subscribers list failed")
         raise SupabaseRepositoryError(str(exc)) from exc
 
+    normalized_audience = (audience or "all").strip().lower()
     emails: List[str] = []
     for row in result.data or []:
         email = str(row.get("email") or "").strip().lower()
-        if email:
-            emails.append(email)
+        if not email:
+            continue
+        if normalized_audience == "pilgrimage":
+            dest = str(row.get("dream_destination") or "").strip().lower()
+            if not _looks_like_pilgrimage_interest(dest):
+                continue
+        emails.append(email)
+
+    if normalized_audience == "pilgrimage":
+        buyer_emails = list_pilgrimage_order_emails()
+        merged = sorted(set(emails) | buyer_emails)
+        return merged
+
+    return emails
+
+
+_PILGRIMAGE_DEST_TOKENS = (
+    "umrah",
+    "hajj",
+    "saudi",
+    "pilgrim",
+    "makkah",
+    "mecca",
+    "madinah",
+    "medina",
+)
+
+
+def _looks_like_pilgrimage_interest(value: str) -> bool:
+    if not value:
+        return False
+    lowered = value.lower()
+    return any(token in lowered for token in _PILGRIMAGE_DEST_TOKENS)
+
+
+def list_pilgrimage_order_emails() -> set[str]:
+    """Emails that purchased Saudi / Umrah / Hajj related packages."""
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("orders")
+            .select("email, country, package_name")
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("pilgrimage order email lookup failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+
+    emails: set[str] = set()
+    for row in result.data or []:
+        email = str(row.get("email") or "").strip().lower()
+        if not email:
+            continue
+        country = str(row.get("country") or "").strip().lower()
+        package = str(row.get("package_name") or "").strip().lower()
+        haystack = f"{country} {package}"
+        if _looks_like_pilgrimage_interest(haystack):
+            emails.add(email)
     return emails
 
 

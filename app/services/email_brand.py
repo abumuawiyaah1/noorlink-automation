@@ -3,6 +3,10 @@ Shared NoorLink email brand chrome (colors, logo image, support signature).
 
 Matches the live site: primary teal #0F3D3E + accent orange #FF9500.
 Logo: https://noorlink.co/images/logo.png
+
+Consistency rule: deal/promo cards that contain readable copy + CTAs use a
+light surface (white / #F3F7F7), teal code text, orange primary CTA — never
+dark slate text on near-black backgrounds. Keep parity with Insider web cards.
 """
 
 from __future__ import annotations
