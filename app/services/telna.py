@@ -184,6 +184,7 @@ class TelnaClient:
             self._client = httpx.AsyncClient(
                 headers=self._default_headers(),
                 timeout=self._timeout,
+                trust_env=False,
             )
         return self
 
@@ -196,6 +197,9 @@ class TelnaClient:
             "Authorization": self.api_token,
             "Accept": "application/json",
             "Content-Type": "application/json",
+            # Cloudflare in front of ppo-api.telna.com returns Error 1010 when
+            # User-Agent is missing (urllib default). Keep an explicit UA.
+            "User-Agent": "NoorLink/1.0 (+https://noorlink.co)",
             "Request-ID": str(uuid.uuid4()),
         }
 
@@ -204,6 +208,7 @@ class TelnaClient:
             self._client = httpx.AsyncClient(
                 headers=self._default_headers(),
                 timeout=self._timeout,
+                trust_env=False,
             )
             self._owns_client = True
         return self._client
