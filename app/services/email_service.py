@@ -277,6 +277,7 @@ def build_fulfillment_email_html(
     review_block = review_request_block(
         app_url=app_url,
         order_number=order_number,
+        trustpilot_review_url=(settings.trustpilot_review_url or "").strip() or None,
         google_review_url=(settings.google_review_url or "").strip() or None,
     )
 

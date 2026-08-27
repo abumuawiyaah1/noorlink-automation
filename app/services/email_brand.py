@@ -81,6 +81,7 @@ def review_request_block(
     *,
     app_url: str,
     order_number: Optional[str] = None,
+    trustpilot_review_url: Optional[str] = None,
     google_review_url: Optional[str] = None,
 ) -> str:
     """Post-trip review ask — matches NoorLink brand card styling."""
@@ -95,10 +96,19 @@ def review_request_block(
             f"&message={quote(f'Hi NoorLink, here is my feedback on order {order_number.strip()}:')}"
         )
 
-    google_btn = ""
-    if (google_review_url or "").strip():
-        google_btn = f"""
-          <a href="{html.escape(google_review_url.strip())}"
+    public_btns = ""
+    trustpilot = (trustpilot_review_url or "").strip()
+    google = (google_review_url or "").strip()
+    if trustpilot:
+        public_btns += f"""
+          <a href="{html.escape(trustpilot)}"
+             style="display:inline-block;background:{PRIMARY};color:#ffffff;padding:12px 22px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;margin-right:8px;margin-bottom:8px;">
+            Rate us on Trustpilot
+          </a>
+        """
+    elif google:
+        public_btns += f"""
+          <a href="{html.escape(google)}"
              style="display:inline-block;background:{PRIMARY};color:#ffffff;padding:12px 22px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;margin-right:8px;margin-bottom:8px;">
             Rate us on Google
           </a>
@@ -120,7 +130,7 @@ def review_request_block(
               any improvements we can make at NoorLink.
             </p>
             <p style="margin:0 0 16px;">
-              {google_btn}
+              {public_btns}
               <a href="{html.escape(review_page)}"
                  style="display:inline-block;background:{ACCENT};color:{PRIMARY_DARK};padding:12px 22px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;margin-right:8px;margin-bottom:8px;">
                 Share your experience

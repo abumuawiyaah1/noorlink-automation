@@ -85,7 +85,9 @@ class Settings(BaseSettings):
     ops_alert_email: str = ""
     slack_webhook_url: str = ""
 
-    # Optional public Google review link (shown in post-delivery emails)
+    # Optional public review links (shown in post-delivery emails)
+    # Trustpilot preferred; Google optional secondary.
+    trustpilot_review_url: str = ""
     google_review_url: str = ""
 
     # Protected bearer token for scheduled cron hits (Insider release + promo expiry)
