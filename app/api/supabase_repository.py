@@ -347,14 +347,14 @@ def _validate_managed_package_price(
     package: Optional[Dict[str, Any]],
     price_cents: int,
 ) -> None:
-    if not package or not package.get("is_managed"):
+    if not package:
         return
     catalog_cents = package.get("price_cents")
     if catalog_cents is None:
         return
     if price_cents != int(catalog_cents):
         raise ManagedPackagePriceMismatchError(
-            f"Price mismatch for managed package "
+            f"Price mismatch for package "
             f"'{package.get('slug') or package.get('id')}': "
             f"expected {catalog_cents} cents, got {price_cents} cents"
         )
@@ -541,11 +541,25 @@ def increment_promo_redemption(code: str) -> None:
     row = get_promo_code(normalized)
     if not row:
         return
-    count = int(row.get("redemption_count") or 0) + 1
+    current = int(row.get("redemption_count") or 0)
+    max_redemptions = row.get("max_redemptions")
+    if max_redemptions is not None and current >= int(max_redemptions):
+        logger.warning("Promo %s already at redemption cap", normalized)
+        return
     try:
-        client.table("promo_codes").update({"redemption_count": count}).eq(
-            "code", normalized
-        ).execute()
+        query = (
+            client.table("promo_codes")
+            .update({"redemption_count": current + 1})
+            .eq("code", normalized)
+        )
+        if max_redemptions is not None:
+            query = query.lt("redemption_count", int(max_redemptions))
+        result = query.execute()
+        if not result.data:
+            logger.warning(
+                "Promo redemption increment lost race for %s (cap may be reached)",
+                normalized,
+            )
     except Exception as exc:
         logger.warning("promo redemption increment failed for %s", normalized, exc_info=True)
 
@@ -996,9 +1010,13 @@ def get_order_row_by_stripe_payment_intent(
 
 def lookup_order_by_stripe_payment_intent(
     payment_intent_id: str,
+    *,
+    email: Optional[str] = None,
 ) -> Optional[Order]:
     row = get_order_row_by_stripe_payment_intent(payment_intent_id.strip())
     if not row:
+        return None
+    if email and str(row.get("email") or "").strip().lower() != email.strip().lower():
         return None
     allowance = get_breakage_allowance_by_order_id(str(row["id"]))
     _, order = enrich_order_row(row, allowance_row=allowance)
@@ -1160,10 +1178,16 @@ def lookup_order(order_id: str, email: str) -> Optional[Order]:
     return order
 
 
-def lookup_order_by_stripe_session(session_id: str) -> Optional[Order]:
-    """Resolve order after Stripe redirect (success page). Session id acts as lookup token."""
+def lookup_order_by_stripe_session(
+    session_id: str,
+    *,
+    email: Optional[str] = None,
+) -> Optional[Order]:
+    """Resolve order after Stripe redirect (success page)."""
     row = get_order_row_by_stripe_session(session_id.strip())
     if not row:
+        return None
+    if email and str(row.get("email") or "").strip().lower() != email.strip().lower():
         return None
     allowance = get_breakage_allowance_by_order_id(str(row["id"]))
     _, order = enrich_order_row(row, allowance_row=allowance)

@@ -62,6 +62,7 @@ def extract_checkout_session_completed(
         "order_id": order_id,
         "payment_intent_id": payment_intent_id,
         "customer_email": getattr(session, "customer_email", None),
+        "amount_cents": stripe_event_amount_cents(event),
     }
 
 
@@ -84,4 +85,17 @@ def extract_payment_intent_succeeded(
         "order_number": order_number,
         "order_id": order_id,
         "customer_email": getattr(intent, "receipt_email", None),
+        "amount_cents": int(getattr(intent, "amount_received", None) or getattr(intent, "amount", 0) or 0) or None,
     }
+
+
+def stripe_event_amount_cents(event: stripe.Event) -> Optional[int]:
+    if event.type == "payment_intent.succeeded":
+        intent = event.data.object
+        raw = getattr(intent, "amount_received", None) or getattr(intent, "amount", None)
+        return int(raw) if raw is not None else None
+    if event.type == "checkout.session.completed":
+        session = event.data.object
+        raw = getattr(session, "amount_total", None)
+        return int(raw) if raw is not None else None
+    return None

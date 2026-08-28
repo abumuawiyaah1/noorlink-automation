@@ -60,10 +60,10 @@ class NewsletterUnsubscribeResponse(BaseModel):
 
 
 class ContactFormRequest(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=120)
     email: EmailStr
-    subject: Optional[str] = None
-    message: str
+    subject: Optional[str] = Field(None, max_length=200)
+    message: str = Field(..., min_length=1, max_length=5000)
 
 
 class ContactFormResponse(BaseModel):
@@ -151,8 +151,9 @@ class CheckoutSessionRequest(BaseModel):
 
 class PromoValidateRequest(BaseModel):
     code: str = Field(..., min_length=2, max_length=40)
-    price: float = Field(..., gt=0)
-    package_id: Optional[str] = Field(None, alias="packageId")
+    country: str = Field(..., min_length=2, max_length=120)
+    price: float = Field(0, ge=0)
+    package_id: str = Field(..., alias="packageId", min_length=2)
 
     model_config = {"populate_by_name": True}
 

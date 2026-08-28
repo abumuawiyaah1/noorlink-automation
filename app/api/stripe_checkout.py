@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 import stripe
 
@@ -66,6 +67,7 @@ def create_stripe_checkout_session(
     success_url = (
         f"{settings.stripe_success_url.rstrip('/')}"
         "?session_id={CHECKOUT_SESSION_ID}"
+        f"&email={quote(email.strip().lower(), safe='')}"
     )
 
     # Do NOT set payment_method_types — that locks Checkout to an explicit list

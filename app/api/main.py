@@ -1,8 +1,10 @@
+from urllib.parse import quote
+
 from datetime import datetime, timezone
 import logging
 from typing import Optional
 
-from fastapi import FastAPI, Header, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -15,7 +17,12 @@ from app.services.email_service import (
 from app.services.fulfillment import FulfillmentError, process_paid_order
 from app.services.ops_alerts import notify_fulfillment_failure
 from app.services.insider_release import expire_finished_promos, release_due_insider_issues
-from app.services.promo_codes import PromoCodeError, normalize_code, validate_promo_row
+from app.services.promo_codes import PromoCodeError, PromoDiscount, normalize_code, validate_promo_row
+from app.services.checkout_pricing import (
+    CheckoutPricingError,
+    authoritative_checkout_price,
+)
+from .internal_auth import require_cron_secret, require_internal_in_production
 
 from .analytics import router as analytics_router
 from .devices import check_device
@@ -33,6 +40,7 @@ from .stripe_webhook import (
     construct_stripe_event,
     extract_checkout_session_completed,
     extract_payment_intent_succeeded,
+    stripe_event_amount_cents,
 )
 from .schemas import (
     ApiTestResponse,
@@ -63,13 +71,14 @@ from .schemas import (
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+_is_production = settings.environment.lower() == "production"
 
 app = FastAPI(
     title="NoorLink Automation API",
     description="Automated eSIM purchase and delivery system",
     version=settings.app_version,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
 )
 
 app.add_middleware(
@@ -88,8 +97,12 @@ app.include_router(webhooks_router)
 
 def _db_error(exc: Exception) -> HTTPException:
     logger.error("Database error: %s", exc)
+    if _is_production:
+        return HTTPException(
+            status_code=503,
+            detail="Database temporarily unavailable. Please try again.",
+        )
     detail = str(exc).strip() or "Database temporarily unavailable. Please try again."
-    # Surface actionable checkout/schema errors to the client.
     if any(
         token in detail
         for token in (
@@ -109,6 +122,59 @@ def _db_error(exc: Exception) -> HTTPException:
         status_code=503,
         detail="Database temporarily unavailable. Please try again.",
     )
+
+
+def _prepare_checkout_pricing(body: CheckoutSessionRequest) -> tuple[float, int, Optional[PromoDiscount]]:
+    if not body.package_id or not str(body.package_id).strip():
+        raise HTTPException(
+            status_code=400,
+            detail="packageId is required. Go back and select a plan.",
+        )
+    try:
+        catalog_price = authoritative_checkout_price(
+            package_id=str(body.package_id),
+            country=body.country,
+            client_price=body.price if body.price > 0 else None,
+        )
+    except db.ManagedPackagePriceMismatchError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Package price does not match our catalog. Refresh and try again.",
+        ) from exc
+    except CheckoutPricingError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    subtotal_cents = int(round(catalog_price * 100))
+    promo_discount: Optional[PromoDiscount] = None
+
+    if body.promo_code and body.promo_code.strip():
+        try:
+            db.expire_promo_codes()
+        except db.SupabaseRepositoryError:
+            pass
+        try:
+            row = db.get_promo_code(normalize_code(body.promo_code))
+            promo_discount = validate_promo_row(row, subtotal_cents=subtotal_cents)
+        except PromoCodeError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return catalog_price, subtotal_cents, promo_discount
+
+
+def _verify_stripe_paid_amount(order_row: dict, event) -> bool:
+    expected = int(order_row.get("amount_cents") or 0)
+    received = stripe_event_amount_cents(event)
+    if not expected or not received:
+        return True
+    if expected != received:
+        logger.error(
+            "Stripe amount mismatch for order %s: expected %s got %s",
+            order_row.get("order_number"),
+            expected,
+            received,
+        )
+        return False
+    return True
 
 
 @app.get("/", response_model=RootResponse)
@@ -134,12 +200,13 @@ async def health_check():
 
 
 @app.get("/api/diagnostics/email", response_model=EmailDiagnosticsResponse)
-async def email_diagnostics(probe: bool = Query(False)):
-    """Public, non-secret check of Resend from-address configuration.
-
-    Pass ?probe=1 to attempt a real send to delivered@resend.dev and return
-    the provider result (never exposes the API key).
-    """
+async def email_diagnostics(
+    probe: bool = Query(False),
+    authorization: Optional[str] = Header(None),
+):
+    """Resend configuration check. probe=1 sends a test email (internal auth in production)."""
+    if probe and _is_production:
+        require_internal_in_production(authorization)
     from_email = (settings.resend_from_email or "").strip()
     configured = bool((settings.resend_api_key or "").strip())
     domain = None
@@ -194,11 +261,13 @@ async def email_diagnostics(probe: bool = Query(False)):
 
 
 @app.get("/api/test", response_model=ApiTestResponse)
-async def test_endpoint():
+async def test_endpoint(authorization: Optional[str] = Header(None)):
+    if _is_production:
+        require_internal_in_production(authorization)
     return ApiTestResponse(
         success=True,
         message="API is working!",
-        environment=settings.environment,
+        environment=settings.environment if not _is_production else "production",
     )
 
 
@@ -238,12 +307,29 @@ async def newsletter_unsubscribe(body: NewsletterUnsubscribeRequest):
 
 @app.post("/api/promo/validate", response_model=PromoValidateResponse)
 async def promo_validate(body: PromoValidateRequest):
+    if not body.package_id or not str(body.package_id).strip():
+        return PromoValidateResponse(
+            valid=False,
+            message="Select a plan before applying a promo code.",
+        )
+    try:
+        catalog_price = authoritative_checkout_price(
+            package_id=str(body.package_id),
+            country=body.country,
+            client_price=body.price if body.price > 0 else None,
+        )
+    except (CheckoutPricingError, db.ManagedPackagePriceMismatchError):
+        return PromoValidateResponse(
+            valid=False,
+            message="Select a valid plan before applying a promo code.",
+        )
+
     try:
         db.expire_promo_codes()
     except db.SupabaseRepositoryError:
         pass
 
-    subtotal_cents = int(round(body.price * 100))
+    subtotal_cents = int(round(catalog_price * 100))
     code = normalize_code(body.code)
     try:
         row = db.get_promo_code(code)
@@ -263,12 +349,7 @@ async def promo_validate(body: PromoValidateRequest):
 
 
 def _require_cron_secret(authorization: Optional[str]) -> None:
-    secret = (settings.cron_secret or "").strip()
-    if not secret:
-        raise HTTPException(status_code=503, detail="Cron is not configured.")
-    expected = f"Bearer {secret}"
-    if authorization != expected:
-        raise HTTPException(status_code=401, detail="Unauthorized.")
+    require_cron_secret(authorization)
 
 
 @app.post("/api/cron/run", response_model=CronRunResponse)
@@ -324,7 +405,9 @@ async def fulfillment_resolve(
     data_gb: float = Query(..., alias="dataGb", gt=0),
     validity_days: int = Query(..., alias="days", gt=0),
     wants_topup: bool = Query(False, alias="wantsTopUp"),
+    authorization: Optional[str] = Header(None),
 ):
+    require_internal_in_production(authorization)
     """
     Debug/admin: show map vs smart cascade choice for a sellable ladder step.
     Does not call upstream provider APIs — catalog cache / builtin seed only.
@@ -341,7 +424,10 @@ async def fulfillment_resolve(
 
 
 @app.get("/api/fulfillment/strategy/summary", response_model=BreakageStrategySummaryResponse)
-async def breakage_strategy_summary():
+async def breakage_strategy_summary(
+    authorization: Optional[str] = Header(None),
+):
+    require_internal_in_production(authorization)
     """Breakage-fulfillment strategy counts and pilot countries (from WeConnect P1 pricelist)."""
     from app.services.breakage_strategy import strategy_summary
 
@@ -353,7 +439,9 @@ async def breakage_strategy_country(
     country: str = Query(..., min_length=2),
     data_gb: Optional[float] = Query(None, alias="dataGb"),
     validity_days: Optional[int] = Query(None, alias="days"),
+    authorization: Optional[str] = Header(None),
 ):
+    require_internal_in_production(authorization)
     from app.services.breakage_strategy import (
         bundles_for_country,
         fulfillment_mode_for_order,
@@ -388,7 +476,16 @@ async def breakage_strategy_country(
 @app.get("/api/fulfillment/allowance", response_model=BreakageAllowanceResponse)
 async def breakage_allowance_lookup(
     order_number: str = Query(..., alias="orderNumber", min_length=4),
+    email: str = Query(..., min_length=3),
+    authorization: Optional[str] = Header(None),
 ):
+    require_internal_in_production(authorization)
+    order = db.lookup_order(order_number, email)
+    if not order:
+        return BreakageAllowanceResponse(
+            success=False,
+            message="Order not found for that email.",
+        )
     from app.services.breakage_allowance import breakage_profit_estimate
 
     row = db.get_breakage_allowance_by_order_number(order_number)
@@ -495,10 +592,11 @@ async def orders_lookup(
 @app.get("/api/orders/by-session", response_model=OrderLookupResponse)
 async def orders_by_stripe_session(
     session_id: str = Query(..., alias="sessionId", min_length=8),
+    email: str = Query(..., min_length=3),
 ):
-    """Post-checkout success page — resolve order from Stripe session_id."""
+    """Post-checkout success page — resolve order from Stripe session_id + email."""
     try:
-        order = db.lookup_order_by_stripe_session(session_id)
+        order = db.lookup_order_by_stripe_session(session_id, email=email)
     except db.SupabaseRepositoryError as exc:
         raise _db_error(exc) from exc
     if not order:
@@ -513,10 +611,14 @@ async def orders_by_stripe_session(
 @app.get("/api/orders/by-payment-intent", response_model=OrderLookupResponse)
 async def orders_by_stripe_payment_intent(
     payment_intent_id: str = Query(..., alias="paymentIntentId", min_length=8),
+    email: str = Query(..., min_length=3),
 ):
     """Success page after Express Checkout (Apple Pay / Google Pay / Link)."""
     try:
-        order = db.lookup_order_by_stripe_payment_intent(payment_intent_id)
+        order = db.lookup_order_by_stripe_payment_intent(
+            payment_intent_id,
+            email=email,
+        )
     except db.SupabaseRepositoryError as exc:
         raise _db_error(exc) from exc
     if not order:
@@ -541,25 +643,13 @@ async def checkout_config():
 @app.post("/api/checkout/payment-intent", response_model=ExpressPaymentIntentResponse)
 async def checkout_payment_intent(body: CheckoutSessionRequest):
     """Create order + PaymentIntent for Apple Pay / Google Pay / Link on-page."""
-    subtotal_cents = int(round(body.price * 100))
-    promo_discount = None
-
-    if body.promo_code and body.promo_code.strip():
-        try:
-            db.expire_promo_codes()
-        except db.SupabaseRepositoryError:
-            pass
-        try:
-            row = db.get_promo_code(normalize_code(body.promo_code))
-            promo_discount = validate_promo_row(row, subtotal_cents=subtotal_cents)
-        except PromoCodeError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+    catalog_price, subtotal_cents, promo_discount = _prepare_checkout_pricing(body)
 
     try:
         created = db.create_order(
             email=str(body.email),
             country=body.country,
-            price=body.price,
+            price=catalog_price,
             flag=body.flag,
             travel_date=body.travel_date,
             package_id=body.package_id,
@@ -617,27 +707,16 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
 
 @app.post("/api/checkout/session", response_model=CheckoutSessionResponse)
 async def checkout_session(body: CheckoutSessionRequest):
-    subtotal_cents = int(round(body.price * 100))
-    promo_discount = None
-    promo_code_value = None
-
-    if body.promo_code and body.promo_code.strip():
-        try:
-            db.expire_promo_codes()
-        except db.SupabaseRepositoryError:
-            pass
-        promo_code_value = normalize_code(body.promo_code)
-        try:
-            row = db.get_promo_code(promo_code_value)
-            promo_discount = validate_promo_row(row, subtotal_cents=subtotal_cents)
-        except PromoCodeError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+    catalog_price, subtotal_cents, promo_discount = _prepare_checkout_pricing(body)
+    promo_code_value = (
+        normalize_code(body.promo_code) if body.promo_code and body.promo_code.strip() else None
+    )
 
     try:
         created = db.create_order(
             email=str(body.email),
             country=body.country,
-            price=body.price,
+            price=catalog_price,
             flag=body.flag,
             travel_date=body.travel_date,
             package_id=body.package_id,
@@ -780,6 +859,27 @@ async def stripe_webhook(
             return JSONResponse({"received": True, "handled": False})
 
         try:
+            row = db.get_order_row_by_order_number(order_number)
+            if row is None and payment_intent_id:
+                row = db.get_order_row_by_stripe_payment_intent(payment_intent_id)
+        except db.SupabaseRepositoryError as exc:
+            raise _db_error(exc) from exc
+
+        if row and not _verify_stripe_paid_amount(row, event):
+            logger.error(
+                "Blocking fulfillment for %s due to Stripe amount mismatch",
+                order_number,
+            )
+            return JSONResponse(
+                {
+                    "received": True,
+                    "handled": False,
+                    "error": "amount_mismatch",
+                    "order_number": order_number,
+                }
+            )
+
+        try:
             process_paid_order(
                 order_number=order_number,
                 stripe_payment_intent_id=payment_intent_id,
@@ -840,6 +940,31 @@ async def stripe_webhook(
     if not order_number and not session_id:
         logger.error("checkout.session.completed missing order identifiers")
         return JSONResponse({"received": True, "handled": False})
+
+    try:
+        row = (
+            db.get_order_row_by_order_number(order_number)
+            if order_number
+            else None
+        )
+        if row is None and session_id:
+            row = db.get_order_row_by_stripe_session(session_id)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    if row and not _verify_stripe_paid_amount(row, event):
+        logger.error(
+            "Blocking fulfillment for %s due to Stripe amount mismatch",
+            row.get("order_number") or order_number,
+        )
+        return JSONResponse(
+            {
+                "received": True,
+                "handled": False,
+                "error": "amount_mismatch",
+                "order_number": row.get("order_number") or order_number,
+            }
+        )
 
     try:
         process_paid_order(

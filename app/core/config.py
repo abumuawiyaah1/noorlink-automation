@@ -155,7 +155,14 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    env = (settings.environment or "").strip().lower()
+    if env in {"production", "prod"}:
+        if settings.cors_origins.strip() == "*":
+            raise ValueError("CORS_ORIGINS must not be '*' in production.")
+        if settings.secret_key.strip() in {"", "change-this-in-production"}:
+            raise ValueError("SECRET_KEY must be set to a strong value in production.")
+    return settings
 
 
 # Backwards-compatible module-level instance

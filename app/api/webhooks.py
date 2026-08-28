@@ -234,7 +234,7 @@ async def simbase_usage_webhook(
         )
         raise HTTPException(
             status_code=502,
-            detail=f"Failed to disable SIM on Simbase: {exc}",
+            detail="Failed to disable SIM on provider.",
         ) from exc
 
     try:
@@ -392,7 +392,25 @@ async def esimaccess_webhook(request: Request) -> JSONResponse:
     Phase A: acknowledge + log. Profile details are fetched at provision time;
     webhooks are used for ops visibility and future status sync.
     """
+    settings = get_settings()
+    secret = (settings.esim_access_webhook_secret or "").strip()
+    if settings.environment.lower() == "production" and not secret:
+        raise HTTPException(status_code=503, detail="Webhook verification not configured")
+
     raw = await request.body()
+
+    if secret:
+        token = (
+            request.headers.get("x-esimaccess-token")
+            or request.headers.get("x-webhook-token")
+            or request.headers.get("x-esim-access-token")
+            or ""
+        ).strip()
+        if token.lower().startswith("bearer "):
+            token = token[7:].strip()
+        if not token or not hmac.compare_digest(token, secret):
+            raise HTTPException(status_code=401, detail="Invalid webhook token")
+
     try:
         payload = json.loads(raw.decode("utf-8") or "{}")
     except json.JSONDecodeError as exc:
