@@ -1,0 +1,90 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <h1 class="h3 mb-2">Insights</h1>
+  <p class="text-muted mb-4">Sales, support, email, and provider health.</p>
+
+  <div class="nl-stat-grid mb-4">
+    <div class="nl-stat"><div class="nl-stat__value">{{ metrics.orders_sold }}</div><div class="nl-stat__label">Orders sold</div></div>
+    <div class="nl-stat"><div class="nl-stat__value">{{ metrics.sla.waiting_over_24h }}</div><div class="nl-stat__label">Tickets &gt;24h</div></div>
+    <div class="nl-stat"><div class="nl-stat__value">{{ metrics.email_analytics.total_logged }}</div><div class="nl-stat__label">Emails logged</div></div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="nl-wizard-panel">
+        <h2 class="h6">Top countries</h2>
+        <ul class="small">{% for country, count in metrics.top_countries %}<li>{{ country }} — {{ count }} orders</li>{% endfor %}</ul>
+        <h2 class="h6 mt-3">Top plans</h2>
+        <ul class="small">{% for plan, count in metrics.top_plans %}<li>{{ plan }} — {{ count }}</li>{% endfor %}</ul>
+        <h2 class="h6 mt-3">Support by category</h2>
+        <ul class="small">{% for cat, count in metrics.support_by_category %}<li>{{ cat }} — {{ count }}</li>{% endfor %}</ul>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="nl-wizard-panel mb-3">
+        <h2 class="h6">Provider wallets</h2>
+        <ul class="small mb-0">
+          {% for b in metrics.provider_balances %}
+          <li><strong>{{ b.provider }}</strong>
+            {% if b.balance_usd is not none %} — ${{ b.balance_usd }}
+            {% elif b.ok == false %} — <span class="text-danger">error</span>
+            {% elif b.portal_url %}
+              — <a href="{{ b.portal_url }}" target="_blank" rel="noopener">{{ b.detail or 'Open portal' }}</a>
+            {% else %} — {{ b.detail or 'see portal' }}{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="nl-wizard-panel mb-3">
+        <h2 class="h6">Promo → orders</h2>
+        <ul class="nl-attribution-chart">
+          {% for row in metrics.promo_performance.attribution_chart %}
+          <li class="nl-attribution-chart__row">
+            <span><strong>{{ row.code }}</strong></span>
+            <span class="nl-attribution-chart__bar"><span class="nl-attribution-chart__fill" style="width: {{ row.bar_pct }}%"></span></span>
+            <span>{{ row.orders }} · ${{ "%.0f"|format(row.revenue_cents / 100) }}</span>
+          </li>
+          {% else %}
+          <li class="text-muted small">No promo redemptions in period</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="nl-wizard-panel mb-3">
+        <h2 class="h6">Insider promo attribution</h2>
+        <ul class="nl-attribution-chart">
+          {% for row in metrics.promo_performance.insider_attribution %}
+          <li class="nl-attribution-chart__row">
+            <span><strong>{{ row.issue_slug }}</strong><br><small class="text-muted">{{ row.promo_code }}</small></span>
+            <span class="nl-attribution-chart__bar"><span class="nl-attribution-chart__fill" style="width: {{ row.bar_pct }}%"></span></span>
+            <span>{{ row.orders }} · ${{ "%.0f"|format(row.revenue_cents / 100) }}</span>
+          </li>
+          {% else %}
+          <li class="text-muted small">No Insider promo orders in period</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="nl-wizard-panel mb-3">
+        <h2 class="h6">Promo performance (list)</h2>
+        <ul class="small">{% for code, count in metrics.promo_performance.top_redeemed %}<li>{{ code }} — {{ count }} orders</li>{% else %}<li class="text-muted">No promo redemptions in period</li>{% endfor %}</ul>
+      </div>
+      <div class="nl-wizard-panel mb-3">
+        <h2 class="h6">Insider sends (logged)</h2>
+        <ul class="small">{% for issue in metrics.insider_performance.recent_issues %}<li>{{ issue.slug }} — {{ issue.emails_logged }} emails ({{ issue.status }})</li>{% else %}<li class="text-muted">No issues yet</li>{% endfor %}</ul>
+      </div>
+      <div class="nl-wizard-panel mb-3">
+        <h2 class="h6">Provider health</h2>
+        <ul class="small">{% for p in providers %}<li><strong>{{ p.provider }}</strong> — {{ p.status }} {% if p.configured %}✓{% else %}✗{% endif %}<br /><span class="text-muted">{{ p.detail }}</span></li>{% endfor %}</ul>
+        <form method="post"><input type="hidden" name="action" value="probe_providers" /><button class="btn btn-sm btn-outline-primary">Run Telna probe</button></form>
+        {% if probe_result %}<pre class="nl-json mt-2 small">{{ probe_result | tojson(indent=2) }}</pre>{% endif %}
+      </div>
+      <div class="nl-wizard-panel">
+        <h2 class="h6">Trending searches</h2>
+        <ul class="small">{% for t in metrics.trending_searches %}<li>{{ t.flag }} {{ t.destination }} — {{ t.count }}</li>{% else %}<li class="text-muted">No searches logged this session</li>{% endfor %}</ul>
+      </div>
+    </div>
+  </div>
+  <p class="mt-3"><a href="{{ url_for('admin:finance-hub') }}">Finance</a> · <a href="{{ url_for('admin:event-log') }}">Event log</a> · <a href="{{ url_for('admin:gdpr-tools') }}">Privacy tools</a></p>
+</div>
+{% endblock %}

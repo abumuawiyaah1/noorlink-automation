@@ -1,0 +1,49 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  {% include "includes/wizard_chrome.html" %}
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h1 class="h3 mb-1">Newsletter subscribers</h1>
+      <p class="text-muted mb-0">{{ stats.active }} active · {{ stats.unsubscribed }} unsubscribed</p>
+    </div>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin:newsletter-export') }}?active={% if active_only %}1{% else %}0{% endif %}">Export CSV</a>
+  </div>
+
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <div class="mb-3">
+    <a href="{{ url_for('admin:newsletter-admin') }}?active=1" class="btn btn-sm {% if active_only %}btn-primary{% else %}btn-outline-secondary{% endif %}">Active only</a>
+    <a href="{{ url_for('admin:newsletter-admin') }}?active=0" class="btn btn-sm {% if not active_only %}btn-primary{% else %}btn-outline-secondary{% endif %}">All</a>
+  </div>
+
+  <div class="nl-wizard-panel mb-4">
+    <h2 class="h6">Unsubscribe someone</h2>
+    <form method="post" class="row g-2 align-items-end">
+      <input type="hidden" name="action" value="unsubscribe" />
+      <div class="col-md-6"><input class="form-control" type="email" name="email" placeholder="email@example.com" required /></div>
+      <div class="col-auto"><button type="submit" class="btn btn-outline-danger">Unsubscribe</button></div>
+    </form>
+  </div>
+
+  <div class="table-responsive nl-wizard-panel">
+    <table class="table table-sm">
+      <thead><tr><th>Email</th><th>Dream destination</th><th>Subscribed</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for row in subscribers %}
+        <tr>
+          <td>{{ row.email }}</td>
+          <td>{{ row.dream_destination or '—' }}</td>
+          <td class="small">{{ row.subscribed_at or '—' }}</td>
+          <td>{% if row.unsubscribed_at %}<span class="text-muted">Unsubscribed</span>{% else %}<span class="text-success">Active</span>{% endif %}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-muted">No subscribers found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

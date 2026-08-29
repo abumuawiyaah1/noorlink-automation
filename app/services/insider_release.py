@@ -65,9 +65,11 @@ def release_due_insider_issues() -> Dict[str, Any]:
                 promo_ends = str(promo_row.get("ends_at") or "")
 
         issue_failures = 0
+        from app.services.ops_event_log import log_email_delivery
+
         for email in subscribers:
             try:
-                send_insider_issue_email(
+                message_id = send_insider_issue_email(
                     to_email=email,
                     subject=str(issue.get("subject") or "NoorLink Insider"),
                     preview=str(issue.get("preview") or ""),
@@ -94,6 +96,14 @@ def release_due_insider_issues() -> Dict[str, Any]:
                         if issue.get("email_giving_note")
                         else None
                     ),
+                )
+                log_email_delivery(
+                    event_type="sent",
+                    recipient=email,
+                    email_type="insider",
+                    subject=str(issue.get("subject") or "NoorLink Insider"),
+                    message_id=message_id,
+                    insider_slug=slug,
                 )
             except EmailDeliveryError as exc:
                 issue_failures += 1

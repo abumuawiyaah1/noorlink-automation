@@ -12,8 +12,9 @@ from app.core.config import get_settings
 from app.services.email_service import (
     EmailDeliveryError,
     send_checkout_acknowledgment,
-    send_support_ticket_confirmation,
 )
+from app.services.support_categories import normalize_support_category
+from app.services.support_notifications import dispatch_ticket_created_notifications
 from app.services.fulfillment import FulfillmentError, process_paid_order
 from app.services.ops_alerts import notify_fulfillment_failure
 from app.services.insider_release import expire_finished_promos, release_due_insider_issues
@@ -29,6 +30,7 @@ from .devices import check_device
 from .devices_router import router as devices_router
 from .plans_router import router as plans_router
 from .affiliates_router import router as affiliates_router
+from .webhooks import router as webhooks_router
 from . import supabase_repository as db
 from .stripe_checkout import (
     StripeCheckoutError,
@@ -64,8 +66,14 @@ from .schemas import (
     NewsletterUnsubscribeRequest,
     NewsletterUnsubscribeResponse,
     OrderLookupResponse,
+    OrderResendEsRequest,
+    OrderResendEsResponse,
     PromoValidateRequest,
     PromoValidateResponse,
+    TopUpOptionsResponse,
+    TopUpSessionRequest,
+    TopUpSessionResponse,
+    OrderSupportMessagesResponse,
     RootResponse,
 )
 
@@ -94,6 +102,10 @@ app.include_router(devices_router)
 app.include_router(plans_router)
 app.include_router(webhooks_router)
 app.include_router(affiliates_router)
+
+from app.admin.setup import mount_admin  # noqa: E402
+
+mount_admin(app)
 
 
 def _db_error(exc: Exception) -> HTTPException:
@@ -203,9 +215,15 @@ async def root():
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
+    from app.db.engine import ping_admin_database
+
     db_ok = db.ping_database()
+    admin_db_ok = ping_admin_database() if (settings.database_url or "").strip() else None
+    status = "healthy" if db_ok else "degraded"
+    if admin_db_ok is False:
+        status = "degraded"
     return HealthResponse(
-        status="healthy" if db_ok else "degraded",
+        status=status,
         service="noorlink-automation",
         timestamp=datetime.now(timezone.utc).isoformat(),
         version=settings.app_version,
@@ -214,12 +232,13 @@ async def health_check():
 
 @app.get("/api/diagnostics/email", response_model=EmailDiagnosticsResponse)
 async def email_diagnostics(
+    request: Request,
     probe: bool = Query(False),
     authorization: Optional[str] = Header(None),
 ):
     """Resend configuration check. probe=1 sends a test email (internal auth in production)."""
     if probe and _is_production:
-        require_internal_in_production(authorization)
+        require_internal_in_production(request, authorization)
     from_email = (settings.resend_from_email or "").strip()
     configured = bool((settings.resend_api_key or "").strip())
     domain = None
@@ -274,9 +293,9 @@ async def email_diagnostics(
 
 
 @app.get("/api/test", response_model=ApiTestResponse)
-async def test_endpoint(authorization: Optional[str] = Header(None)):
+async def test_endpoint(request: Request, authorization: Optional[str] = Header(None)):
     if _is_production:
-        require_internal_in_production(authorization)
+        require_internal_in_production(request, authorization)
     return ApiTestResponse(
         success=True,
         message="API is working!",
@@ -402,25 +421,77 @@ async def cron_run(authorization: Optional[str] = Header(None)):
         logger.warning("eSIM expiry reminders failed during cron: %s", exc)
         expiry_reminders = {"success": False, "error": str(exc)[:240]}
 
+    usage_sync = None
+    try:
+        from app.services.usage_sync_cron import process_esim_usage_sync
+
+        usage_sync = process_esim_usage_sync()
+    except Exception as exc:
+        logger.warning("eSIM usage sync failed during cron: %s", exc)
+        usage_sync = {"success": False, "error": str(exc)[:240]}
+
+    monthly_summary = None
+    if datetime.now(timezone.utc).day == 1:
+        try:
+            from app.services.admin_monthly_summary import send_monthly_summary_email
+
+            monthly_summary = send_monthly_summary_email(days=30)
+        except Exception as exc:
+            logger.warning("Monthly summary email failed during cron: %s", exc)
+            monthly_summary = {"sent": 0, "error": str(exc)[:240]}
+
+    log_retention = None
+    try:
+        from app.services.ops_log_retention import purge_old_ops_logs
+
+        log_retention = purge_old_ops_logs(retention_days=90)
+    except Exception as exc:
+        logger.warning("Ops log retention failed during cron: %s", exc)
+        log_retention = {"error": str(exc)[:240]}
+
+    auto_refunds = None
+    try:
+        from app.services.support_auto_refund import process_unanswered_auto_refunds
+
+        auto_refunds = process_unanswered_auto_refunds()
+    except Exception as exc:
+        logger.warning("Support auto-refund cron failed: %s", exc)
+        auto_refunds = {"success": False, "error": str(exc)[:240]}
+
+    affiliate_payouts = None
+    try:
+        from app.services.affiliate_payout_requests import process_unanswered_affiliate_payouts
+
+        affiliate_payouts = process_unanswered_affiliate_payouts()
+    except Exception as exc:
+        logger.warning("Affiliate payout auto-approve cron failed: %s", exc)
+        affiliate_payouts = {"success": False, "error": str(exc)[:240]}
+
     return CronRunResponse(
         success=True,
         expired_promos=expired,
         insider=insider_result,
         catalog_sync=catalog_sync,
         expiry_reminders=expiry_reminders,
+        usage_sync=usage_sync,
+        monthly_summary=monthly_summary,
+        log_retention=log_retention,
+        auto_refunds=auto_refunds,
+        affiliate_payouts=affiliate_payouts,
         message="Cron tasks completed.",
     )
 
 
 @app.get("/api/fulfillment/resolve", response_model=FulfillmentResolveResponse)
 async def fulfillment_resolve(
+    request: Request,
     country: str = Query(..., min_length=2),
     data_gb: float = Query(..., alias="dataGb", gt=0),
     validity_days: int = Query(..., alias="days", gt=0),
     wants_topup: bool = Query(False, alias="wantsTopUp"),
     authorization: Optional[str] = Header(None),
 ):
-    require_internal_in_production(authorization)
+    require_internal_in_production(request, authorization)
     """
     Debug/admin: show map vs smart cascade choice for a sellable ladder step.
     Does not call upstream provider APIs — catalog cache / builtin seed only.
@@ -438,9 +509,10 @@ async def fulfillment_resolve(
 
 @app.get("/api/fulfillment/strategy/summary", response_model=BreakageStrategySummaryResponse)
 async def breakage_strategy_summary(
+    request: Request,
     authorization: Optional[str] = Header(None),
 ):
-    require_internal_in_production(authorization)
+    require_internal_in_production(request, authorization)
     """Breakage-fulfillment strategy counts and pilot countries (from WeConnect P1 pricelist)."""
     from app.services.breakage_strategy import strategy_summary
 
@@ -449,12 +521,13 @@ async def breakage_strategy_summary(
 
 @app.get("/api/fulfillment/strategy/country", response_model=BreakageCountryPolicyResponse)
 async def breakage_strategy_country(
+    request: Request,
     country: str = Query(..., min_length=2),
     data_gb: Optional[float] = Query(None, alias="dataGb"),
     validity_days: Optional[int] = Query(None, alias="days"),
     authorization: Optional[str] = Header(None),
 ):
-    require_internal_in_production(authorization)
+    require_internal_in_production(request, authorization)
     from app.services.breakage_strategy import (
         bundles_for_country,
         fulfillment_mode_for_order,
@@ -488,11 +561,12 @@ async def breakage_strategy_country(
 
 @app.get("/api/fulfillment/allowance", response_model=BreakageAllowanceResponse)
 async def breakage_allowance_lookup(
+    request: Request,
     order_number: str = Query(..., alias="orderNumber", min_length=4),
     email: str = Query(..., min_length=3),
     authorization: Optional[str] = Header(None),
 ):
-    require_internal_in_production(authorization)
+    require_internal_in_production(request, authorization)
     order = db.lookup_order(order_number, email)
     if not order:
         return BreakageAllowanceResponse(
@@ -516,23 +590,52 @@ async def breakage_allowance_lookup(
 
 @app.post("/api/contact", response_model=ContactFormResponse)
 async def contact_submit(body: ContactFormRequest):
+    order_number = (body.order_id or "").strip().upper() or None
+    ticket_id: str
+    ticket_category: Optional[str] = None
+
     try:
-        ticket_id = db.create_support_ticket(
-            name=body.name,
-            email=str(body.email),
-            subject=body.subject,
-            message=body.message,
+        from app.db.engine import get_engine
+        from app.services.support_messaging import (
+            SupportMessagingError,
+            create_ticket_from_contact,
         )
+
+        if get_engine() is not None:
+            created = create_ticket_from_contact(
+                name=body.name,
+                email=str(body.email),
+                subject=body.subject,
+                message=body.message,
+                order_number=order_number,
+                language=body.language,
+            )
+            ticket_id = created["ticket_number"]
+            ticket_category = created.get("category")
+        else:
+            ticket_category = normalize_support_category(body.subject)
+            ticket_id = db.create_support_ticket(
+                name=body.name,
+                email=str(body.email),
+                subject=body.subject,
+                message=body.message,
+                order_number=order_number,
+                category=ticket_category,
+            )
+    except SupportMessagingError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     except db.SupabaseRepositoryError as exc:
         raise _db_error(exc) from exc
 
     try:
-        send_support_ticket_confirmation(
-            to_email=str(body.email),
-            name=body.name,
+        dispatch_ticket_created_notifications(
             ticket_id=ticket_id,
+            name=body.name,
+            email=str(body.email),
             subject=body.subject,
             message=body.message,
+            order_number=order_number,
+            category=ticket_category,
         )
     except EmailDeliveryError as exc:
         logger.error(
@@ -588,8 +691,231 @@ async def device_check_post(body: DeviceCheckRequest):
     )
 
 
+def _lookup_order_response(
+    order_row: Optional[dict],
+    *,
+    refresh: bool = False,
+) -> OrderLookupResponse:
+    if not order_row:
+        return OrderLookupResponse(found=False, order=None)
+
+    row = order_row
+    if refresh and str(row.get("iccid") or "").strip():
+        try:
+            from app.services.esim_usage_sync import sync_order_usage_blocking
+
+            row = sync_order_usage_blocking(row, source="api_refresh")
+        except Exception as exc:
+            logger.warning("Usage refresh on lookup failed for %s: %s", row.get("order_number"), exc)
+
+    allowance = db.get_breakage_allowance_by_order_id(str(row["id"]))
+    from app.services.order_customer_view import enrich_order_row
+
+    _, order = enrich_order_row(row, allowance_row=allowance)
+    return OrderLookupResponse(found=True, order=order)
+
+
+@app.get("/api/orders/topup/options", response_model=TopUpOptionsResponse)
+async def orders_topup_options(
+    order_id: str = Query(..., alias="orderId"),
+    email: str = Query(...),
+):
+    try:
+        row = db.lookup_order(order_id, email)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not row:
+        return TopUpOptionsResponse(
+            success=False,
+            supported=False,
+            reason="Order not found for that email.",
+        )
+    from app.services.esim_topup import topup_capabilities
+
+    order_row = db.get_order_row_by_order_number(row.order_number)
+    if not order_row:
+        return TopUpOptionsResponse(success=False, supported=False, reason="Order not found.")
+    caps = topup_capabilities(order_row)
+    return TopUpOptionsResponse(
+        success=True,
+        supported=bool(caps.get("supported")),
+        provider=caps.get("provider"),
+        amounts_usd=list(caps.get("amounts_usd") or []),
+        min_usd=caps.get("min_usd"),
+        max_usd=caps.get("max_usd"),
+        reason=caps.get("reason"),
+        order_number=row.order_number,
+    )
+
+
+@app.post("/api/orders/topup/session", response_model=TopUpSessionResponse)
+async def orders_topup_session(body: TopUpSessionRequest):
+    try:
+        looked_up = db.lookup_order(body.order_id, str(body.email))
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not looked_up:
+        return TopUpSessionResponse(
+            success=False,
+            message="Order not found for that email.",
+        )
+
+    row = db.get_order_row_by_order_number(looked_up.order_number)
+    if not row:
+        return TopUpSessionResponse(success=False, message="Order not found.")
+
+    from app.services.esim_topup import (
+        topup_capabilities,
+        topup_retail_cents,
+    )
+
+    caps = topup_capabilities(row)
+    if not caps.get("supported"):
+        return TopUpSessionResponse(
+            success=False,
+            message=str(caps.get("reason") or "Top-up not available for this eSIM."),
+        )
+
+    fund_usd = float(body.fund_usd)
+    allowed = [float(a) for a in (caps.get("amounts_usd") or [])]
+    min_usd = float(caps.get("min_usd") or 5)
+    max_usd = float(caps.get("max_usd") or 100)
+    if fund_usd < min_usd or fund_usd > max_usd:
+        return TopUpSessionResponse(
+            success=False,
+            message=f"Choose a top-up between ${min_usd:.0f} and ${max_usd:.0f}.",
+        )
+    if allowed and not any(abs(fund_usd - a) < 0.01 for a in allowed):
+        return TopUpSessionResponse(
+            success=False,
+            message=f"Choose one of: {', '.join(f'${a:.0f}' for a in allowed)}.",
+        )
+
+    iccid = str(row.get("iccid") or "").strip()
+    if not iccid:
+        return TopUpSessionResponse(success=False, message="This order has no ICCID yet.")
+
+    from .stripe_checkout import StripeCheckoutError, create_topup_checkout_session
+
+    try:
+        session = create_topup_checkout_session(
+            parent_order_number=looked_up.order_number,
+            parent_order_id=str(row["id"]),
+            email=str(body.email),
+            fund_usd=fund_usd,
+            iccid=iccid,
+        )
+    except StripeCheckoutError as exc:
+        logger.error("Top-up checkout failed: %s", exc)
+        return TopUpSessionResponse(
+            success=False,
+            message="Could not start payment. Try again in a minute.",
+        )
+
+    retail_usd = topup_retail_cents(fund_usd) / 100.0
+    return TopUpSessionResponse(
+        success=True,
+        checkout_url=session.url,
+        session_id=session.id,
+        retail_usd=retail_usd,
+        fund_usd=fund_usd,
+        message="Redirect to Stripe to add data to your eSIM.",
+    )
+
+
 @app.get("/api/orders/lookup", response_model=OrderLookupResponse)
 async def orders_lookup(
+    request: Request,
+    order_id: str = Query(..., alias="orderId"),
+    email: str = Query(...),
+    refresh: bool = Query(False),
+):
+    from app.services.api_rate_limit import check_rate_limit
+
+    forwarded = request.headers.get("x-forwarded-for")
+    ip_address = (
+        forwarded.split(",")[0].strip()
+        if forwarded
+        else (request.client.host if request.client else "unknown")
+    )
+    allowed, retry_after = check_rate_limit(
+        f"order-lookup:{ip_address}",
+        max_calls=30,
+        window_seconds=60,
+    )
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many order lookups. Try again in {retry_after} seconds.",
+        )
+
+    try:
+        order = db.lookup_order(order_id, email)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not order:
+        return OrderLookupResponse(found=False, order=None)
+    try:
+        row = db.get_order_row_by_order_number(order.order_number)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not row:
+        return OrderLookupResponse(found=True, order=order)
+    return _lookup_order_response(row, refresh=refresh)
+
+
+@app.post("/api/orders/resend-esim", response_model=OrderResendEsResponse)
+async def orders_resend_esim(body: OrderResendEsRequest, request: Request):
+    from app.services.api_rate_limit import check_rate_limit
+    from app.services.customer_self_service import (
+        CustomerSelfServiceError,
+        customer_resend_esim_email,
+    )
+    from app.services.security_threats import log_security_event
+
+    forwarded = request.headers.get("x-forwarded-for")
+    ip_address = forwarded.split(",")[0].strip() if forwarded else (
+        request.client.host if request.client else None
+    )
+
+    allowed, retry_after = check_rate_limit(
+        f"order-resend:{ip_address or 'unknown'}",
+        max_calls=10,
+        window_seconds=60,
+    )
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many resend attempts. Try again in {retry_after} seconds.",
+        )
+
+    try:
+        result = customer_resend_esim_email(
+            order_number=body.order_id,
+            email=str(body.email),
+        )
+    except CustomerSelfServiceError as exc:
+        log_security_event(
+            threat_type="order_probe",
+            source="customer_resend",
+            message=str(exc)[:500],
+            severity="info",
+            ip_address=ip_address,
+            order_number=body.order_id.strip().upper(),
+        )
+        return OrderResendEsResponse(success=False, message=str(exc))
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    return OrderResendEsResponse(
+        success=True,
+        order_number=result.get("order_number"),
+        message="QR email sent — check inbox and spam.",
+    )
+
+
+@app.get("/api/orders/support-messages", response_model=OrderSupportMessagesResponse)
+async def orders_support_messages(
     order_id: str = Query(..., alias="orderId"),
     email: str = Query(...),
 ):
@@ -598,8 +924,36 @@ async def orders_lookup(
     except db.SupabaseRepositoryError as exc:
         raise _db_error(exc) from exc
     if not order:
-        return OrderLookupResponse(found=False, order=None)
-    return OrderLookupResponse(found=True, order=order)
+        return OrderSupportMessagesResponse(
+            success=False,
+            message="Order not found for that email.",
+        )
+
+    try:
+        from app.db.engine import get_engine
+        from app.services.support_messaging import (
+            SupportMessagingError,
+            list_messages_for_order,
+            list_tickets_for_order,
+        )
+
+        if get_engine() is None:
+            return OrderSupportMessagesResponse(
+                success=True,
+                messages=[],
+                message="Support messaging not available yet.",
+            )
+
+        messages = list_messages_for_order(order.order_number, customer_email=str(email))
+        tickets = list_tickets_for_order(order.order_number)
+        ticket_number = tickets[0].ticket_number if tickets else None
+        return OrderSupportMessagesResponse(
+            success=True,
+            messages=messages,
+            ticket_number=ticket_number,
+        )
+    except SupportMessagingError as exc:
+        return OrderSupportMessagesResponse(success=False, message=str(exc))
 
 
 @app.get("/api/orders/by-session", response_model=OrderLookupResponse)
@@ -899,6 +1253,19 @@ async def stripe_webhook(
         event = construct_stripe_event(payload, stripe_signature)
     except StripeWebhookError as exc:
         logger.warning("Stripe webhook rejected: %s", exc)
+        from app.services.security_threats import log_security_event
+
+        forwarded = request.headers.get("x-forwarded-for")
+        ip_address = forwarded.split(",")[0].strip() if forwarded else (
+            request.client.host if request.client else None
+        )
+        log_security_event(
+            threat_type="webhook_rejected",
+            source="stripe_webhook",
+            message=str(exc)[:500],
+            severity="warning",
+            ip_address=ip_address,
+        )
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     if event.type == "payment_intent.succeeded":
@@ -953,6 +1320,15 @@ async def stripe_webhook(
                 order_number,
                 exc,
             )
+            from app.services.ops_event_log import log_ops_event
+
+            log_ops_event(
+                event_type="stripe_webhook",
+                source="stripe_webhook_express",
+                severity="error",
+                order_number=order_number,
+                message=f"Fulfillment failed: {exc}",
+            )
             try:
                 row = db.get_order_row_by_order_number(order_number)
                 if row is None and payment_intent_id:
@@ -980,6 +1356,14 @@ async def stripe_webhook(
                 }
             )
 
+        from app.services.ops_event_log import log_ops_event
+
+        log_ops_event(
+            event_type="stripe_webhook",
+            source="stripe_webhook_express",
+            order_number=order_number,
+            message="payment_intent.succeeded processed",
+        )
         return JSONResponse({"received": True, "handled": True})
 
     if event.type != "checkout.session.completed":
@@ -988,6 +1372,68 @@ async def stripe_webhook(
     session_data = extract_checkout_session_completed(event)
     if not session_data:
         return JSONResponse({"received": True, "handled": False})
+
+    if session_data.get("checkout_type") == "topup":
+        order_number = session_data.get("order_number")
+        fund_raw = session_data.get("fund_usd")
+        try:
+            fund_usd = float(fund_raw)
+        except (TypeError, ValueError):
+            logger.error("Top-up webhook missing fund_usd for %s", order_number)
+            return JSONResponse({"received": True, "handled": False})
+
+        from app.services.esim_topup import TopUpError, process_topup_checkout, topup_retail_cents
+
+        expected_cents = topup_retail_cents(fund_usd)
+        received_cents = session_data.get("amount_cents") or 0
+        if expected_cents and received_cents and expected_cents != received_cents:
+            logger.error(
+                "Top-up amount mismatch for %s: expected %s got %s",
+                order_number,
+                expected_cents,
+                received_cents,
+            )
+            return JSONResponse(
+                {
+                    "received": True,
+                    "handled": False,
+                    "error": "amount_mismatch",
+                    "order_number": order_number,
+                }
+            )
+
+        try:
+            import asyncio
+
+            asyncio.run(
+                process_topup_checkout(
+                    order_number=str(order_number or ""),
+                    fund_usd=fund_usd,
+                    stripe_session_id=session_data.get("session_id"),
+                    buyer_email=session_data.get("customer_email"),
+                )
+            )
+        except TopUpError as exc:
+            logger.error("Top-up fulfillment failed for %s: %s", order_number, exc)
+            return JSONResponse(
+                {
+                    "received": True,
+                    "handled": True,
+                    "topup": "failed",
+                    "order_number": order_number,
+                    "error": str(exc)[:200],
+                }
+            )
+
+        return JSONResponse(
+            {
+                "received": True,
+                "handled": True,
+                "topup": "completed",
+                "order_number": order_number,
+                "fund_usd": fund_usd,
+            }
+        )
 
     order_number = session_data.get("order_number")
     session_id = session_data.get("session_id")
@@ -1037,6 +1483,15 @@ async def stripe_webhook(
         )
     except FulfillmentError as exc:
         logger.error("Fulfillment failed after payment for %s: %s", order_number, exc)
+        from app.services.ops_event_log import log_ops_event
+
+        log_ops_event(
+            event_type="stripe_webhook",
+            source="stripe_webhook",
+            severity="error",
+            order_number=order_number,
+            message=f"Fulfillment failed: {exc}",
+        )
         try:
             row = db.get_order_row_by_order_number(order_number) if order_number else None
             if row is None and session_id:
@@ -1064,6 +1519,15 @@ async def stripe_webhook(
         )
     except db.SupabaseRepositoryError as exc:
         raise _db_error(exc) from exc
+
+    from app.services.ops_event_log import log_ops_event
+
+    log_ops_event(
+        event_type="stripe_webhook",
+        source="stripe_webhook",
+        order_number=order_number,
+        message="checkout.session.completed processed",
+    )
 
     return JSONResponse(
         {

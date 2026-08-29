@@ -1,0 +1,70 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <h1 class="h3 mb-2">Finance</h1>
+  {% if stripe_mode %}
+  <div class="mb-3">
+    <span class="badge bg-{{ stripe_mode.badge_class }}">Stripe {{ stripe_mode.label }}</span>
+    {% if stripe_mode.warning %}
+    <span class="text-warning small ms-2">{{ stripe_mode.warning }}</span>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if read_only %}
+  <p class="text-muted mb-4">Read-only overview — order counts and revenue. Margin and exports are admin-only.</p>
+  {% else %}
+  <p class="text-muted mb-4">Revenue, margin estimate, and exports for accounting.</p>
+  {% endif %}
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  {% if show_documents %}
+  <p class="mb-3"><a href="{{ url_for('admin:document-vault') }}">Legal &amp; accounting documents →</a></p>
+  {% endif %}
+
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-auto"><select class="form-select" name="days" onchange="this.form.submit()">
+      <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+      <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+      <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+    </select></div>
+  </form>
+
+  <div class="nl-stat-grid mb-4">
+    <div class="nl-stat"><div class="nl-stat__value">${{ "%.0f"|format(summary.revenue_cents / 100) }}</div><div class="nl-stat__label">Revenue</div></div>
+    {% if not read_only %}
+    <div class="nl-stat"><div class="nl-stat__value">${{ "%.0f"|format(summary.margin_cents / 100) }}</div><div class="nl-stat__label">Est. margin ({{ summary.margin_pct }}%)</div></div>
+    {% endif %}
+    <div class="nl-stat"><div class="nl-stat__value">{{ summary.order_count }}</div><div class="nl-stat__label">Paid orders</div></div>
+    <div class="nl-stat"><div class="nl-stat__value">{{ summary.refunded_count }}</div><div class="nl-stat__label">Refunded</div></div>
+    {% if not read_only %}
+    <div class="nl-stat"><div class="nl-stat__value">${{ "%.0f"|format(summary.affiliate_liability_cents / 100) }}</div><div class="nl-stat__label">Affiliate owed</div></div>
+    {% endif %}
+    <div class="nl-stat"><div class="nl-stat__value">{{ summary.pending_fulfillment }}</div><div class="nl-stat__label">Stuck fulfillment</div></div>
+  </div>
+
+  {% if not read_only %}
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="nl-wizard-panel">
+        <h2 class="h6">Top countries</h2>
+        <ul class="small mb-0">{% for country, cents in summary.by_country.items() %}<li>{{ country }} — ${{ "%.2f"|format(cents / 100) }}</li>{% else %}<li class="text-muted">No data</li>{% endfor %}</ul>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="nl-wizard-panel">
+        <h2 class="h6">Actions</h2>
+        <a class="btn btn-outline-primary btn-sm me-2 mb-2" href="{{ url_for('admin:finance-export-orders') }}?days={{ days }}">Export orders CSV</a>
+        <a class="btn btn-outline-primary btn-sm me-2 mb-2" href="{{ url_for('admin:finance-export-commissions') }}">Export commissions CSV</a>
+        <a class="btn btn-outline-secondary btn-sm mb-2" href="{{ url_for('admin:refund-order') }}">Refund an order</a>
+        <form method="post" class="mt-2">
+          <input type="hidden" name="action" value="send_summary" />
+          <button type="submit" class="btn btn-sm btn-primary">Email monthly summary now</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -11,6 +11,14 @@ class PromoCodeError(Exception):
     """Raised when a promo code cannot be applied."""
 
 
+HIGH_DISCOUNT_APPROVAL_THRESHOLD = 20
+
+
+def requires_admin_approval(percent_off: Optional[int]) -> bool:
+    """True when discount percent exceeds the threshold requiring admin sign-off."""
+    return percent_off is not None and int(percent_off) > HIGH_DISCOUNT_APPROVAL_THRESHOLD
+
+
 @dataclass(frozen=True)
 class PromoDiscount:
     code: str
@@ -72,6 +80,11 @@ def validate_promo_row(
     current = now or datetime.now(timezone.utc)
     if not row.get("is_active", True):
         raise PromoCodeError("This promotion has ended.")
+
+    if requires_admin_approval(row.get("percent_off")) and not row.get("admin_approved", False):
+        raise PromoCodeError(
+            "This promotion is pending admin approval and cannot be used yet."
+        )
 
     starts_at = _parse_ts(row["starts_at"])
     ends_at = _parse_ts(row["ends_at"])

@@ -1,0 +1,168 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<style>
+  .nl-check-ok { color: #059669; }
+  .nl-check-bad { color: #dc2626; }
+</style>
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h1 class="h3 mb-1">Operations</h1>
+      <p class="text-muted mb-0">System health and tools. <a href="{{ url_for('admin:notifications-hub') }}">Notifications</a> · <a href="{{ url_for('admin:help-center') }}">Help</a></p>
+    </div>
+  </div>
+
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <div class="nl-stat-grid">
+    <div class="nl-stat"><div class="nl-stat__value">{{ summary.suspended_count }}</div><div class="nl-stat__label">Suspended orders</div></div>
+    <div class="nl-stat"><div class="nl-stat__value">{{ summary.pending_fulfillment }}</div><div class="nl-stat__label">Paid, not fulfilled</div></div>
+    <div class="nl-stat"><div class="nl-stat__value">{{ summary.active_subscribers }}</div><div class="nl-stat__label">Newsletter subscribers</div></div>
+    <div class="nl-stat"><div class="nl-stat__value">{{ summary.due_insider_issues }}</div><div class="nl-stat__label">Insider due to send</div></div>
+    <div class="nl-stat"><div class="nl-stat__value">{{ summary.catalog_product_count }}</div><div class="nl-stat__label">Provider SKUs synced</div></div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    {% for tool in tools %}
+    <div class="col-md-6 col-lg-4">
+      <a href="{{ url_for(tool.endpoint) }}" class="text-decoration-none text-dark">
+        <div class="nl-wizard-panel h-100">
+          <div class="text-muted small mb-1"><i class="{{ tool.icon }}"></i> {% if tool.badge %}{{ tool.badge }}{% endif %}</div>
+          <h3 class="h6 mb-1">{{ tool.title }}</h3>
+          <p class="small text-muted mb-0">{{ tool.summary }}</p>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if is_admin %}
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="nl-wizard-panel">
+        <h2 class="h5">Run background tasks</h2>
+        <p class="text-muted small">Full cron: promos, Insider send, Telna sync, reminders, usage.</p>
+        {% if can_run_cron %}
+        <form method="post" action="{{ url_for('admin:operations-hub') }}" class="mb-3">
+          <input type="hidden" name="action" value="run_cron" />
+          <button type="submit" class="btn btn-primary">Run all tasks now</button>
+        </form>
+        {% endif %}
+        {% if cron_result %}
+        <pre class="nl-json">{{ cron_result | tojson(indent=2) }}</pre>
+        {% endif %}
+      </div>
+
+      <div class="nl-wizard-panel mt-4">
+        <h2 class="h5">Admin scripts</h2>
+        <p class="text-muted small">Safe test and maintenance scripts — every run is logged.</p>
+        {% for script in admin_scripts %}
+        <form method="post" action="{{ url_for('admin:operations-hub') }}" class="border-bottom py-3"
+          onsubmit="return confirm('{{ script.confirmation }}');">
+          <input type="hidden" name="action" value="run_script" />
+          <input type="hidden" name="script_key" value="{{ script.key }}" />
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div>
+              <strong class="small">{{ script.title }}</strong>
+              <span class="badge bg-light text-dark ms-1">{{ script.category }}</span>
+              <p class="small text-muted mb-0">{{ script.summary }}</p>
+            </div>
+            <button type="submit" class="btn btn-sm btn-outline-primary flex-shrink-0">Run</button>
+          </div>
+        </form>
+        {% endfor %}
+        {% if script_result %}
+        <pre class="nl-json mt-3">{{ script_result | tojson(indent=2) }}</pre>
+        {% endif %}
+        <p class="small text-muted mt-3 mb-0">
+          <a href="{{ url_for('admin:diagnostics') }}">Email &amp; analytics diagnostics</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="nl-wizard-panel">
+        <h2 class="h5">Security</h2>
+        {% if security.checklist_ok %}
+        <p class="small text-success mb-3"><i class="fa-solid fa-shield-halved"></i> All checks passed.</p>
+        {% else %}
+        <p class="small text-warning mb-3">Some configuration items need attention.</p>
+        {% endif %}
+        <ul class="list-unstyled small mb-4">
+          {% for item in security.checklist %}
+          <li class="mb-2">
+            {% if item.ok %}<span class="nl-check-ok">✓</span>{% else %}<span class="nl-check-bad">✗</span>{% endif %}
+            {{ item.label }}
+            {% if not item.ok %}<br /><span class="text-muted">{{ item.hint }}</span>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+
+        <h3 class="h6">Staff access</h3>
+        <table class="table table-sm">
+          <thead><tr><th>User</th><th>Role</th><th>Last login</th></tr></thead>
+          <tbody>
+            {% for u in security.staff_users %}
+            <tr><td>{{ u.display_name }}</td><td>{{ u.role }}</td><td class="small text-muted">{{ u.last_login }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h3 class="h6 mt-3">External threats (24h)</h3>
+        {% if security.threats.needs_attention %}
+        <p class="small text-warning mb-2">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          {{ security.threats.total }} signal(s) — review below or
+          <a href="{{ url_for('admin:event-log') }}?type=security_">full event log</a>.
+        </p>
+        {% if security.threats.repeated_login_ips %}
+        <p class="small text-danger mb-2">Repeated failed admin logins from:
+          {% for row in security.threats.repeated_login_ips %}{{ row.ip }} ({{ row.count }}){% if not loop.last %}, {% endif %}{% endfor %}
+        </p>
+        {% endif %}
+        <table class="table table-sm mb-3">
+          <thead><tr><th>When</th><th>Type</th><th>IP</th><th>Detail</th></tr></thead>
+          <tbody>
+            {% for row in security.threats.recent %}
+            <tr>
+              <td class="small text-muted">{{ row.at[:16] if row.at else '' }}</td>
+              <td class="small">{{ row.type }}</td>
+              <td class="small text-muted">{{ row.ip or '—' }}</td>
+              <td class="small">{{ row.message }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-muted">No external threat signals logged yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="small text-success mb-3"><i class="fa-solid fa-check"></i> No suspicious external activity in the last 24 hours.</p>
+        {% endif %}
+        <p class="small text-muted mb-3">
+          Ops email/Slack alerts fire after 5 failed admin logins from one IP within 60 minutes.
+        </p>
+
+        <h3 class="h6 mt-3">Recent activity</h3>
+        <table class="table table-sm">
+          <thead><tr><th>When</th><th>Who</th><th>Action</th></tr></thead>
+          <tbody>
+            {% for row in security.recent_audit %}
+            <tr>
+              <td class="small text-muted">{{ row.at[:16] if row.at else '' }}</td>
+              <td>{{ row.user }}</td>
+              <td class="small">{{ row.action }} · {{ row.table }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-muted">No audit entries yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <a href="/admin/admin-audit-log/list" class="small">Full audit log</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<style>
+  .nl-notif-urgent { border-left: 4px solid #dc2626; }
+  .nl-notif-warning { border-left: 4px solid #FF9500; }
+  .nl-notif-info { border-left: 4px solid #0F3D3E; }
+  .nl-help-playbook { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: #fff; }
+  .nl-doc-pre { background: #F3F7F7; border-radius: 10px; padding: 1rem; font-size: 13px; max-height: 480px; overflow: auto; white-space: pre-wrap; }
+  .nl-check-ok { color: #059669; }
+  .nl-check-bad { color: #dc2626; }
+</style>
+<div class="container-fluid">
+  <h1 class="h3 mb-2">Notifications</h1>
+  <p class="text-muted mb-4">What needs your attention right now. Each item links to the fix.</p>
+
+  {% if total_count == 0 %}
+  <div class="nl-wizard-panel">
+    <p class="mb-0 text-success"><i class="fa-solid fa-check-circle"></i> All clear — nothing needs action.</p>
+    <p class="small text-muted mt-2 mb-0">Check <a href="{{ url_for('admin:help-center') }}">Help</a> if you're troubleshooting something specific.</p>
+  </div>
+  {% else %}
+  {% for n in notifications %}
+  <a href="{{ n.link_path }}" class="text-decoration-none text-dark d-block mb-3">
+    <div class="nl-wizard-panel nl-notif-{{ n.severity }}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="badge {% if n.severity == 'urgent' %}bg-danger{% elif n.severity == 'warning' %}bg-warning text-dark{% else %}bg-secondary{% endif %} me-2">{{ n.count }}</span>
+          <strong>{{ n.title }}</strong>
+          <p class="small text-muted mb-0 mt-1">{{ n.detail }}</p>
+        </div>
+        <span class="text-muted small">&rarr;</span>
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid" style="max-width:720px;">
+  <div class="mb-3"><a href="{{ url_for('admin:insights-hub') }}" class="small">&larr; Insights</a></div>
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <h1 class="h3 mb-2">Privacy tools (GDPR)</h1>
+  <p class="text-muted mb-4">Export or redact customer data on request. Orders are redacted, not deleted, for accounting.</p>
+
+  <div class="nl-wizard-panel mb-4">
+    <h2 class="h6">Export customer data</h2>
+    <form method="post">
+      <input type="hidden" name="action" value="export" />
+      <div class="input-group">
+        <input class="form-control" type="email" name="email" placeholder="customer@example.com" required />
+        <button type="submit" class="btn btn-outline-primary">Download JSON</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="nl-wizard-panel border-danger">
+    <h2 class="h6 text-danger">Delete / redact customer data</h2>
+    <p class="small text-muted">Redacts email on orders and tickets. Irreversible.</p>
+    <form method="post" onsubmit="return confirm('Permanently redact this customer?');">
+      <input type="hidden" name="action" value="delete" />
+      <div class="mb-2"><input class="form-control" type="email" name="email" placeholder="customer@example.com" required /></div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="confirm" id="confirm" value="1" required />
+        <label class="form-check-label" for="confirm">I confirm this erasure request is authorized</label>
+      </div>
+      <button type="submit" class="btn btn-danger">Redact customer data</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

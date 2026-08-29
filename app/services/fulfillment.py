@@ -38,9 +38,10 @@ class FulfillmentError(Exception):
 
 
 def _notify_failure(order_row: Dict[str, Any], error: str, *, context: str) -> None:
+    order_number = str(order_row.get("order_number") or "")
     try:
         notify_fulfillment_failure(
-            order_number=str(order_row.get("order_number") or ""),
+            order_number=order_number,
             email=str(order_row.get("email") or ""),
             country=str(order_row.get("country") or ""),
             package_name=str(order_row.get("package_name") or "Travel eSIM"),
@@ -49,9 +50,17 @@ def _notify_failure(order_row: Dict[str, Any], error: str, *, context: str) -> N
             order_status=str(order_row.get("status") or "paid"),
         )
     except Exception:
-        logger.exception(
-            "Ops alert failed for order %s", order_row.get("order_number")
-        )
+        logger.exception("Ops alert failed for order %s", order_number)
+
+    from app.services.ops_event_log import log_ops_event
+
+    log_ops_event(
+        event_type="fulfillment_failed",
+        source=context,
+        severity="error",
+        order_number=order_number or None,
+        message=error[:500],
+    )
 
 
 def _validity_days_from_order_row(order_row: Dict[str, Any]) -> Optional[int]:
@@ -238,10 +247,19 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     try:
-        send_fulfillment_email(
+        message_id = send_fulfillment_email(
             to_email=recipient_email,
             subject=subject,
             html_body=html_body,
+        )
+        from app.services.ops_event_log import log_email_delivery
+
+        log_email_delivery(
+            event_type="sent",
+            recipient=recipient_email,
+            email_type="fulfillment",
+            subject=subject,
+            message_id=message_id,
         )
         if is_gift and buyer_email and buyer_email != recipient_email:
             send_gift_sent_confirmation_email(
@@ -273,14 +291,27 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
 
     logger.info("Fulfillment complete for order %s", order_number)
 
+    from app.services.ops_event_log import log_ops_event
+
+    log_ops_event(
+        event_type="fulfillment_success",
+        source="fulfillment",
+        order_number=order_number,
+        message=f"Delivered {country} eSIM to {recipient_email}",
+    )
+
     try:
         from app.services.affiliates import ensure_customer_affiliate, process_affiliate_on_fulfillment
 
-        if not is_gift:
-            ensure_customer_affiliate(email=buyer_email)
-            process_affiliate_on_fulfillment(delivered_row)
-        else:
-            ensure_customer_affiliate(email=buyer_email)
+        complimentary = metadata.get("complimentary") if isinstance(metadata, dict) else None
+        is_complimentary = isinstance(complimentary, dict) and bool(complimentary.get("granted_by"))
+
+        if not is_complimentary:
+            if not is_gift:
+                ensure_customer_affiliate(email=buyer_email)
+                process_affiliate_on_fulfillment(delivered_row)
+            else:
+                ensure_customer_affiliate(email=buyer_email)
     except Exception:
         logger.exception("Affiliate post-fulfillment failed for %s", order_number)
 

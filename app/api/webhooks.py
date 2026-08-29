@@ -16,6 +16,12 @@ from fastapi.responses import JSONResponse
 from app.api import supabase_repository as db
 from app.core.config import get_settings
 from app.services.citrus import CitrusClient, CitrusError
+from app.services.resend_events import (
+    BOUNCE_EVENTS,
+    DELIVERY_EVENTS,
+    handle_resend_email_event,
+    verify_resend_webhook_signature,
+)
 from app.services.simbase import SimbaseClient, SimbaseError
 
 logger = logging.getLogger(__name__)
@@ -445,6 +451,27 @@ async def esimaccess_webhook(request: Request) -> JSONResponse:
     if notify_type == "CHECK_HEALTH":
         return JSONResponse({"ok": True, "handled": True, "reason": "health_check"})
 
+    usage_synced = False
+    if iccid and notify_type in {"DATA_USAGE", "VALIDITY_USAGE", "SMDP_EVENT", "ESIM_STATUS"}:
+        try:
+            order = db.get_order_row_by_iccid(str(iccid))
+            if order and isinstance(content, dict):
+                from app.services.esim_usage_sync import (
+                    parse_esimaccess_webhook_usage,
+                    sync_order_usage_blocking,
+                )
+
+                overrides = parse_esimaccess_webhook_usage(content)
+                if notify_type == "SMDP_EVENT":
+                    event_type = str(content.get("eid") or content.get("event") or "").lower()
+                    if "install" in event_type or "enable" in event_type:
+                        overrides["activated"] = True
+                        overrides["activation_status"] = "installed"
+                sync_order_usage_blocking(order, source="webhook", overrides=overrides)
+                usage_synced = True
+        except Exception:
+            logger.exception("eSIM Access usage webhook sync failed iccid=%s", iccid)
+
     # Persist lightweight breadcrumb on matching order when we already have ICCID
     if iccid:
         try:
@@ -466,8 +493,172 @@ async def esimaccess_webhook(request: Request) -> JSONResponse:
         {
             "ok": True,
             "handled": notify_type in ESIMACCESS_KNOWN_TYPES or not notify_type,
+            "usage_synced": usage_synced,
             "notifyType": notify_type or None,
             "orderNo": order_no,
             "iccid": iccid,
         }
     )
+
+
+def _parse_email_address(raw: Any) -> str:
+    if isinstance(raw, list) and raw:
+        raw = raw[0]
+    text = str(raw or "").strip()
+    if "<" in text and ">" in text:
+        return text.split("<", 1)[1].split(">", 1)[0].strip().lower()
+    return text.lower()
+
+
+def _fetch_resend_inbound_body(email_id: str):
+    """Best-effort fetch of inbound email body from Resend Receiving API."""
+    try:
+        import resend
+
+        from app.core.config import get_settings
+
+        settings = get_settings()
+        if not (settings.resend_api_key or "").strip():
+            return None, None
+        resend.api_key = settings.resend_api_key
+        getter = getattr(getattr(resend.Emails, "Receiving", None), "get", None)
+        if not callable(getter):
+            return None, None
+        payload = getter(email_id)
+        if not isinstance(payload, dict):
+            return None, None
+        text = payload.get("text") or payload.get("body")
+        html_body = payload.get("html")
+        return (
+            str(text).strip() if text else None,
+            str(html_body) if html_body else None,
+        )
+    except Exception:
+        logger.exception("Resend inbound body fetch failed for %s", email_id)
+        return None, None
+
+
+@router.post("/resend/inbound")
+async def resend_inbound_email_webhook(request: Request):
+    """
+    Inbound support email (Resend `email.received`).
+
+    Configure in Resend → Webhooks → email.received → this URL.
+    Set RESEND_INBOUND_WEBHOOK_SECRET if Resend provides a signing secret.
+    """
+    settings = get_settings()
+    raw = await request.body()
+    secret = (settings.resend_inbound_webhook_secret or "").strip()
+
+    if secret:
+        auth = (request.headers.get("authorization") or "").strip()
+        token = auth[7:].strip() if auth.lower().startswith("bearer ") else auth
+        if not token or not hmac.compare_digest(token, secret):
+            logger.warning("Resend inbound webhook rejected: invalid bearer token")
+            raise HTTPException(status_code=401, detail="Invalid inbound webhook authorization")
+
+    try:
+        payload = json.loads(raw.decode("utf-8") or "{}")
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail="Invalid JSON") from exc
+
+    event_type = str(payload.get("type") or "").strip()
+    if event_type and event_type != "email.received":
+        return JSONResponse({"ok": True, "handled": False, "type": event_type})
+
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else payload
+    if not isinstance(data, dict):
+        return JSONResponse({"ok": True, "handled": False, "reason": "missing_data"})
+
+    from_email = _parse_email_address(data.get("from"))
+    to_raw = data.get("to") or settings.support_email
+    to_email = _parse_email_address(to_raw)
+    subject = str(data.get("subject") or "").strip() or None
+    body_text = data.get("text")
+    body_html = data.get("html")
+    email_id = str(data.get("email_id") or data.get("id") or "").strip()
+
+    if email_id and not body_text and not body_html:
+        fetched_text, fetched_html = _fetch_resend_inbound_body(email_id)
+        body_text = body_text or fetched_text
+        body_html = body_html or fetched_html
+
+    if not from_email:
+        raise HTTPException(status_code=400, detail="Missing from address")
+
+    from app.services.support_messaging import SupportMessagingError, record_inbound_email
+
+    try:
+        result = record_inbound_email(
+            from_email=from_email,
+            to_email=to_email or settings.support_email,
+            subject=subject,
+            body_text=str(body_text) if body_text else None,
+            body_html=str(body_html) if body_html else None,
+            resend_email_id=email_id or None,
+            message_id_header=str(data.get("message_id") or "") or None,
+            in_reply_to=str(data.get("in_reply_to") or "") or None,
+        )
+    except SupportMessagingError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return JSONResponse(
+        {
+            "ok": True,
+            "handled": result is not None,
+            "ticket": result,
+        }
+    )
+
+
+@router.post("/resend/events")
+async def resend_delivery_events_webhook(request: Request):
+    """
+    Resend delivery webhooks: email.bounced, email.complained, email.delivered, etc.
+
+    Configure in Resend → Webhooks → point to this URL.
+    Set RESEND_EVENTS_WEBHOOK_SECRET to the signing secret (whsec_...) from Resend.
+    """
+    settings = get_settings()
+    raw = await request.body()
+    secret = (settings.resend_events_webhook_secret or settings.resend_inbound_webhook_secret or "").strip()
+
+    if secret:
+        if secret.startswith("whsec_"):
+            valid = verify_resend_webhook_signature(
+                payload=raw,
+                secret=secret,
+                svix_id=request.headers.get("svix-id"),
+                svix_timestamp=request.headers.get("svix-timestamp"),
+                svix_signature=request.headers.get("svix-signature"),
+            )
+        else:
+            auth = (request.headers.get("authorization") or "").strip()
+            token = auth[7:].strip() if auth.lower().startswith("bearer ") else auth
+            valid = bool(token) and hmac.compare_digest(token, secret)
+        if not valid:
+            from app.services.security_threats import log_security_event
+
+            log_security_event(
+                threat_type="webhook_rejected",
+                source="resend_events",
+                message="Invalid Resend delivery webhook signature",
+                severity="warning",
+            )
+            raise HTTPException(status_code=401, detail="Invalid Resend webhook signature")
+
+    try:
+        payload = json.loads(raw.decode("utf-8") or "{}")
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail="Invalid JSON") from exc
+
+    event_type = str(payload.get("type") or "").strip()
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+    if not event_type or not isinstance(data, dict):
+        return JSONResponse({"ok": True, "handled": False, "reason": "missing_event"})
+
+    if event_type not in BOUNCE_EVENTS | DELIVERY_EVENTS:
+        return JSONResponse({"ok": True, "handled": False, "type": event_type})
+
+    result = handle_resend_email_event(event_type=event_type, data=data)
+    return JSONResponse({"ok": True, "handled": True, **result})

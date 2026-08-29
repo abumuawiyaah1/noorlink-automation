@@ -1,0 +1,136 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<style>
+  .nl-help-playbook { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: #fff; }
+  .nl-doc-article {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1.5rem 2rem;
+    max-height: 75vh; overflow: auto; color: #334155; line-height: 1.55;
+  }
+  .nl-doc-article h1 { color: #0F3D3E; font-size: 1.5rem; margin-bottom: 1rem; }
+  .nl-doc-article h2 { color: #0F3D3E; font-size: 1.15rem; margin-top: 1.25rem; }
+  .nl-doc-article h3 { color: #05191A; font-size: 1rem; margin-top: 1rem; }
+  .nl-doc-article code { background: #F3F7F7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: #0F3D3E; }
+  .nl-doc-article pre.nl-doc-code { background: #05191A; color: #F3F7F7; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+  .nl-doc-hit { border-left: 3px solid #FF9500; padding-left: 0.75rem; margin-bottom: 1rem; }
+  .nl-doc-sidebar-card {
+    border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; background: #fff;
+  }
+  .nl-doc-sidebar-card--dev { border-color: #0F3D3E; background: #F3F7F7; }
+  .nl-readonly-badge { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #6B7280; }
+</style>
+<div class="container-fluid">
+  <h1 class="h3 mb-2">Help</h1>
+  <p class="text-muted mb-2">Search playbooks and <strong>full documentation</strong> — read-only reference.</p>
+  <p class="nl-readonly-badge mb-4">Read-only · research & training</p>
+
+  {% if flash_error %}<div class="alert alert-warning">{{ flash_error }}</div>{% endif %}
+
+  <form method="get" action="{{ url_for('admin:help-center') }}" class="row g-2 mb-4">
+    <div class="col-md-8">
+      <input class="form-control form-control-lg" name="q" value="{{ query }}" placeholder="Search dashboard guide, API, webhooks, refunds, Telna, roles…" autofocus />
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary btn-lg">Search</button>
+    </div>
+    {% if query or doc_slug %}
+    <div class="col-auto align-self-center">
+      <a href="{{ url_for('admin:help-center') }}" class="small">Clear</a>
+    </div>
+    {% endif %}
+  </form>
+
+  {% if doc_html %}
+  <div class="mb-4">
+    <a href="{{ url_for('admin:help-center') }}{% if query %}?q={{ query | urlencode }}{% endif %}" class="small">&larr; Back to search</a>
+    {% if doc_meta and doc_meta.audience == 'dev' %}
+    <span class="badge bg-dark ms-2">Developer · admin only</span>
+    {% else %}
+    <span class="badge bg-secondary ms-2">Staff guide</span>
+    {% endif %}
+    <div class="nl-doc-article mt-3">{{ doc_html | safe }}</div>
+    <p class="small text-muted mt-3">This page is read-only. To change docs, edit the markdown file in the repo <code>docs/</code> folder.</p>
+  </div>
+  {% else %}
+
+  <div class="row">
+    <div class="col-lg-8">
+      {% if query and doc_hits %}
+      <h2 class="h6 text-muted text-uppercase mb-3">Documentation matches</h2>
+      {% for hit in doc_hits %}
+      <article class="nl-doc-hit">
+        <h3 class="h6 mb-1">
+          <a href="{{ url_for('admin:help-center') }}?doc={{ hit.slug }}{% if query %}&q={{ query | urlencode }}{% endif %}">{{ hit.title }}</a>
+          {% if hit.audience == 'dev' %}<span class="badge bg-dark ms-1">Dev</span>{% endif %}
+        </h3>
+        <p class="small text-muted mb-1">{{ hit.excerpt }}</p>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin:help-center') }}?doc={{ hit.slug }}">Read full document</a>
+      </article>
+      {% endfor %}
+      {% endif %}
+
+      <h2 class="h6 text-muted text-uppercase mb-3 mt-2">{% if query %}Playbooks{% else %}Common problems{% endif %}</h2>
+      {% for p in playbooks %}
+      <article class="nl-help-playbook">
+        <h3 class="h6 mb-1">{{ p.title }}</h3>
+        <p class="small text-muted mb-2">{{ p.problem }}</p>
+        <ol class="small mb-2">
+          {% for step in p.steps %}<li>{{ step }}</li>{% endfor %}
+        </ol>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-sm btn-primary" href="{{ p.wizard_path }}">Open tool</a>
+          {% if p.doc_slug %}
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin:help-center') }}?doc={{ p.doc_slug }}{% if query %}&q={{ query | urlencode }}{% endif %}">Read doc</a>
+          {% endif %}
+        </div>
+      </article>
+      {% else %}
+      {% if query %}
+      <p class="text-muted">No playbooks matched. Check documentation matches above or try <em>dashboard</em>, <em>api</em>, <em>finance</em>.</p>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="col-lg-4">
+      <h2 class="h6 text-muted text-uppercase mb-3">Full documentation</h2>
+      <p class="small text-muted">Complete read-only guides — searchable via the box above.</p>
+
+      {% for doc in pinned_docs %}
+      <div class="nl-doc-sidebar-card{% if doc.audience == 'dev' %} nl-doc-sidebar-card--dev{% endif %}">
+        <div class="d-flex justify-content-between align-items-start">
+          <strong class="small">{{ doc.title }}</strong>
+          {% if doc.audience == 'dev' %}<span class="badge bg-dark">Dev</span>{% endif %}
+        </div>
+        <p class="small text-muted mb-2 mt-1">{{ doc.summary }}</p>
+        {% if doc.available %}
+        <a class="btn btn-sm btn-primary" href="{{ url_for('admin:help-center') }}?doc={{ doc.slug }}">Read guide</a>
+        {% else %}
+        <span class="text-danger small">File missing in docs/</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <h2 class="h6 text-muted text-uppercase mb-3 mt-4">Technical runbooks</h2>
+      <ul class="list-unstyled">
+        {% for doc in docs %}
+        {% if not doc.pinned %}
+        <li class="mb-2">
+          {% if doc.available %}
+          <a href="{{ url_for('admin:help-center') }}?doc={{ doc.slug }}">{{ doc.title }}</a>
+          {% else %}
+          <span class="text-muted">{{ doc.title }} (missing)</span>
+          {% endif %}
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+
+      <p class="small text-muted mt-3">
+        <a href="{{ url_for('admin:staff-wizards') }}">Quick start</a> ·
+        <a href="{{ url_for('admin:operations-hub') }}">Operations</a>
+      </p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

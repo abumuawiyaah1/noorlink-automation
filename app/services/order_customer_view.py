@@ -177,6 +177,15 @@ def enrich_order_row(
 
     base = _row_to_order(row)
     gift_fields = gift_fields_from_row(row)
+    usage_fields = _usage_fields_from_row(
+        row,
+        {
+            "days_remaining": days_remaining,
+            "data_remaining_gb": data_remaining_gb,
+            "data_used_gb": data_used_gb,
+            "data_total_gb": data_total_gb,
+        },
+    )
     order = base.model_copy(
         update={
             "validity_days": validity_days,
@@ -185,6 +194,7 @@ def enrich_order_row(
             "fulfillment_pending": fulfillment_pending(row),
             "allowance_status": allowance_status,
             **gift_fields,
+            **usage_fields,
         }
     )
     extras = {
@@ -194,5 +204,39 @@ def enrich_order_row(
         "fulfillment_pending": fulfillment_pending(row),
         "allowance_status": allowance_status,
         **gift_fields,
+        **usage_fields,
     }
     return extras, order
+
+
+def _usage_fields_from_row(row: Dict[str, Any], extras: Dict[str, Any]) -> Dict[str, Any]:
+    meta = row.get("metadata") or {}
+    if not isinstance(meta, dict):
+        return {}
+    snapshot = meta.get("usage_snapshot")
+    if not isinstance(snapshot, dict):
+        from app.services.esim_topup import topup_capabilities
+
+        caps = topup_capabilities(row)
+        return {
+            "topup_supported": bool(caps.get("supported")),
+            "topup_reason": caps.get("reason"),
+        }
+
+    days_remaining = snapshot.get("days_remaining", extras.get("days_remaining"))
+    data_remaining_gb = snapshot.get("data_remaining_gb", extras.get("data_remaining_gb"))
+    data_used_gb = snapshot.get("data_used_gb")
+    data_total_gb = snapshot.get("data_total_gb")
+
+    return {
+        "activation_status": snapshot.get("activation_status"),
+        "activated_at": snapshot.get("activated_at"),
+        "usage_synced_at": snapshot.get("synced_at"),
+        "usage_pct": snapshot.get("usage_pct"),
+        "days_remaining": days_remaining,
+        "data_remaining_gb": data_remaining_gb,
+        "data_used_gb": data_used_gb if data_used_gb is not None else extras.get("data_used_gb"),
+        "data_total_gb": data_total_gb if data_total_gb is not None else extras.get("data_total_gb"),
+        "topup_supported": bool(snapshot.get("topup_supported")),
+        "wallet_balance_usd": snapshot.get("wallet_balance_usd"),
+    }

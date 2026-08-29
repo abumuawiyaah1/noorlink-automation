@@ -49,6 +49,8 @@ def extract_checkout_session_completed(
 
     order_number = metadata.get("order_number") if isinstance(metadata, dict) else None
     order_id = metadata.get("order_id") if isinstance(metadata, dict) else None
+    checkout_type = metadata.get("checkout_type") if isinstance(metadata, dict) else None
+    fund_usd = metadata.get("fund_usd") if isinstance(metadata, dict) else None
 
     payment_intent = getattr(session, "payment_intent", None)
     if isinstance(payment_intent, dict):
@@ -60,6 +62,8 @@ def extract_checkout_session_completed(
         "session_id": getattr(session, "id", None),
         "order_number": order_number,
         "order_id": order_id,
+        "checkout_type": checkout_type,
+        "fund_usd": fund_usd,
         "payment_intent_id": payment_intent_id,
         "customer_email": getattr(session, "customer_email", None),
         "amount_cents": stripe_event_amount_cents(event),

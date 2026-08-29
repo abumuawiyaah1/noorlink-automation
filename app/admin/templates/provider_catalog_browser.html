@@ -1,0 +1,42 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <div class="mb-3"><a href="{{ url_for('admin:operations-hub') }}" class="small">&larr; Operations</a></div>
+  <h1 class="h3 mb-2">Provider SKU browser</h1>
+  <p class="text-muted mb-4">Upstream Telna/Citrus SKUs — copy into the custom plan wizard.</p>
+
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-md-4"><input class="form-control" name="q" value="{{ query }}" placeholder="Search country, SKU, name…" /></div>
+    <div class="col-md-3">
+      <select class="form-select" name="provider">
+        <option value="">All providers</option>
+        <option value="telna" {% if provider == 'telna' %}selected{% endif %}>Telna</option>
+        <option value="citrus" {% if provider == 'citrus' %}selected{% endif %}>Citrus</option>
+      </select>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-primary">Search</button></div>
+  </form>
+
+  <div class="table-responsive nl-wizard-panel">
+    <table class="table table-sm">
+      <thead><tr><th>Provider</th><th>SKU</th><th>Name</th><th>Scope</th><th>Data</th><th>Days</th><th>Wholesale</th></tr></thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>{{ p.provider }}</td>
+          <td><code>{{ p.provider_sku }}</code></td>
+          <td>{{ p.name }}</td>
+          <td class="small">{{ p.country_slugs or p.scope }}</td>
+          <td>{% if p.data_gb %}{{ p.data_gb }} GB{% else %}—{% endif %}</td>
+          <td>{{ p.validity_days or '—' }}</td>
+          <td>{% if p.wholesale_cents %}${{ p.wholesale_cents / 100 }}{% else %}—{% endif %}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-muted">No products found. Try a different search or run cron to sync Telna catalog.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

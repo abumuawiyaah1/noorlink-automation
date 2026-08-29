@@ -1,0 +1,39 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <div class="mb-3"><a href="{{ url_for('admin:operations-hub') }}" class="small">&larr; Operations</a></div>
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <h1 class="h3 mb-2">Suspended orders</h1>
+  <p class="text-muted mb-4">These orders hit their data cap or balance limit. Reactivate only if you've confirmed with the provider.</p>
+
+  {% if orders %}
+  <div class="table-responsive nl-wizard-panel">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Order</th><th>Customer</th><th>Plan</th><th>Used</th><th>Suspended</th><th></th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td><a href="{{ url_for('admin:order-insight') }}?order={{ o.order_number }}">{{ o.order_number }}</a></td>
+          <td>{{ o.email }}</td>
+          <td>{{ o.country }} — {{ o.package_name }}</td>
+          <td>{% if o.data_used_gb is not none %}{{ o.data_used_gb }} / {{ o.data_total_gb or '?' }} GB{% else %}—{% endif %}</td>
+          <td class="small text-muted">{{ o.suspended_at or o.updated_at or '—' }}</td>
+          <td>
+            <form method="post" class="d-inline" onsubmit="return confirm('Reactivate {{ o.order_number }}?');">
+              <input type="hidden" name="order_number" value="{{ o.order_number }}" />
+              <button type="submit" class="btn btn-sm btn-outline-primary">Reactivate</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted">No suspended orders right now.</p>
+  {% endif %}
+</div>
+{% endblock %}

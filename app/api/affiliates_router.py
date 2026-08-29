@@ -11,10 +11,14 @@ from app.api import supabase_repository as db
 from app.api.internal_auth import require_internal_in_production
 from app.api.schemas import (
     AffiliateCreateRequest,
+    AffiliateDashboardResponse,
     AffiliatePayoutRequest,
+    AffiliatePayoutRequestPublic,
+    AffiliatePayoutRequestResponse,
     AffiliateReferralLinkResponse,
     AffiliateResolveResponse,
 )
+from app.services.affiliate_portal import AffiliatePortalError, get_affiliate_dashboard, request_affiliate_payout
 from app.services.affiliates import (
     DEFAULTS,
     get_affiliate_summary,
@@ -76,6 +80,48 @@ async def affiliate_referral_link(
         url=payload["url"],
         customer_discount_percent=payload["customerDiscountPercent"],
         referrer_reward_percent=payload["referrerRewardPercent"],
+    )
+
+
+@router.get("/api/affiliate/dashboard", response_model=AffiliateDashboardResponse)
+async def affiliate_dashboard(
+    code: str = Query(..., min_length=2, max_length=32),
+    email: str = Query(..., min_length=3),
+):
+    try:
+        data = get_affiliate_dashboard(code=code, email=email)
+    except AffiliatePortalError as exc:
+        return AffiliateDashboardResponse(success=False, message=str(exc))
+
+    return AffiliateDashboardResponse(
+        success=True,
+        code=data["code"],
+        type=data["type"],
+        display_name=data.get("display_name"),
+        referral_url=data.get("referral_url"),
+        customer_discount_percent=data.get("customer_discount_percent"),
+        commission_percent=data.get("commission_percent"),
+        pays_cash=data.get("pays_cash"),
+        approved_balance_cents=data.get("approved_balance_cents"),
+        paid_total_cents=data.get("paid_total_cents"),
+        payout_minimum_cents=data.get("payout_minimum_cents"),
+        ready_for_payout=data.get("ready_for_payout"),
+        recent_commissions=data.get("recent_commissions") or [],
+    )
+
+
+@router.post("/api/affiliate/payout-request", response_model=AffiliatePayoutRequestResponse)
+async def affiliate_payout_request(body: AffiliatePayoutRequestPublic):
+    try:
+        result = request_affiliate_payout(code=body.code, email=str(body.email))
+    except AffiliatePortalError as exc:
+        return AffiliatePayoutRequestResponse(success=False, message=str(exc))
+
+    return AffiliatePayoutRequestResponse(
+        success=True,
+        code=result["code"],
+        approved_balance_cents=result["approved_balance_cents"],
+        message=result["message"],
     )
 
 

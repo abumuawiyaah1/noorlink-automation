@@ -1,0 +1,44 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid" style="max-width:720px;">
+  {% include "includes/wizard_chrome.html" %}
+  <h1 class="h3 mb-2">Add a staff member</h1>
+  <p class="text-muted mb-4">Create a dashboard login. Share the password securely — it is not shown again.</p>
+
+  <form method="post" class="nl-wizard-panel">
+    <div class="mb-3">
+      <label class="form-label" for="username">Username *</label>
+      <input class="form-control" id="username" name="username" required value="{{ form_values.get('username', '') }}" autocomplete="off" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="display_name">Display name</label>
+      <input class="form-control" id="display_name" name="display_name" value="{{ form_values.get('display_name', '') }}" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="notify_email">Notify email (for alerts)</label>
+      <input class="form-control" type="email" id="notify_email" name="notify_email" value="{{ form_values.get('notify_email', '') }}" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="role">Role *</label>
+      <select class="form-select" id="role" name="role" required>
+        {% for r in roles %}
+        <option value="{{ r }}" {% if form_values.get('role', 'support') == r %}selected{% endif %}>{{ r }}</option>
+        {% endfor %}
+      </select>
+      <div class="form-text">
+        {% if actor_role == 'owner' %}
+        You are the <strong>owner</strong> — you can create admin and owner accounts.
+        {% else %}
+        As <strong>admin</strong> you can create support, catalog, marketing, finance, and legal — not admin/owner.
+        {% endif %}
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="password">Password * (min 12 characters)</label>
+      <input class="form-control" type="password" id="password" name="password" required autocomplete="new-password" />
+    </div>
+    <button type="submit" class="btn btn-primary">Create staff login</button>
+  </form>
+</div>
+{% endblock %}

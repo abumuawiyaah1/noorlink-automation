@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% from '_macros.html' import display_menu %}
+{% block body %}
+<style>
+  .nl-session-bar {
+    background: #F3F7F7;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.45rem 1rem;
+    font-size: 13px;
+    color: #334155;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nl-session-bar strong { color: #0F3D3E; }
+  @media (max-width: 768px) {
+    .wrapper { flex-direction: column !important; }
+    .navbar-vertical {
+      width: 100% !important;
+      min-height: auto !important;
+      position: relative !important;
+    }
+    .page-wrapper { width: 100% !important; margin-left: 0 !important; }
+    .nl-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .nl-wizard-panel { padding: 1rem !important; }
+    .table-responsive { font-size: 12px; }
+    .btn { min-height: 44px; }
+    .form-control, .form-select { font-size: 16px; }
+    h1.h3, .page-title { font-size: 1.25rem !important; }
+  }
+</style>
+{% if request.session.get("admin_user_id") and request.session.get("admin_session_started") %}
+<div class="nl-session-bar" id="nl-session-bar"
+  data-started="{{ request.session.get('admin_session_started') }}"
+  data-max-age="{{ admin_session_max_age | default(86400) }}">
+  <span>Signed in as <strong>{{ request.session.get('admin_display_name') or request.session.get('admin_username') }}</strong></span>
+  <span style="display:flex;gap:0.5rem;align-items:center;">
+    <button type="button" class="nl-theme-toggle" id="nl-theme-toggle" aria-label="Toggle dark mode">Dark mode</button>
+    <span id="nl-session-remaining">Session active</span>
+  </span>
+</div>
+<script>
+(function () {
+  var root = document.documentElement;
+  var toggle = document.getElementById("nl-theme-toggle");
+  var stored = localStorage.getItem("nl-admin-theme");
+  if (stored === "dark") {
+    root.setAttribute("data-nl-theme", "dark");
+    if (toggle) toggle.textContent = "Light mode";
+  }
+  if (toggle) {
+    toggle.addEventListener("click", function () {
+      var dark = root.getAttribute("data-nl-theme") === "dark";
+      if (dark) {
+        root.removeAttribute("data-nl-theme");
+        localStorage.setItem("nl-admin-theme", "light");
+        toggle.textContent = "Dark mode";
+      } else {
+        root.setAttribute("data-nl-theme", "dark");
+        localStorage.setItem("nl-admin-theme", "dark");
+        toggle.textContent = "Light mode";
+      }
+    });
+  }
+})();
+</script>
+<script>
+(function () {
+  var bar = document.getElementById("nl-session-bar");
+  var el = document.getElementById("nl-session-remaining");
+  if (!bar || !el) return;
+  var started = Date.parse(bar.dataset.started || "");
+  var maxSec = parseInt(bar.dataset.maxAge || "86400", 10);
+  if (!started || !maxSec) return;
+  function tick() {
+    var left = Math.max(0, maxSec - Math.floor((Date.now() - started) / 1000));
+    var h = Math.floor(left / 3600);
+    var m = Math.floor((left % 3600) / 60);
+    el.textContent = left <= 600
+      ? "Session expires in " + m + " min — save your work"
+      : "Session expires in ~" + h + "h " + m + "m";
+    if (left <= 0) el.textContent = "Session may have expired — refresh or log in again";
+  }
+  tick();
+  setInterval(tick, 30000);
+})();
+</script>
+{% endif %}
+<div class="wrapper">
+  <aside class="navbar navbar-expand-lg navbar-vertical navbar-expand-md navbar-dark">
+    <div class="container-fluid">
+      <h1 class="navbar-brand navbar-brand-autodark">
+        <a href="{{ url_for('admin:index') }}">
+          {% if admin.logo_url %}
+          <img src="{{ admin.logo_url }}" width="64" height="64" alt="Admin" class="navbar-brand-image" />
+          {% else %}
+          <h3>{{ admin.title }}</h3>
+          {% endif %}
+        </a>
+      </h1>
+      <nav class="navbar navbar-expand-sm" id="navbar-menu">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          {{ display_menu(admin._menu, request) }}
+        </div>
+      </nav>
+      {% if admin.authentication_backend %}
+      <a href="{{ request.url_for('admin:logout') }}" class="btn btn-secondary btn-icon">
+        <i class="fa fa-sign-out"></i>
+        <span>Logout</span>
+      </a>
+      {% endif %}
+    </div>
+  </aside>
+  <div class="page-wrapper">
+    <div class="container-fluid">
+      <div class="page-header d-print-none">
+        {% block content_header %}
+        <div class="row align-items-center">
+          <div class="col">
+            <h2 class="page-title">{{ title }}</h2>
+            <div class="page-pretitle">{{ subtitle }}</div>
+          </div>
+        </div>
+        {% endblock %}
+      </div>
+    </div>
+    <div class="page-body flex-grow-1">
+      <div class="container-fluid">
+        <div class="row row-deck row-cards">
+          {% block content %} {% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

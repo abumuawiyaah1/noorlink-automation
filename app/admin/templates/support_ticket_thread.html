@@ -1,0 +1,127 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-12">
+      <a href="{{ url_for('admin:support-inbox') }}" class="text-decoration-none">&larr; Back to inbox</a>
+      <h1 class="h3 mt-2">{{ ticket.ticket_number }}</h1>
+      <p class="text-muted mb-0">
+        {{ ticket.name }} &lt;{{ ticket.email }}&gt;
+        {% if ticket.order_number %} · Order <strong>{{ ticket.order_number }}</strong>{% endif %}
+        · Topic: <strong>{{ category_label }}</strong>
+        · Language: <span class="nl-lang-badge">{{ ticket.language or 'en' }}</span>
+        · Status: {{ ticket.status }}
+        {% if ticket.assigned_to %} · Assigned: <strong>{{ ticket.assigned_to }}</strong>{% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% if flash_success %}
+  <div class="alert alert-success">{{ flash_success }}</div>
+  {% endif %}
+  {% if flash_error %}
+  <div class="alert alert-danger">{{ flash_error }}</div>
+  {% endif %}
+
+  <div class="card mb-4">
+    <div class="card-body" style="max-height: 520px; overflow-y: auto;">
+      {% for msg in messages %}
+      <div class="mb-4 pb-3 border-bottom">
+        <div class="d-flex justify-content-between">
+          <strong>{% if msg.direction == 'outbound' %}NoorLink Support{% else %}{{ ticket.name }}{% endif %}</strong>
+          <small class="text-muted">{{ msg.created_at }}</small>
+        </div>
+        <small class="text-muted d-block mb-2">{{ msg.from_email }} → {{ msg.to_email }}</small>
+        <div style="white-space: pre-wrap; line-height: 1.55;">{{ msg.body_text or '(no text)' }}</div>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">No messages recorded.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">Assign ticket</div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">
+        Assigning sends the customer a branded email that someone is handling their case.
+        Staff with a notify email on their admin account also get an assignment alert.
+      </p>
+      <form method="post" action="{{ url_for('admin:support-inbox-ticket', ticket_number=ticket.ticket_number) }}">
+        <input type="hidden" name="action" value="assign" />
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <select name="assign_to" class="form-select form-select-sm" style="width: auto; min-width: 220px;" required>
+            <option value="" disabled {% if not ticket.assigned_to %}selected{% endif %}>Choose team member…</option>
+            {% for admin in admins %}
+            <option value="{{ admin.username }}" {% if ticket.assigned_to == admin.username %}selected{% endif %}>
+              {{ admin.display_name or admin.username }} ({{ admin.username }})
+            </option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-outline-primary btn-sm">Assign &amp; notify</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Send branded reply — {{ category_label }}</div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">
+        Sends a NoorLink-branded email with topic-specific wording. Reply-to
+        <strong>support@noorlink.co</strong>. Subject includes
+        <code>[{{ ticket.ticket_number }}]</code>.
+      </p>
+      {% if reply_templates %}
+      <div class="mb-3 d-flex flex-wrap gap-2" id="reply-template-buttons">
+        {% for tpl in reply_templates %}
+        <button type="button" class="btn btn-sm btn-outline-secondary support-template-btn" data-template-key="{{ tpl.key }}">
+          {{ tpl.label }}
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <form method="post" action="{{ url_for('admin:support-inbox-ticket', ticket_number=ticket.ticket_number) }}">
+        <input type="hidden" name="action" value="reply" />
+        <input type="hidden" name="template_key" id="template-key-input" value="" />
+        <div class="mb-3">
+          <label class="form-label">Message</label>
+          <textarea id="reply-body" name="reply_body" class="form-control" rows="6" placeholder="Write your reply or pick a template above…"></textarea>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <button type="submit" class="btn btn-primary">Send reply</button>
+          <label class="ms-sm-3 me-2">Status</label>
+          <select name="ticket_status" class="form-select form-select-sm" style="width: auto;">
+            <option value="open" {% if ticket.status == 'open' %}selected{% endif %}>Open</option>
+            <option value="waiting" {% if ticket.status == 'waiting' %}selected{% endif %}>Waiting on customer</option>
+            <option value="closed" {% if ticket.status == 'closed' %}selected{% endif %}>Closed</option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% if reply_templates %}
+<script id="reply-templates-json" type="application/json">{{ reply_templates | tojson }}</script>
+{% endif %}
+<script>
+  (function () {
+    var node = document.getElementById("reply-templates-json");
+    var templates = node ? JSON.parse(node.textContent || "[]") : [];
+    var byKey = {};
+    templates.forEach(function (tpl) {
+      byKey[tpl.key] = tpl.body || "";
+    });
+    document.querySelectorAll(".support-template-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var key = btn.getAttribute("data-template-key") || "";
+        var textarea = document.getElementById("reply-body");
+        var keyInput = document.getElementById("template-key-input");
+        if (textarea) textarea.value = byKey[key] || "";
+        if (keyInput) keyInput.value = key;
+      });
+    });
+  })();
+</script>
+{% endblock %}

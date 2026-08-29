@@ -1,0 +1,88 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+<style>
+  .nl-wizard-panel { border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; padding: 1.25rem 1.5rem; }
+  .nl-wizard-help { background: #F3F7F7; border-radius: 10px; padding: .85rem 1rem; font-size: 14px; color: #334155; }
+</style>
+
+<div class="container-fluid" style="max-width:720px;">
+  {% include "includes/wizard_chrome.html" %}
+
+  <h1 class="h3 mb-2">Create a promo code</h1>
+  <p class="text-muted mb-4">Simple discounts for campaigns. Customers enter the code at checkout.</p>
+
+  <form method="post" action="{{ url_for('admin:promo-wizard') }}" class="nl-wizard-panel">
+    <div class="mb-3">
+      <label class="form-label" for="code">Code *</label>
+      <input class="form-control text-uppercase" id="code" name="code" required
+        value="{{ form_values.get('code', '') }}" placeholder="SUMMER10" />
+      <div class="form-text">Letters and numbers only — no spaces.</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="label">Internal label</label>
+      <input class="form-control" id="label" name="label"
+        value="{{ form_values.get('label', '') }}" placeholder="Summer sale 2026" />
+    </div>
+
+    <fieldset class="mb-3">
+      <legend class="form-label mb-2">Discount type *</legend>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="discount_type" id="discount_percent" value="percent"
+          {% if form_values.get('discount_type', 'percent') != 'amount' %}checked{% endif %} />
+        <label class="form-check-label" for="discount_percent">Percent off</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="discount_type" id="discount_amount" value="amount"
+          {% if form_values.get('discount_type') == 'amount' %}checked{% endif %} />
+        <label class="form-check-label" for="discount_amount">Fixed amount off</label>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <label class="form-label" for="percent_off">Percent off</label>
+          <input class="form-control" id="percent_off" name="percent_off" type="number" min="1" max="90"
+            value="{{ form_values.get('percent_off', '10') }}" placeholder="10" />
+        </div>
+        <div class="col-6">
+          <label class="form-label" for="amount_off_cents">Amount off (cents)</label>
+          <input class="form-control" id="amount_off_cents" name="amount_off_cents" type="number" min="1"
+            value="{{ form_values.get('amount_off_cents', '') }}" placeholder="500 = $5" />
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label" for="starts_at">Starts *</label>
+        <input class="form-control" id="starts_at" name="starts_at" type="date" required
+          value="{{ form_values.get('starts_at', default_start) }}" />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label" for="ends_at">Ends *</label>
+        <input class="form-control" id="ends_at" name="ends_at" type="date" required
+          value="{{ form_values.get('ends_at', default_end) }}" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label" for="max_redemptions">Max uses</label>
+        <input class="form-control" id="max_redemptions" name="max_redemptions" type="number" min="1"
+          value="{{ form_values.get('max_redemptions', '') }}" placeholder="Leave blank = unlimited" />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label" for="min_order_cents">Minimum order (cents)</label>
+        <input class="form-control" id="min_order_cents" name="min_order_cents" type="number" min="0"
+          value="{{ form_values.get('min_order_cents', '0') }}" />
+      </div>
+    </div>
+
+    <div class="nl-wizard-help mb-3">
+      Discounts above <strong>{{ approval_threshold }}%</strong> need an admin to approve before checkout
+      {% if not editor_is_admin %} — you'll see a confirmation after saving{% endif %}.
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create promo code</button>
+  </form>
+</div>
+{% endblock %}

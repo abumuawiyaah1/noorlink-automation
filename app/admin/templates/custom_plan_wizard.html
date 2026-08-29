@@ -1,0 +1,169 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+<div class="container-fluid">
+  {% include "includes/wizard_chrome.html" %}
+  <div class="row mb-3">
+    <div class="col-12">
+      <h1 class="h3 mb-1">Add a new travel plan</h1>
+      <p class="text-muted mb-0">
+        Create a storefront plan and provider route in one step.
+        {% if editor_is_admin %}
+        As admin, plans you create are approved immediately.
+        {% else %}
+        Catalog saves require admin approval before the plan goes on sale.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <form method="post" action="{{ url_for('admin:new-custom-plan') }}">
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header">Plan (storefront)</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label" for="country">Country *</label>
+              <input class="form-control" id="country" name="country" required
+                value="{{ form_values.get('country', '') }}" placeholder="Turkey" />
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label" for="country_code">Country code</label>
+                <input class="form-control" id="country_code" name="country_code" maxlength="2"
+                  value="{{ form_values.get('country_code', '') }}" placeholder="TR" />
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label" for="flag_emoji">Flag</label>
+                <input class="form-control" id="flag_emoji" name="flag_emoji"
+                  value="{{ form_values.get('flag_emoji', '') }}" placeholder="🇹🇷" />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="name">Plan name</label>
+              <input class="form-control" id="name" name="name"
+                value="{{ form_values.get('name', '') }}" placeholder="Auto-filled from country + data" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="slug">Slug</label>
+              <input class="form-control" id="slug" name="slug"
+                value="{{ form_values.get('slug', '') }}" placeholder="Auto: turkey-10gb-15d" />
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label" for="data_label">Data label *</label>
+                <input class="form-control" id="data_label" name="data_label" required
+                  value="{{ form_values.get('data_label', '10GB') }}" />
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label" for="data_total_gb">Data (GB)</label>
+                <input class="form-control" id="data_total_gb" name="data_total_gb" type="number" step="0.01" min="0"
+                  value="{{ form_values.get('data_total_gb', '10') }}" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label" for="validity_days">Validity (days) *</label>
+                <input class="form-control" id="validity_days" name="validity_days" type="number" min="1" required
+                  value="{{ form_values.get('validity_days', '15') }}" />
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label" for="sort_order">Sort order</label>
+                <input class="form-control" id="sort_order" name="sort_order" type="number"
+                  value="{{ form_values.get('sort_order', '0') }}" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label" for="price_cents">Price (cents) *</label>
+                <input class="form-control" id="price_cents" name="price_cents" type="number" min="1" required
+                  value="{{ form_values.get('price_cents', '') }}" placeholder="1999 = $19.99" />
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label" for="currency">Currency</label>
+                <input class="form-control" id="currency" name="currency" maxlength="3"
+                  value="{{ form_values.get('currency', 'USD') }}" />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="region">Region</label>
+              <select class="form-select" id="region" name="region">
+                {% for region in ['Americas', 'Europe', 'Middle East', 'Asia Pacific', 'Africa', 'Global'] %}
+                <option value="{{ region }}" {% if form_values.get('region', 'Americas') == region %}selected{% endif %}>{{ region }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="description">Description</label>
+              <textarea class="form-control" id="description" name="description" rows="3">{{ form_values.get('description', '') }}</textarea>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1"
+                {% if form_values.get('is_featured') in ['1', 'true', 'on'] %}checked{% endif %} />
+              <label class="form-check-label" for="is_featured">Featured plan</label>
+            </div>
+            {% if editor_is_admin %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="publish_now" name="publish_now" value="1"
+                {% if form_values.get('publish_now', '1') in ['1', 'true', 'on', ''] %}checked{% endif %} />
+              <label class="form-check-label" for="publish_now">Put on sale immediately</label>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header">Provider route (fulfillment)</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label" for="provider">Provider *</label>
+              <select class="form-select" id="provider" name="provider" required>
+                <option value="" disabled {% if not form_values.get('provider') %}selected{% endif %}>Choose provider…</option>
+                {% for provider in providers %}
+                <option value="{{ provider }}" {% if form_values.get('provider') == provider %}selected{% endif %}>{{ provider }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="provider_sku">Provider SKU *</label>
+              <input class="form-control" id="provider_sku" name="provider_sku" required
+                value="{{ form_values.get('provider_sku', '') }}" placeholder="From Citrus / eSIM Access / Telna" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="provider_slug">Provider slug</label>
+              <input class="form-control" id="provider_slug" name="provider_slug"
+                value="{{ form_values.get('provider_slug', '') }}" placeholder="Optional internal slug" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="catalog_key">Catalog key</label>
+              <input class="form-control" id="catalog_key" name="catalog_key"
+                value="{{ form_values.get('catalog_key', '') }}" placeholder="Auto-generated from slug + provider" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="wholesale_cents">Wholesale cost (cents)</label>
+              <input class="form-control" id="wholesale_cents" name="wholesale_cents" type="number" min="0"
+                value="{{ form_values.get('wholesale_cents', '') }}" placeholder="Your provider cost" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="route_notes">Route notes</label>
+              <textarea class="form-control" id="route_notes" name="route_notes" rows="3"
+                placeholder="Internal notes about this SKU or provider">{{ form_values.get('route_notes', '') }}</textarea>
+            </div>
+            <div class="alert alert-light border small mb-0">
+              Checkout uses this route to provision the eSIM after payment.
+              New routes need admin approval unless you are logged in as admin.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex flex-wrap gap-2 align-items-center">
+      <button type="submit" class="btn btn-primary">Create plan + route</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('admin:list', identity='esim-package') }}">View all plans</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

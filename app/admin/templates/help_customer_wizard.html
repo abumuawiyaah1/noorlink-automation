@@ -1,0 +1,59 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+<style>
+  .nl-wizard-panel { border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; padding: 1.25rem 1.5rem; }
+  .nl-wizard-help { background: #F3F7F7; border-radius: 10px; padding: .85rem 1rem; font-size: 14px; color: #334155; }
+</style>
+
+<div class="container-fluid" style="max-width:720px;">
+  {% include "includes/wizard_chrome.html" %}
+
+  <h1 class="h3 mb-2">Help a customer</h1>
+  <p class="text-muted mb-4">
+    Use this when someone contacts you by phone, WhatsApp, or email.
+    We log the request and send them a confirmation with a ticket number.
+  </p>
+
+  <form method="post" action="{{ url_for('admin:help-customer') }}" class="nl-wizard-panel">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label" for="name">Customer name *</label>
+        <input class="form-control" id="name" name="name" required
+          value="{{ form_values.get('name', '') }}" />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label" for="email">Customer email *</label>
+        <input class="form-control" id="email" name="email" type="email" required
+          value="{{ form_values.get('email', '') }}" />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="order_number">Order number</label>
+      <input class="form-control" id="order_number" name="order_number"
+        value="{{ form_values.get('order_number', '') }}" placeholder="NL-ABC12345 (if they have one)" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="subject">What do they need help with? *</label>
+      <select class="form-select" id="subject" name="subject" required>
+        {% for label in topics.keys() %}
+        <option value="{{ label }}" {% if form_values.get('subject', 'Order help') == label %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="message">Notes / message *</label>
+      <textarea class="form-control" id="message" name="message" rows="5" required
+        placeholder="What did they say? Include anything you already checked…">{{ form_values.get('message', '') }}</textarea>
+    </div>
+
+    <div class="nl-wizard-help mb-3">
+      After you submit, open the thread in <strong>Support Inbox</strong> to reply with a branded email.
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create support ticket</button>
+  </form>
+</div>
+{% endblock %}

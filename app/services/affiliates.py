@@ -361,6 +361,7 @@ def _create_reward_promo(*, code: str, percent: int) -> None:
         "is_active": True,
         "max_redemptions": 1,
         "min_order_cents": 0,
+        "admin_approved": True,
     }
     client.table("promo_codes").insert(payload).execute()
 

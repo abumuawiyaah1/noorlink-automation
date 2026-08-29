@@ -1,0 +1,70 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid" style="max-width:800px;">
+  {% include "includes/wizard_chrome.html" %}
+  <h1 class="h3 mb-2">Send Insider newsletter</h1>
+  <p class="text-muted mb-4">Create an issue and schedule it. The daily cron sends issues when their time arrives.</p>
+
+  <form method="post" class="nl-wizard-panel">
+    <div class="mb-3">
+      <label class="form-label" for="slug">URL slug</label>
+      <input class="form-control" id="slug" name="slug" value="{{ form_values.get('slug', '') }}" placeholder="2026-09-turkey (auto from subject if blank)" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="subject">Email subject *</label>
+      <input class="form-control" id="subject" name="subject" required value="{{ form_values.get('subject', '') }}" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="preview">Preview text *</label>
+      <textarea class="form-control" id="preview" name="preview" rows="2" required>{{ form_values.get('preview', '') }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="hero_image_url">Hero image URL</label>
+      <input class="form-control" id="hero_image_url" name="hero_image_url" value="{{ form_values.get('hero_image_url', '') }}" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="web_path">Web path</label>
+      <input class="form-control" id="web_path" name="web_path" value="{{ form_values.get('web_path', '') }}" placeholder="/newsletter/your-slug" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="promo_code">Linked promo code</label>
+      <input class="form-control text-uppercase" id="promo_code" name="promo_code" value="{{ form_values.get('promo_code', '') }}" />
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label" for="send_at">Send date *</label>
+        <input class="form-control" type="date" id="send_at" name="send_at" required value="{{ form_values.get('send_at', default_send) }}" />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label" for="audience">Audience</label>
+        <select class="form-select" id="audience" name="audience">
+          <option value="all" {% if form_values.get('audience', 'all') == 'all' %}selected{% endif %}>All subscribers</option>
+          <option value="pilgrimage" {% if form_values.get('audience') == 'pilgrimage' %}selected{% endif %}>Pilgrimage / Umrah only</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="email_highlight">Email highlight (optional deal callout)</label>
+      <input class="form-control" id="email_highlight" name="email_highlight" value="{{ form_values.get('email_highlight', '') }}" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="email_note">Editor's note</label>
+      <textarea class="form-control" id="email_note" name="email_note" rows="2">{{ form_values.get('email_note', '') }}</textarea>
+    </div>
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="publish_now" id="publish_now" value="1" />
+      <label class="form-check-label" for="publish_now">Schedule for immediate send (cron picks up within ~24h)</label>
+    </div>
+    <button type="submit" name="action" value="create" class="btn btn-primary me-2">Schedule issue</button>
+
+    <hr class="my-4" />
+    <h2 class="h6">Send test email first</h2>
+    <div class="input-group">
+      <input class="form-control" type="email" name="test_email" placeholder="you@noorlink.co" />
+      <button type="submit" name="action" value="test" class="btn btn-outline-primary">Send test</button>
+    </div>
+    <p class="form-text">Fill in subject and preview above, then send a test before scheduling.</p>
+  </form>
+</div>
+{% endblock %}

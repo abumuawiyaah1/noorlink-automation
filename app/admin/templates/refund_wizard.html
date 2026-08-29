@@ -1,0 +1,48 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid" style="max-width:720px;">
+  <div class="mb-3"><a href="{{ url_for('admin:finance-hub') }}" class="small">&larr; Finance</a></div>
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <h1 class="h3 mb-2">Refund an order</h1>
+  <p class="text-muted mb-4">Issues a Stripe refund and marks the order refunded. Policy: over {{ usage_threshold }}% data used needs admin override.</p>
+
+  {% if order_preview %}
+  <div class="nl-wizard-panel mb-3">
+    <h2 class="h6">Order preview</h2>
+    <p class="small mb-1"><strong>{{ order_preview.order_number }}</strong> — {{ order_preview.status }} — ${{ "%.2f"|format((order_preview.amount_cents or 0) / 100) }}</p>
+    <p class="small text-muted mb-2">{{ order_preview.email }}{% if order_preview.data_total_gb %} · {{ order_preview.data_used_gb or 0 }} / {{ order_preview.data_total_gb }} GB used{% endif %}</p>
+    {% if stripe_url %}
+    <a class="btn btn-sm btn-outline-secondary" href="{{ stripe_url }}" target="_blank" rel="noopener noreferrer">Open in Stripe Dashboard</a>
+    {% else %}
+    <p class="small text-warning mb-0">No Stripe payment intent on file — refund manually in Stripe.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <form method="post" class="nl-wizard-panel">
+    <div class="mb-3">
+      <label class="form-label" for="order_number">Order number *</label>
+      <input class="form-control text-uppercase" id="order_number" name="order_number" required value="{{ form_values.get('order_number', order_preview.order_number if order_preview else '') }}" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="reason">Reason *</label>
+      <select class="form-select" id="reason" name="reason">
+        <option value="customer_request">Customer request</option>
+        <option value="duplicate_charge">Duplicate charge</option>
+        <option value="service_issue">Service issue</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    {% if editor_is_admin %}
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="admin_override" id="admin_override" value="1" />
+      <label class="form-check-label" for="admin_override">Admin override (high data usage)</label>
+    </div>
+    {% endif %}
+    <button type="submit" class="btn btn-danger" onclick="return confirm('Issue Stripe refund for this order?');">Process refund</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <div class="mb-3"><a href="{{ url_for('admin:operations-hub') }}" class="small">&larr; Operations</a></div>
+  <h1 class="h3 mb-2">Breakage allowances</h1>
+  <p class="text-muted mb-4">Margin-protection allowances created at fulfillment.</p>
+  <div class="table-responsive nl-wizard-panel">
+    <table class="table table-sm">
+      <thead><tr><th>Order</th><th>Status</th><th>Allowance MB</th><th>Used MB</th><th>Valid until</th></tr></thead>
+      <tbody>
+        {% for row in allowances %}
+        <tr>
+          <td><a href="{{ url_for('admin:order-insight') }}?order={{ row.order_number }}">{{ row.order_number }}</a></td>
+          <td>{{ row.status }}</td>
+          <td>{{ row.allowance_mb }}</td>
+          <td>{{ row.used_mb or 0 }}</td>
+          <td class="small">{{ row.valid_until or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-muted">No breakage allowances recorded.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

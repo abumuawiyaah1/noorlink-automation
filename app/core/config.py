@@ -37,6 +37,8 @@ class Settings(BaseSettings):
         ...,
         description="service_role key — backend only, bypasses RLS",
     )
+    # Direct Postgres URI (Supabase pooler) for SQLAdmin dashboard
+    database_url: str = ""
 
     # —— Stripe (Dashboard → Developers → API keys + Webhooks) ——
     stripe_secret_key: str
@@ -82,6 +84,21 @@ class Settings(BaseSettings):
     # From address must use a domain verified in Resend (prefer noorlink.co).
     resend_api_key: str
     resend_from_email: str = "NoorLink <noreply@noorlink.co>"
+    support_email: str = "support@noorlink.co"
+    # Comma-separated extra inboxes for new-ticket staff alerts
+    support_staff_notify_emails: str = ""
+    # Auto-refund unanswered refund tickets after N hours (strict low-usage policy)
+    support_auto_refund_wait_hours: int = 48
+    # Max order amount (cents) eligible for 48h auto-refund
+    support_auto_refund_max_cents: int = 5000
+    # Affiliate payout requests: auto-approve (not auto-pay) if staff unattended
+    affiliate_auto_payout_wait_hours: int = 72
+    # Max payout amount (cents) eligible for 72h auto-approve
+    affiliate_auto_payout_max_cents: int = 50000
+    # Resend webhook signing secret for inbound support email (email.received)
+    resend_inbound_webhook_secret: str = ""
+    # Resend webhook signing secret for delivery events (bounce, complaint, delivered)
+    resend_events_webhook_secret: str = ""
 
     # Ops alerts when Stripe is paid but fulfillment/QR delivery fails
     ops_alert_email: str = ""
@@ -98,10 +115,14 @@ class Settings(BaseSettings):
     # Protected bearer token for scheduled cron hits (Insider release + promo expiry)
     cron_secret: str = ""
 
-    # —— Auth (future JWT sessions) ——
+    # —— Auth (sessions + admin dashboard) ——
     secret_key: str = "change-this-in-production"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    admin_enabled: bool = True
+    admin_session_max_age: int = 86400
+    # Comma-separated IPs allowed to reach /admin (empty = allow all). Also use Cloudflare Access.
+    admin_allowed_ips: str = ""
 
     # —— URLs ——
     # Next.js frontend (Stripe success/cancel redirects)
@@ -137,6 +158,10 @@ class Settings(BaseSettings):
     def supabase_admin_key(self) -> str:
         """Always use service role for server-side persistence."""
         return self.supabase_service_key
+
+    @property
+    def admin_allowed_ip_list(self) -> List[str]:
+        return [ip.strip() for ip in self.admin_allowed_ips.split(",") if ip.strip()]
 
     @property
     def cors_origin_list(self) -> List[str]:

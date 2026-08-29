@@ -67,6 +67,15 @@ def _generate_order_number() -> str:
     return f"NL-{uuid4().hex[:8].upper()}"
 
 
+def _apply_sale_ready_package_filters(query):
+    """Only plans approved by admin and marked on sale are customer-visible."""
+    return query.eq("is_active", True).eq("admin_approved", True)
+
+
+def _package_row_is_sale_ready(row: Dict[str, Any]) -> bool:
+    return bool(row.get("is_active", True)) and bool(row.get("admin_approved", True))
+
+
 def _parse_travel_date(value: Optional[str]) -> Optional[str]:
     if not value:
         return None
@@ -184,11 +193,12 @@ def _has_managed_catalog_for_country(client: Client, country: str) -> bool:
     """Avoid auto-provisioning when a managed SKU already owns this country."""
     try:
         result = (
-            client.table("esim_packages")
-            .select("id")
-            .ilike("country", country)
-            .eq("is_managed", True)
-            .eq("is_active", True)
+            _apply_sale_ready_package_filters(
+                client.table("esim_packages")
+                .select("id")
+                .ilike("country", country)
+                .eq("is_managed", True)
+            )
             .limit(1)
             .execute()
         )
@@ -224,10 +234,9 @@ def _provision_dynamic_package(
 
     slug = payload["slug"]
     existing = (
-        client.table("esim_packages")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_active", True)
+        _apply_sale_ready_package_filters(
+            client.table("esim_packages").select("*").eq("slug", slug)
+        )
         .limit(1)
         .execute()
     )
@@ -297,10 +306,9 @@ def _resolve_package_unsafe(
 ) -> Optional[Dict[str, Any]]:
     if package_id and not _is_synthetic_plan_id(package_id):
         result = (
-            client.table("esim_packages")
-            .select("*")
-            .eq("id", package_id)
-            .eq("is_active", True)
+            _apply_sale_ready_package_filters(
+                client.table("esim_packages").select("*").eq("id", package_id)
+            )
             .limit(1)
             .execute()
         )
@@ -320,11 +328,12 @@ def _resolve_package_unsafe(
         )
 
     result = (
-        client.table("esim_packages")
-        .select("*")
-        .eq("country", country)
-        .eq("price_cents", price_cents)
-        .eq("is_active", True)
+        _apply_sale_ready_package_filters(
+            client.table("esim_packages")
+            .select("*")
+            .eq("country", country)
+            .eq("price_cents", price_cents)
+        )
         .limit(1)
         .execute()
     )
@@ -332,11 +341,12 @@ def _resolve_package_unsafe(
         return result.data[0]
 
     result = (
-        client.table("esim_packages")
-        .select("*")
-        .ilike("country", country)
-        .eq("price_cents", price_cents)
-        .eq("is_active", True)
+        _apply_sale_ready_package_filters(
+            client.table("esim_packages")
+            .select("*")
+            .ilike("country", country)
+            .eq("price_cents", price_cents)
+        )
         .order("sort_order")
         .limit(1)
         .execute()
@@ -345,10 +355,9 @@ def _resolve_package_unsafe(
         return result.data[0]
 
     result = (
-        client.table("esim_packages")
-        .select("*")
-        .ilike("country", country)
-        .eq("is_active", True)
+        _apply_sale_ready_package_filters(
+            client.table("esim_packages").select("*").ilike("country", country)
+        )
         .order("sort_order")
         .limit(1)
         .execute()
@@ -633,6 +642,8 @@ def create_support_ticket(
     email: str,
     subject: Optional[str],
     message: str,
+    order_number: Optional[str] = None,
+    category: Optional[str] = None,
 ) -> str:
     client = get_supabase_client()
     ticket_number = f"TCK-{uuid4().hex[:8].upper()}"
@@ -644,6 +655,10 @@ def create_support_ticket(
         "message": message.strip(),
         "status": "open",
     }
+    if order_number:
+        payload["order_number"] = order_number.strip().upper()
+    if category:
+        payload["category"] = category
     try:
         client.table("support_tickets").insert(payload).execute()
     except Exception as exc:
@@ -684,10 +699,11 @@ def create_order(
     if package_id and not package and not _is_synthetic_plan_id(package_id):
         try:
             managed_probe = (
-                client.table("esim_packages")
-                .select("id, is_managed, price_cents, slug")
-                .eq("id", package_id)
-                .eq("is_active", True)
+                _apply_sale_ready_package_filters(
+                    client.table("esim_packages")
+                    .select("id, is_managed, price_cents, slug")
+                    .eq("id", package_id)
+                )
                 .limit(1)
                 .execute()
             )
@@ -859,6 +875,10 @@ def get_order_row_by_order_number(order_number: str) -> Optional[Dict[str, Any]]
         raise SupabaseRepositoryError(str(exc)) from exc
 
 
+# Alias used by scripts/fulfill_order.py
+get_order_row = get_order_row_by_order_number
+
+
 def merge_order_metadata(order_number: str, patch: Dict[str, Any]) -> Dict[str, Any]:
     client = get_supabase_client()
     row = _fetch_order_row(client, order_number=order_number)
@@ -873,6 +893,21 @@ def merge_order_metadata(order_number: str, patch: Dict[str, Any]) -> Dict[str, 
     if isinstance(patch.get("reminders"), dict):
         existing = metadata.get("reminders") if isinstance(metadata.get("reminders"), dict) else {}
         merged["reminders"] = {**existing, **patch["reminders"]}
+
+    if isinstance(patch.get("fulfillment"), dict):
+        existing = metadata.get("fulfillment") if isinstance(metadata.get("fulfillment"), dict) else {}
+        merged["fulfillment"] = {**existing, **patch["fulfillment"]}
+
+    if isinstance(patch.get("topups"), dict):
+        existing = metadata.get("topups") if isinstance(metadata.get("topups"), dict) else {}
+        merged_topups = {**existing, **patch["topups"]}
+        if isinstance(patch["topups"].get("history"), list):
+            if isinstance(existing.get("history"), list):
+                merged_topups["history"] = patch["topups"]["history"]
+        merged["topups"] = merged_topups
+
+    if isinstance(patch.get("usage_snapshot"), dict):
+        merged["usage_snapshot"] = patch["usage_snapshot"]
 
     try:
         client.table("orders").update({"metadata": merged}).eq(
@@ -1671,6 +1706,30 @@ def list_orders_for_expiry_reminders(
         )
     except Exception as exc:
         logger.exception("list_orders_for_expiry_reminders failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    return list(result.data or [])
+
+
+def list_orders_for_usage_sync(
+    *,
+    since_iso: str,
+    limit: int = 150,
+) -> list[Dict[str, Any]]:
+    """Delivered/active orders with ICCID for provider usage polling."""
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("orders")
+            .select("*")
+            .in_("status", ["delivered", "active", "suspended"])
+            .not_.is_("iccid", "null")
+            .gte("created_at", since_iso)
+            .order("updated_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("list_orders_for_usage_sync failed")
         raise SupabaseRepositoryError(str(exc)) from exc
     return list(result.data or [])
 

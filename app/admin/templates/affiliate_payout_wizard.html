@@ -1,0 +1,72 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid" style="max-width:720px;">
+  {% include "includes/wizard_chrome.html" %}
+  <h1 class="h3 mb-2">Record affiliate payout</h1>
+  <p class="text-muted mb-4">
+    After you send payment (PayPal/Wise/bank), mark approved commissions as paid.
+    Partner requests auto-approve after 72h if unattended — still send funds manually.
+  </p>
+
+  {% if open_requests %}
+  <div class="nl-wizard-panel mb-4">
+    <h2 class="h5 mb-3">Open payout requests</h2>
+    <ul class="list-unstyled mb-0">
+      {% for r in open_requests %}
+      <li class="mb-3 pb-3" style="border-bottom:1px solid #e5e7eb;">
+        <div>
+          <strong>{{ r.affiliate_code }}</strong>
+          — ${{ "%.2f"|format(r.amount_cents / 100) }}
+          {% if r.status == 'approved_auto' %}
+          <span class="badge text-bg-warning">AUTO-APPROVED — send funds</span>
+          {% else %}
+          <span class="badge text-bg-secondary">pending · {{ r.age_hours }}h</span>
+          {% endif %}
+        </div>
+        <div class="text-muted small">
+          Pay to {{ r.payout_email or '—' }} · requested by {{ r.requested_by_email }}
+        </div>
+        {% if r.status == 'pending' %}
+        <form method="post" class="mt-2">
+          <input type="hidden" name="action" value="acknowledge" />
+          <input type="hidden" name="request_id" value="{{ r.id }}" />
+          <button type="submit" class="btn btn-sm btn-outline-secondary">I’m on it</button>
+        </form>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form method="post" class="nl-wizard-panel">
+    <input type="hidden" name="action" value="record" />
+    <div class="mb-3">
+      <label class="form-label" for="affiliate_id">Affiliate *</label>
+      <select class="form-select" id="affiliate_id" name="affiliate_id" required>
+        <option value="" disabled selected>Choose affiliate…</option>
+        {% for c in candidates %}
+        <option value="{{ c.affiliate_id }}" {% if form_values.get('affiliate_id') == c.affiliate_id %}selected{% endif %}
+          {% if not c.ready %}disabled{% endif %}>
+          {{ c.display_name }} ({{ c.code }}) — ${{ "%.2f"|format(c.balance_cents / 100) }}{% if not c.ready %} [below min ${{ "%.2f"|format(c.minimum_cents / 100) }}]{% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="method">Payment method</label>
+      <input class="form-control" id="method" name="method" value="{{ form_values.get('method', 'manual') }}" placeholder="PayPal, Wise, bank transfer…" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="reference">Reference / transaction ID</label>
+      <input class="form-control" id="reference" name="reference" value="{{ form_values.get('reference', '') }}" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="notes">Notes</label>
+      <textarea class="form-control" id="notes" name="notes" rows="2">{{ form_values.get('notes', '') }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Record payout</button>
+  </form>
+</div>
+{% endblock %}

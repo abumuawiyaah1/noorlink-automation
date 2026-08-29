@@ -1,0 +1,10 @@
+{# Shared header for staff wizards — plain language, back navigation #}
+<div class="nl-wizard-nav mb-3">
+  <a href="{{ url_for('admin:staff-wizards') }}" class="text-decoration-none small">&larr; All quick-start guides</a>
+</div>
+{% if flash_success %}
+<div class="alert alert-success">{{ flash_success }}</div>
+{% endif %}
+{% if flash_error %}
+<div class="alert alert-danger">{{ flash_error }}</div>
+{% endif %}

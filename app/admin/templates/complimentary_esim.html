@@ -1,0 +1,72 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+<div class="container-fluid">
+  {% include "includes/wizard_chrome.html" %}
+  <div class="row mb-3">
+    <div class="col-12">
+      <h1 class="h3 mb-1">Send a free eSIM</h1>
+      <p class="text-muted mb-0">
+        Admin only. Creates a <strong>$0</strong> order, provisions the eSIM, and sends the QR email.
+        Grants are logged in the audit trail.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post" action="{{ url_for('admin:complimentary-esim') }}">
+        <div class="mb-3">
+          <label class="form-label" for="package_id">Plan</label>
+          <select class="form-select" id="package_id" name="package_id" required>
+            <option value="" disabled selected>Choose a plan…</option>
+            {% for pkg in packages %}
+            <option value="{{ pkg.id }}">
+              {{ pkg.flag_emoji or '' }} {{ pkg.country }} — {{ pkg.name }}
+              ({{ pkg.data_label }}, {{ pkg.validity_days }}d)
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="recipient_email">Recipient email</label>
+            <input
+              class="form-control"
+              id="recipient_email"
+              name="recipient_email"
+              type="email"
+              required
+              placeholder="staff@noorlink.co"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="recipient_name">Recipient name (optional)</label>
+            <input class="form-control" id="recipient_name" name="recipient_name" placeholder="First name" />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="reason">Reason</label>
+          <select class="form-select" id="reason" name="reason" required>
+            {% for key, label in reasons.items() %}
+            <option value="{{ key }}" {% if key == 'staff' %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="note">Internal note (optional)</label>
+          <textarea class="form-control" id="note" name="note" rows="3" placeholder="Why this grant was issued…"></textarea>
+        </div>
+
+        <div class="alert alert-warning py-2 small mb-3">
+          This spends real provider balance. Double-check the plan and recipient before confirming.
+        </div>
+
+        <button type="submit" class="btn btn-primary">Grant eSIM &amp; send email</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

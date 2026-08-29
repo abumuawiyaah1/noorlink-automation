@@ -53,6 +53,7 @@ def send_email(
     html_body: str,
     text_body: Optional[str] = None,
     bcc: Optional[list[str]] = None,
+    reply_to: Optional[str] = None,
 ) -> str:
     """Send a transactional email via Resend. Returns provider message id."""
     settings = get_settings()
@@ -66,14 +67,17 @@ def send_email(
     if text_body is None:
         text_body = _html_to_text(html_body)
 
+    reply = (reply_to or settings.support_email or "").strip()
+
     payload: Dict[str, Any] = {
         "from": settings.resend_from_email,
         "to": [to_email],
         "subject": subject,
         "html": html_body,
         "text": text_body,
-        "reply_to": "support@noorlink.co",
     }
+    if reply:
+        payload["reply_to"] = reply
     bcc_list = [addr.strip() for addr in (bcc or []) if addr and addr.strip()]
     if bcc_list:
         payload["bcc"] = bcc_list
@@ -431,7 +435,10 @@ def send_support_ticket_confirmation(
     message: str,
 ) -> str:
     settings = get_settings()
-    email_subject = f"Support ticket {ticket_id} created — NoorLink"
+    safe_subject = (subject or "Support request").strip()
+    email_subject = f"[{ticket_id}] {safe_subject}"
+    if len(email_subject) > 240:
+        email_subject = f"[{ticket_id}] Support request — NoorLink"
     html_body = build_support_ticket_email_html(
         name=name,
         ticket_id=ticket_id,

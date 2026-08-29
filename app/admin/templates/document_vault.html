@@ -1,0 +1,140 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <h1 class="h3 mb-2">Legal &amp; accounting documents</h1>
+  <p class="text-muted mb-4">
+    Private company vault for contracts, tax papers, and accounting files.
+    Access: <strong>admin</strong>, <strong>finance</strong>, and <strong>legal</strong> roles.
+    Highly sensitive files can be marked admin-only.
+  </p>
+
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <div class="row g-3">
+    <div class="col-lg-4">
+      {% if can_upload %}
+      <div class="nl-wizard-panel">
+        <h2 class="h6">Upload document</h2>
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="upload" />
+          <div class="mb-2">
+            <label class="form-label" for="title">Title *</label>
+            <input class="form-control" id="title" name="title" required maxlength="200" placeholder="e.g. Partner NDA — Acme 2026" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="category">Category *</label>
+            <select class="form-select" id="category" name="category" required>
+              {% for code, label in categories %}
+              <option value="{{ code }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="access_level">Access *</label>
+            <select class="form-select" id="access_level" name="access_level" required>
+              {% for code, label in access_levels %}
+              <option value="{{ code }}" {% if code == 'vault' %}selected{% endif %} {% if code == 'admin_only' and not is_admin %}disabled{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="document_year">Year</label>
+            <input class="form-control" id="document_year" name="document_year" type="number" min="1990" max="2100" placeholder="2026" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="description">Notes</label>
+            <textarea class="form-control" id="description" name="description" rows="2" maxlength="1000"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="file">File * (max 20 MB)</label>
+            <input class="form-control" id="file" name="file" type="file" required accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.csv,.txt" />
+            <div class="form-text">PDF, images, Word, Excel, CSV, TXT</div>
+          </div>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="nl-wizard-panel">
+        <p class="mb-0 text-muted">You can view and download documents. Upload requires finance, legal, or admin.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+      <form method="get" class="row g-2 mb-3">
+        <div class="col-auto">
+          <select class="form-select" name="category" onchange="this.form.submit()">
+            <option value="">All categories</option>
+            {% for code, label in categories %}
+            <option value="{{ code }}" {% if filter_category == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <input class="form-control" name="year" type="number" placeholder="Year" value="{{ filter_year }}" />
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-outline-secondary">Filter</button>
+        </div>
+      </form>
+
+      <div class="nl-wizard-panel p-0 overflow-hidden">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Year</th>
+                <th>Access</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for doc in documents %}
+              <tr>
+                <td>
+                  <strong>{{ doc.title }}</strong>
+                  <br /><small class="text-muted">{{ doc.original_filename }}{% if doc.description %} — {{ doc.description }}{% endif %}</small>
+                </td>
+                <td>{{ doc.category_label }}</td>
+                <td>{{ doc.document_year or '—' }}</td>
+                <td>
+                  {% if doc.access_level == 'admin_only' %}
+                  <span class="badge bg-danger">Admin only</span>
+                  {% else %}
+                  <span class="badge bg-secondary">Vault</span>
+                  {% endif %}
+                </td>
+                <td>{{ doc.file_size_label }}</td>
+                <td>
+                  <small>{{ doc.uploaded_by }}<br />{{ doc.created_at[:10] if doc.created_at else '—' }}</small>
+                </td>
+                <td class="text-nowrap">
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin:document-download', document_id=doc.id) }}">Download</a>
+                  {% if can_delete %}
+                  <form method="post" class="d-inline" onsubmit="return confirm('Archive this document? (soft delete)');">
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="document_id" value="{{ doc.id }}" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Archive</button>
+                  </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">No documents yet. Upload the first file to start the vault.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

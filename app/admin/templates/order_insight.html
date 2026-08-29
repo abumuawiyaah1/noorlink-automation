@@ -1,0 +1,54 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid" style="max-width:800px;">
+  {% include "includes/wizard_chrome.html" %}
+  <h1 class="h3 mb-2">Order lookup</h1>
+  <p class="text-muted mb-4">Gift details, reminder emails, breakage allowance, and suspension status.</p>
+
+  <form method="post" class="nl-wizard-panel mb-4">
+    <div class="input-group">
+      <input class="form-control text-uppercase" name="order_number" value="{{ order_number }}" placeholder="NL-ABC12345" required />
+      <button type="submit" class="btn btn-primary">Look up</button>
+    </div>
+  </form>
+
+  {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+  {% if context %}
+  <div class="nl-wizard-panel">
+    <h2 class="h5">{{ context.order_number }} <span class="badge bg-secondary">{{ context.status }}</span></h2>
+    <p class="mb-3">{{ context.email }} · {{ context.country }} · {{ context.package_name }} · ${{ (context.amount_cents or 0) / 100 }}</p>
+
+    {% if context.is_gift %}
+    <div class="mb-3 p-3" style="background:#F3F7F7;border-radius:10px;">
+      <strong>Gift order</strong><br />
+      To: {{ context.gift_recipient_name or '' }} &lt;{{ context.gift_recipient_email }}&gt;<br />
+      From: {{ context.gift_sender_name or 'A friend' }}<br />
+      {% if context.gift_message %}<em>"{{ context.gift_message }}"</em>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if context.is_complimentary %}
+    <p><strong>Complimentary</strong> — reason: {{ context.complimentary_reason or 'staff' }}</p>
+    {% endif %}
+
+    <h3 class="h6 mt-3">Usage</h3>
+    <p>ICCID: {{ context.iccid or '—' }} · Used: {{ context.data_used_gb or '—' }} / {{ context.data_total_gb or '—' }} GB · Top-ups: {{ context.topup_count }}</p>
+    {% if context.usage_guard %}<p class="text-warning">Usage guard: {{ context.usage_guard }}{% if context.suspended_at %} (since {{ context.suspended_at }}){% endif %}</p>{% endif %}
+
+    <h3 class="h6 mt-3">Reminder emails</h3>
+    <ul class="small">{% for label in context.reminder_labels %}<li>{{ label }}</li>{% endfor %}</ul>
+
+    {% if context.breakage %}
+    <h3 class="h6 mt-3">Breakage allowance</h3>
+    <p class="small mb-0">Status: {{ context.breakage.status }} · Allowance: {{ context.breakage.allowance_mb }} MB · Used: {{ context.breakage.used_mb or 0 }} MB</p>
+    {% endif %}
+
+    <div class="mt-3">
+      <a href="{{ url_for('admin:list', identity='order') }}?search={{ context.order_number }}" class="btn btn-sm btn-outline-secondary">Open in Orders table</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

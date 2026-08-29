@@ -64,6 +64,10 @@ class ContactFormRequest(BaseModel):
     email: EmailStr
     subject: Optional[str] = Field(None, max_length=200)
     message: str = Field(..., min_length=1, max_length=5000)
+    order_id: Optional[str] = Field(None, alias="orderId", max_length=40)
+    language: Optional[str] = Field(None, max_length=8)
+
+    model_config = {"populate_by_name": True}
 
 
 class ContactFormResponse(BaseModel):
@@ -129,6 +133,13 @@ class Order(BaseModel):
     gift_recipient_name: Optional[str] = Field(None, serialization_alias="giftRecipientName")
     gift_recipient_email: Optional[str] = Field(None, serialization_alias="giftRecipientEmail")
     package_id: Optional[str] = Field(None, serialization_alias="packageId")
+    activation_status: Optional[str] = Field(None, serialization_alias="activationStatus")
+    activated_at: Optional[str] = Field(None, serialization_alias="activatedAt")
+    usage_synced_at: Optional[str] = Field(None, serialization_alias="usageSyncedAt")
+    usage_pct: Optional[float] = Field(None, serialization_alias="usagePct")
+    topup_supported: bool = Field(False, serialization_alias="topupSupported")
+    topup_reason: Optional[str] = Field(None, serialization_alias="topupReason")
+    wallet_balance_usd: Optional[float] = Field(None, serialization_alias="walletBalanceUsd")
 
     model_config = {"populate_by_name": True}
 
@@ -165,6 +176,73 @@ class OrderLookupResponse(BaseModel):
     message: Optional[str] = None
 
 
+class TopUpOptionsResponse(BaseModel):
+    success: bool
+    supported: bool = False
+    provider: Optional[str] = None
+    amounts_usd: list[float] = Field(default_factory=list, serialization_alias="amountsUsd")
+    min_usd: Optional[float] = Field(None, serialization_alias="minUsd")
+    max_usd: Optional[float] = Field(None, serialization_alias="maxUsd")
+    reason: Optional[str] = None
+    order_number: Optional[str] = Field(None, serialization_alias="orderNumber")
+
+    model_config = {"populate_by_name": True}
+
+
+class TopUpSessionRequest(BaseModel):
+    order_id: str = Field(..., alias="orderId", min_length=4)
+    email: EmailStr
+    fund_usd: float = Field(..., alias="fundUsd", gt=0)
+
+    model_config = {"populate_by_name": True}
+
+
+class TopUpSessionResponse(BaseModel):
+    success: bool
+    checkout_url: Optional[str] = Field(None, serialization_alias="checkoutUrl")
+    session_id: Optional[str] = Field(None, serialization_alias="sessionId")
+    retail_usd: Optional[float] = Field(None, serialization_alias="retailUsd")
+    fund_usd: Optional[float] = Field(None, serialization_alias="fundUsd")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class SupportMessageItem(BaseModel):
+    direction: str
+    from_email: str = Field(..., serialization_alias="fromEmail")
+    subject: Optional[str] = None
+    body: str
+    created_at: Optional[str] = Field(None, serialization_alias="createdAt")
+    ticket_number: Optional[str] = Field(None, serialization_alias="ticketNumber")
+
+    model_config = {"populate_by_name": True}
+
+
+class OrderSupportMessagesResponse(BaseModel):
+    success: bool
+    messages: list[SupportMessageItem] = Field(default_factory=list)
+    ticket_number: Optional[str] = Field(None, serialization_alias="ticketNumber")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class OrderResendEsRequest(BaseModel):
+    order_id: str = Field(..., alias="orderId", min_length=4)
+    email: EmailStr
+
+    model_config = {"populate_by_name": True}
+
+
+class OrderResendEsResponse(BaseModel):
+    success: bool
+    order_number: Optional[str] = Field(None, serialization_alias="orderNumber")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
 class PromoValidateRequest(BaseModel):
     code: str = Field(..., min_length=2, max_length=40)
     country: str = Field(..., min_length=2, max_length=120)
@@ -192,6 +270,11 @@ class CronRunResponse(BaseModel):
     insider: Optional[dict] = None
     catalog_sync: Optional[dict] = Field(None, serialization_alias="catalogSync")
     expiry_reminders: Optional[dict] = Field(None, serialization_alias="expiryReminders")
+    usage_sync: Optional[dict] = Field(None, serialization_alias="usageSync")
+    monthly_summary: Optional[dict] = Field(None, serialization_alias="monthlySummary")
+    log_retention: Optional[dict] = Field(None, serialization_alias="logRetention")
+    auto_refunds: Optional[dict] = Field(None, serialization_alias="autoRefunds")
+    affiliate_payouts: Optional[dict] = Field(None, serialization_alias="affiliatePayouts")
     message: Optional[str] = None
 
     model_config = {"populate_by_name": True}
@@ -304,6 +387,38 @@ class AffiliateReferralLinkResponse(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class AffiliateCommissionItem(BaseModel):
+    order_number: Optional[str] = Field(None, serialization_alias="orderNumber")
+    commission_cents: Optional[int] = Field(None, serialization_alias="commissionCents")
+    status: Optional[str] = None
+    fulfilled_at: Optional[str] = Field(None, serialization_alias="fulfilledAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class AffiliateDashboardResponse(BaseModel):
+    success: bool
+    code: Optional[str] = None
+    type: Optional[str] = None
+    display_name: Optional[str] = Field(None, serialization_alias="displayName")
+    referral_url: Optional[str] = Field(None, serialization_alias="referralUrl")
+    customer_discount_percent: Optional[int] = Field(
+        None, serialization_alias="customerDiscountPercent"
+    )
+    commission_percent: Optional[int] = Field(None, serialization_alias="commissionPercent")
+    pays_cash: Optional[bool] = Field(None, serialization_alias="paysCash")
+    approved_balance_cents: Optional[int] = Field(None, serialization_alias="approvedBalanceCents")
+    paid_total_cents: Optional[int] = Field(None, serialization_alias="paidTotalCents")
+    payout_minimum_cents: Optional[int] = Field(None, serialization_alias="payoutMinimumCents")
+    ready_for_payout: Optional[bool] = Field(None, serialization_alias="readyForPayout")
+    recent_commissions: list[AffiliateCommissionItem] = Field(
+        default_factory=list, serialization_alias="recentCommissions"
+    )
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
 class AffiliateCreateRequest(BaseModel):
     code: str = Field(..., min_length=3, max_length=32)
     type: Literal["influencer", "mosque", "connector", "customer"]
@@ -317,6 +432,22 @@ class AffiliateCreateRequest(BaseModel):
     payout_minimum_cents: Optional[int] = Field(None, alias="payoutMinimumCents")
     landing_path: Optional[str] = Field(None, alias="landingPath")
     status: Literal["pending", "active", "paused"] = "active"
+
+    model_config = {"populate_by_name": True}
+
+
+class AffiliatePayoutRequestPublic(BaseModel):
+    code: str = Field(..., min_length=2, max_length=32)
+    email: EmailStr
+
+    model_config = {"populate_by_name": True}
+
+
+class AffiliatePayoutRequestResponse(BaseModel):
+    success: bool
+    code: Optional[str] = None
+    approved_balance_cents: Optional[int] = Field(None, serialization_alias="approvedBalanceCents")
+    message: Optional[str] = None
 
     model_config = {"populate_by_name": True}
 

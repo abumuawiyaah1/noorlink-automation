@@ -346,6 +346,7 @@ def _fetch_db_maps() -> List[Dict[str, Any]]:
             client.table("plan_fulfillment_map")
             .select("*")
             .eq("is_active", True)
+            .eq("admin_approved", True)
             .execute()
         )
         return list(result.data or [])

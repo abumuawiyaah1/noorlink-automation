@@ -1,0 +1,44 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+<style>
+  .nl-wizard-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .nl-wizard-card { border: 1px solid #e5e7eb; border-radius: 14px; padding: 1.25rem; background: #fff; height: 100%; }
+  .nl-wizard-card:hover { border-color: #0F3D3E; box-shadow: 0 4px 14px rgba(15,61,62,.08); }
+  .nl-wizard-card__icon { width: 2.5rem; height: 2.5rem; border-radius: 10px; background: #F3F7F7; color: #0F3D3E; display: flex; align-items: center; justify-content: center; margin-bottom: .75rem; }
+  .nl-wizard-card__badge { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #FF9500; }
+  .nl-wizard-steps { margin: .75rem 0 0; padding-left: 1.1rem; color: #6B7280; font-size: 13px; }
+</style>
+
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-2">Quick start</h1>
+      <p class="text-muted mb-0">
+        Step-by-step guides for common tasks. Pick what you need — no technical knowledge required.
+        <a href="{{ url_for('admin:notifications-hub') }}">Notifications</a> ·
+        <a href="{{ url_for('admin:help-center') }}">Help</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="nl-wizard-grid">
+    {% for wizard in wizards %}
+    <a href="{{ url_for(wizard.endpoint) }}" class="text-decoration-none text-dark">
+      <article class="nl-wizard-card">
+        <div class="nl-wizard-card__icon"><i class="{{ wizard.icon }}"></i></div>
+        {% if wizard.badge %}<div class="nl-wizard-card__badge">{{ wizard.badge }}</div>{% endif %}
+        <h2 class="h5 mb-2">{{ wizard.title }}</h2>
+        <p class="mb-0 text-muted" style="font-size:14px;line-height:1.55;">{{ wizard.summary }}</p>
+        <ol class="nl-wizard-steps">
+          {% for step in wizard.steps %}
+          <li>{{ step }}</li>
+          {% endfor %}
+        </ol>
+      </article>
+    </a>
+    {% else %}
+    <p class="text-muted">No guides available for your role. Ask an admin if you need access.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

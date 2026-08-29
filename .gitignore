@@ -24,6 +24,10 @@ dist/
 .env
 .env.local
 .cron_secret.local
+.citrus_webhook_secret
+*_webhook_secret
+*.pem
+OWNER_RECOVERY_SECRET.local
 
 # IDE
 .vscode/
@@ -42,4 +46,6 @@ Thumbs.db
 
 # Railway
 .railway/
-.citrus_webhook_secret
+# Accidental nested clone — never commit (next wave #6)
+noorlink-automation/
+

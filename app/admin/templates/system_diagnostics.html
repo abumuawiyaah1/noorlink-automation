@@ -1,0 +1,30 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <div class="mb-3"><a href="{{ url_for('admin:operations-hub') }}" class="small">&larr; Operations</a></div>
+  <h1 class="h3 mb-2">Email & analytics</h1>
+
+  <div class="nl-wizard-panel mb-4">
+    <h2 class="h6">Email (Resend)</h2>
+    <p class="mb-1">Configured: {% if email.resend_configured %}<span class="text-success">Yes</span>{% else %}<span class="text-danger">No</span>{% endif %}</p>
+    <p class="mb-1">From: {{ email.from_email }} · Domain OK: {% if email.domain_matches %}✓{% else %}✗{% endif %}</p>
+    {% if email.hint %}<p class="small text-warning">{{ email.hint }}</p>{% endif %}
+    {% if email.test_send_ok is not none %}
+    <p class="small">Test send: {% if email.test_send_ok %}OK{% else %}Failed — {{ email.test_send_error }}{% endif %}</p>
+    {% endif %}
+    <form method="post"><input type="hidden" name="action" value="probe_email" /><button type="submit" class="btn btn-sm btn-outline-primary">Send test to Resend sandbox</button></form>
+  </div>
+
+  <div class="nl-wizard-panel">
+    <h2 class="h6">Trending destination searches (in-memory)</h2>
+    {% if analytics.trending %}
+    <table class="table table-sm"><thead><tr><th>Destination</th><th>Searches</th></tr></thead>
+    <tbody>{% for row in analytics.trending %}<tr><td>{{ row.flag }} {{ row.destination }}</td><td>{{ row.count }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}
+    <p class="text-muted small mb-2">No searches recorded yet this session. Fallback pills on the site:</p>
+    <ul class="small">{% for row in analytics.fallback %}<li>{{ row.flag }} {{ row.destination }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

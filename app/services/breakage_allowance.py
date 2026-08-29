@@ -146,17 +146,32 @@ def breakage_profit_estimate(row: Dict[str, Any]) -> Dict[str, Any]:
 
 async def sync_allowance_from_provider(row: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Pull usage from WeConnect and update ledger.
-    Stub until WeConnect client exists — returns row unchanged with note.
+    Pull usage from provider profile linked on the allowance row.
     """
-    logger.info(
-        "Allowance sync stub for order %s profile=%s",
-        row.get("order_number"),
-        row.get("provider_profile_id"),
-    )
-    return {
-        "ok": False,
-        "stub": True,
-        "message": "WeConnect usage sync not wired yet.",
-        "order_number": row.get("order_number"),
-    }
+    order_number = str(row.get("order_number") or "")
+    profile_id = str(row.get("provider_profile_id") or "").strip()
+    if not order_number:
+        return {"ok": False, "message": "Missing order_number on allowance."}
+
+    order_row = None
+    try:
+        from app.api import supabase_repository as db
+
+        order_row = db.get_order_row_by_order_number(order_number)
+    except Exception as exc:
+        return {"ok": False, "message": str(exc)[:200]}
+
+    if not order_row:
+        return {"ok": False, "message": f"Order {order_number} not found."}
+
+    if profile_id and not order_row.get("iccid"):
+        order_row = {**order_row, "iccid": profile_id}
+
+    try:
+        from app.services.esim_usage_sync import sync_order_usage_blocking
+
+        sync_order_usage_blocking(order_row, source="allowance_sync")
+        return {"ok": True, "order_number": order_number}
+    except Exception as exc:
+        logger.warning("Allowance sync failed for %s: %s", order_number, exc)
+        return {"ok": False, "message": str(exc)[:200], "order_number": order_number}

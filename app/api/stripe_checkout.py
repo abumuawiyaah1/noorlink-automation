@@ -111,6 +111,64 @@ def create_stripe_checkout_session(
         raise StripeCheckoutError(str(exc)) from exc
 
 
+def create_topup_checkout_session(
+    *,
+    parent_order_number: str,
+    parent_order_id: str,
+    email: str,
+    fund_usd: float,
+    iccid: str,
+) -> stripe.checkout.Session:
+    """Stripe Checkout for adding data to an existing Citrus eSIM."""
+    from app.services.esim_topup import topup_retail_cents
+
+    settings = get_settings()
+    stripe.api_key = settings.stripe_secret_key
+    amount_cents = topup_retail_cents(fund_usd)
+    display_name = f"Data top-up · {parent_order_number} · ${fund_usd:.0f} data"
+
+    success_url = (
+        f"{settings.app_url.rstrip('/')}/dashboard"
+        f"?orderId={quote(parent_order_number, safe='')}"
+        f"&email={quote(email.strip().lower(), safe='')}"
+        "&topup=1"
+    )
+
+    create_kwargs: Dict[str, Any] = {
+        "mode": "payment",
+        "customer_email": email.strip().lower(),
+        "line_items": [
+            {
+                "price_data": {
+                    "currency": "usd",
+                    "unit_amount": amount_cents,
+                    "product_data": {"name": display_name},
+                },
+                "quantity": 1,
+            }
+        ],
+        "success_url": success_url,
+        "cancel_url": f"{settings.app_url.rstrip('/')}/dashboard",
+        "metadata": {
+            "checkout_type": "topup",
+            "order_number": parent_order_number,
+            "order_id": parent_order_id,
+            "fund_usd": str(fund_usd),
+            "iccid": iccid,
+        },
+    }
+
+    pmc = (settings.stripe_payment_method_configuration or "").strip()
+    if pmc:
+        create_kwargs["payment_method_configuration"] = pmc
+
+    try:
+        return stripe.checkout.Session.create(**create_kwargs)
+    except stripe.StripeError as exc:
+        logger.exception("Stripe top-up checkout failed for %s", parent_order_number)
+        raise StripeCheckoutError(str(exc)) from exc
+
+
 def create_stripe_payment_intent(
     *,
     order_number: str,
