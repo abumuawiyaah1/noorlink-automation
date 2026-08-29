@@ -60,6 +60,7 @@ def create_stripe_checkout_session(
     amount_cents: int,
     currency: str,
     force_custom_price: bool = False,
+    is_gift: bool = False,
 ) -> stripe.checkout.Session:
     settings = get_settings()
     stripe.api_key = settings.stripe_secret_key
@@ -69,6 +70,10 @@ def create_stripe_checkout_session(
         "?session_id={CHECKOUT_SESSION_ID}"
         f"&email={quote(email.strip().lower(), safe='')}"
     )
+    if is_gift:
+        success_url += "&gift=1"
+
+    display_name = f"Gift · {package_name}" if is_gift else package_name
 
     # Do NOT set payment_method_types — that locks Checkout to an explicit list
     # and turns off Dashboard dynamic methods (Apple Pay / Google Pay / Link).
@@ -77,7 +82,7 @@ def create_stripe_checkout_session(
         "customer_email": email.strip().lower(),
         "line_items": _line_items(
             package=package,
-            package_name=package_name,
+            package_name=display_name,
             amount_cents=amount_cents,
             currency=currency,
             force_custom_price=force_custom_price,

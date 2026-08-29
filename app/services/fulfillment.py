@@ -15,6 +15,7 @@ from app.services.email_service import (
     EmailDeliveryError,
     build_fulfillment_email_html,
     send_fulfillment_email,
+    send_gift_sent_confirmation_email,
 )
 from app.services.esim_provision import provision_esim
 from app.services.breakage_allowance import (
@@ -203,7 +204,24 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
     settings = get_settings()
     flag = delivered_row.get("flag_emoji")
     country = delivered_row.get("country") or "your destination"
-    subject = f"{country} eSIM delivered — {order_number}"
+    metadata = delivered_row.get("metadata") or {}
+    gift = metadata.get("gift") if isinstance(metadata, dict) else None
+    is_gift = isinstance(gift, dict) and bool(gift.get("is_gift"))
+    recipient_email = (
+        str(gift.get("recipient_email") or "").strip().lower()
+        if is_gift
+        else str(delivered_row.get("email") or "").strip().lower()
+    )
+    buyer_email = str(delivered_row.get("email") or "").strip().lower()
+
+    if is_gift and not recipient_email:
+        raise FulfillmentError(f"Gift order {order_number} missing recipient email")
+
+    subject = (
+        f"A gift for you — {country} eSIM"
+        if is_gift
+        else f"{country} eSIM delivered — {order_number}"
+    )
 
     html_body = build_fulfillment_email_html(
         order_number=order_number,
@@ -214,14 +232,27 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
         activation_code=esim["activation_code"],
         travel_guide=travel_guide,
         app_url=settings.app_url,
+        gift_sender_name=str(gift.get("sender_name") or "A friend") if is_gift else None,
+        gift_recipient_name=str(gift.get("recipient_name") or "") if is_gift else None,
+        gift_message=str(gift.get("message") or "") if is_gift else None,
     )
 
     try:
         send_fulfillment_email(
-            to_email=str(delivered_row["email"]),
+            to_email=recipient_email,
             subject=subject,
             html_body=html_body,
         )
+        if is_gift and buyer_email and buyer_email != recipient_email:
+            send_gift_sent_confirmation_email(
+                to_email=buyer_email,
+                order_number=order_number,
+                recipient_name=str(gift.get("recipient_name") or "your friend"),
+                recipient_email=recipient_email,
+                country=country,
+                package_name=delivered_row.get("package_name") or "Travel eSIM",
+                flag_emoji=flag,
+            )
     except EmailDeliveryError as exc:
         logger.error(
             "Order %s delivered in DB but email failed: %s",
@@ -245,8 +276,11 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
     try:
         from app.services.affiliates import ensure_customer_affiliate, process_affiliate_on_fulfillment
 
-        ensure_customer_affiliate(email=str(delivered_row.get("email") or ""))
-        process_affiliate_on_fulfillment(delivered_row)
+        if not is_gift:
+            ensure_customer_affiliate(email=buyer_email)
+            process_affiliate_on_fulfillment(delivered_row)
+        else:
+            ensure_customer_affiliate(email=buyer_email)
     except Exception:
         logger.exception("Affiliate post-fulfillment failed for %s", order_number)
 

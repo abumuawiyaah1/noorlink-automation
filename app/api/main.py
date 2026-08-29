@@ -162,6 +162,18 @@ def _prepare_checkout_pricing(body: CheckoutSessionRequest):
     return catalog_price, pricing
 
 
+def _validate_gift_checkout(body: CheckoutSessionRequest) -> None:
+    from app.services.gift_orders import validate_gift_checkout
+
+    validate_gift_checkout(body)
+
+
+def _build_gift_metadata(body: CheckoutSessionRequest) -> Optional[dict]:
+    from app.services.gift_orders import build_gift_metadata
+
+    return build_gift_metadata(body)
+
+
 def _verify_stripe_paid_amount(order_row: dict, event) -> bool:
     expected = int(order_row.get("amount_cents") or 0)
     received = stripe_event_amount_cents(event)
@@ -644,6 +656,11 @@ async def checkout_config():
 @app.post("/api/checkout/payment-intent", response_model=ExpressPaymentIntentResponse)
 async def checkout_payment_intent(body: CheckoutSessionRequest):
     """Create order + PaymentIntent for Apple Pay / Google Pay / Link on-page."""
+    if body.is_gift:
+        raise HTTPException(
+            status_code=400,
+            detail="Gift orders use secure card checkout. Please use the gift form.",
+        )
     catalog_price, pricing = _prepare_checkout_pricing(body)
     from app.services.affiliates import affiliate_metadata_patch
 
@@ -720,6 +737,9 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
 
 @app.post("/api/checkout/session", response_model=CheckoutSessionResponse)
 async def checkout_session(body: CheckoutSessionRequest):
+    _validate_gift_checkout(body)
+    if body.is_gift:
+        body = body.model_copy(update={"affiliate_ref": None, "promo_code": None})
     catalog_price, pricing = _prepare_checkout_pricing(body)
     from app.services.affiliates import affiliate_metadata_patch
 
@@ -729,9 +749,10 @@ async def checkout_session(body: CheckoutSessionRequest):
     )
     affiliate_meta = (
         affiliate_metadata_patch(pricing.affiliate).get("affiliate")
-        if pricing.affiliate
+        if pricing.affiliate and not body.is_gift
         else None
     )
+    gift_meta = _build_gift_metadata(body)
 
     try:
         created = db.create_order(
@@ -742,11 +763,12 @@ async def checkout_session(body: CheckoutSessionRequest):
             travel_date=body.travel_date,
             package_id=body.package_id,
             phone=body.phone,
-            promo_code=promo.code if promo else None,
-            promo_discount_cents=promo.discount_cents if promo else None,
-            promo_subtotal_cents=pricing.subtotal_cents if promo else None,
-            total_discount_cents=pricing.discount_cents,
+            promo_code=promo.code if promo and not body.is_gift else None,
+            promo_discount_cents=promo.discount_cents if promo and not body.is_gift else None,
+            promo_subtotal_cents=pricing.subtotal_cents if promo and not body.is_gift else None,
+            total_discount_cents=pricing.discount_cents if not body.is_gift else 0,
             affiliate_metadata=affiliate_meta,
+            gift_metadata=gift_meta,
             wants_topup=bool(body.wants_topup),
         )
     except db.ManagedPackagePriceMismatchError as exc:
@@ -779,7 +801,8 @@ async def checkout_session(body: CheckoutSessionRequest):
             package_name=order.package_name,
             amount_cents=amount_cents,
             currency=order.currency,
-            force_custom_price=pricing.force_custom_price,
+            force_custom_price=pricing.force_custom_price or bool(body.is_gift),
+            is_gift=bool(body.is_gift),
         )
         db.update_order_stripe_session(order.order_number, session.id)
     except StripeCheckoutError as exc:
@@ -795,16 +818,32 @@ async def checkout_session(body: CheckoutSessionRequest):
     email_sent = False
     email_error: str | None = None
     try:
-        send_checkout_acknowledgment(
-            to_email=str(body.email),
-            order_number=order.order_number,
-            country=order.country,
-            package_name=order.package_name,
-            amount=float(order.price),
-            currency=order.currency or "USD",
-            flag_emoji=order.flag,
-            checkout_url=session.url,
-        )
+        if body.is_gift and gift_meta:
+            from app.services.email_service import send_gift_checkout_acknowledgment
+
+            send_gift_checkout_acknowledgment(
+                to_email=str(body.email),
+                order_number=order.order_number,
+                country=order.country,
+                package_name=order.package_name,
+                amount=float(order.price),
+                currency=order.currency or "USD",
+                flag_emoji=order.flag,
+                checkout_url=session.url,
+                recipient_name=str(gift_meta["recipient_name"]),
+                recipient_email=str(gift_meta["recipient_email"]),
+            )
+        else:
+            send_checkout_acknowledgment(
+                to_email=str(body.email),
+                order_number=order.order_number,
+                country=order.country,
+                package_name=order.package_name,
+                amount=float(order.price),
+                currency=order.currency or "USD",
+                flag_emoji=order.flag,
+                checkout_url=session.url,
+            )
         email_sent = True
     except EmailDeliveryError as exc:
         email_error = str(exc)[:400]

@@ -15,6 +15,7 @@ from app.services.email_brand import (
     BG,
     MUTED,
     PRIMARY,
+    SURFACE,
     TEXT,
     cta_button,
     review_request_block,
@@ -226,8 +227,28 @@ def build_fulfillment_email_html(
     activation_code: str,
     travel_guide: Dict[str, Any],
     app_url: str,
+    gift_sender_name: Optional[str] = None,
+    gift_recipient_name: Optional[str] = None,
+    gift_message: Optional[str] = None,
 ) -> str:
     flag = flag_emoji or ""
+    gift_block = ""
+    if gift_sender_name and gift_recipient_name:
+        message_html = ""
+        if gift_message and gift_message.strip():
+            message_html = f"""
+          <p style="margin:12px 0 0;padding:14px 16px;background:{SURFACE};border-left:4px solid {ACCENT};border-radius:8px;color:{TEXT};font-size:15px;line-height:1.55;font-style:italic;">
+            “{html.escape(gift_message.strip())}”
+          </p>"""
+        gift_block = f"""
+      <div style="background:#F3F7F7;border-radius:12px;padding:20px 24px;margin:0 0 24px;border:1px solid #E5E7EB;">
+        <p style="margin:0 0 8px;color:{MUTED};font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">A gift for you</p>
+        <p style="margin:0;color:{TEXT};font-size:17px;line-height:1.5;">
+          Hi {html.escape(gift_recipient_name)}, <strong style="color:{PRIMARY};">{html.escape(gift_sender_name)}</strong>
+          sent you a NoorLink eSIM for {html.escape(country)}.
+        </p>
+        {message_html}
+      </div>"""
     regional = _regional_email_context(country)
     regional_intro = ""
     coverage_block = ""
@@ -295,6 +316,7 @@ def build_fulfillment_email_html(
     )
 
     body = f"""
+      {gift_block}
       <p style="margin:0 0 20px;">
         Thank you for your order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong>.
         Your <em>{html.escape(package_name)}</em> plan is provisioned and ready to install.
@@ -332,8 +354,12 @@ def build_fulfillment_email_html(
       {review_block}
     """
     return wrap_branded_email(
-        eyebrow="eSIM delivered",
-        title=f"{flag} Your {html.escape(country)} eSIM is ready".strip(),
+        eyebrow="eSIM delivered" if not gift_sender_name else "Gift delivered",
+        title=(
+            f"{flag} Your {html.escape(country)} eSIM is ready".strip()
+            if not gift_sender_name
+            else f"{flag} Your gift eSIM is ready".strip()
+        ),
         body_html=body,
         app_url=app_url,
         tip="Install on Wi‑Fi before travel. After landing, turn on Data Roaming for the NoorLink line and set it as your Mobile Data SIM."
@@ -439,6 +465,96 @@ def send_checkout_acknowledgment(
         checkout_url=checkout_url,
         app_url=settings.app_url,
     )
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)
+
+
+def send_gift_checkout_acknowledgment(
+    *,
+    to_email: str,
+    order_number: str,
+    country: str,
+    package_name: str,
+    amount: float,
+    currency: str = "USD",
+    flag_emoji: Optional[str] = None,
+    checkout_url: Optional[str] = None,
+    recipient_name: str,
+    recipient_email: str,
+) -> str:
+    settings = get_settings()
+    flag = flag_emoji or ""
+    amount_label = f"{currency.upper()} {amount:.2f}"
+    pay_block = ""
+    if checkout_url:
+        pay_block = f"""
+            <p style="text-align:center;margin:24px 0;">
+              {cta_button(href=checkout_url, label="Complete gift payment")}
+            </p>"""
+    body = f"""
+      <p style="margin:0 0 16px;color:{TEXT};">
+        You are sending a travel eSIM gift to
+        <strong style="color:{PRIMARY};">{html.escape(recipient_name)}</strong>
+        ({html.escape(recipient_email)}).
+      </p>
+      <p style="margin:0 0 16px;color:{TEXT};">
+        Order <strong>{html.escape(order_number)}</strong> · {html.escape(package_name)} ·
+        {html.escape(country)} · {html.escape(amount_label)}.
+      </p>
+      <p style="margin:0 0 16px;color:{TEXT};">
+        After payment clears, they receive the QR code and install steps by email.
+        You will get a confirmation when delivery is sent.
+      </p>
+      {pay_block}
+    """
+    html_body = wrap_branded_email(
+        eyebrow="Gift checkout",
+        title=f"{flag} Complete your eSIM gift".strip(),
+        body_html=body,
+        app_url=settings.app_url.rstrip("/"),
+        tip="Install before you fly — the same calm NoorLink service you trust.",
+    )
+    subject = f"Complete your eSIM gift for {recipient_name}"
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)
+
+
+def send_gift_sent_confirmation_email(
+    *,
+    to_email: str,
+    order_number: str,
+    recipient_name: str,
+    recipient_email: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str] = None,
+) -> str:
+    settings = get_settings()
+    flag = flag_emoji or ""
+    body = f"""
+      <p style="margin:0 0 16px;color:{TEXT};font-size:16px;line-height:1.6;">
+        Your gift is on its way to
+        <strong style="color:{PRIMARY};">{html.escape(recipient_name)}</strong>
+        at {html.escape(recipient_email)}.
+      </p>
+      <p style="margin:0 0 16px;color:{TEXT};font-size:16px;line-height:1.6;">
+        They received a NoorLink email with the QR code and install steps for
+        <strong>{html.escape(package_name)}</strong> ({html.escape(country)}).
+      </p>
+      <p style="margin:0 0 20px;color:{MUTED};font-size:14px;line-height:1.5;">
+        Order reference: {html.escape(order_number)}. The eSIM is tied to their email —
+        they can track usage in My eSIMs anytime.
+      </p>
+      <p style="text-align:center;margin:0;">
+        {cta_button(href=f"{settings.app_url.rstrip('/')}/destinations", label="Send another gift")}
+      </p>
+    """
+    html_body = wrap_branded_email(
+        eyebrow="Gift sent",
+        title=f"{flag} Your gift was delivered".strip(),
+        body_html=body,
+        app_url=settings.app_url.rstrip("/"),
+        tip="Thank you for sharing NoorLink with someone you care about.",
+    )
+    subject = f"Gift sent — {recipient_name}'s {country} eSIM"
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
 
 
@@ -882,13 +998,15 @@ def send_referral_reward_email(
       <p style="margin:0 0 20px;color:{MUTED};font-size:14px;line-height:1.5;">
         Single use · valid 12 months · enter at checkout.
       </p>
+      <p style="text-align:center;margin:0;">
+        {cta_button(href=f"{app_url}/destinations", label="Browse destinations")}
+      </p>
     """
     html_body = wrap_branded_email(
         eyebrow="Refer-a-friend",
         title="Your next-trip reward is ready",
         body_html=body,
         app_url=app_url,
-        cta=cta_button(href=f"{app_url}/destinations", label="Browse destinations"),
         tip="Install before you fly — same calm NoorLink service.",
     )
     return send_email(

@@ -6,6 +6,7 @@ Requires SUPABASE_URL + SUPABASE_SERVICE_KEY in the environment.
 from __future__ import annotations
 
 import logging
+import secrets
 from datetime import date, datetime, timezone
 from functools import lru_cache
 from dataclasses import dataclass
@@ -113,6 +114,7 @@ def _row_to_order(row: Dict[str, Any]) -> Order:
         activation_code=row.get("activation_code"),
         data_used_gb=float(row["data_used_gb"]) if row.get("data_used_gb") is not None else None,
         data_total_gb=float(row["data_total_gb"]) if row.get("data_total_gb") is not None else None,
+        package_id=str(row["package_id"]) if row.get("package_id") else None,
     )
 
 
@@ -147,12 +149,35 @@ def _upsert_user_by_email(
         payload: Dict[str, Any] = {"email": normalized}
         if phone_value:
             payload["phone"] = phone_value
-        inserted = client.table("users").insert(payload).execute()
+        try:
+            inserted = client.table("users").insert(payload).execute()
+        except Exception as exc:
+            err = str(exc).lower()
+            if "password" in err and ("23502" in err or "not-null" in err or "null value" in err):
+                payload["password"] = f"guest:{secrets.token_urlsafe(32)}"
+                inserted = client.table("users").insert(payload).execute()
+            else:
+                raise
         if inserted.data:
             return str(inserted.data[0]["id"])
     except Exception:
         logger.warning("users upsert skipped for %s", normalized, exc_info=True)
     return None
+
+
+def order_access_email_matches(row: Dict[str, Any], email: str) -> bool:
+    """Buyer email or gift recipient may access an order."""
+    normalized = email.strip().lower()
+    if str(row.get("email") or "").strip().lower() == normalized:
+        return True
+    metadata = row.get("metadata") or {}
+    if not isinstance(metadata, dict):
+        return False
+    gift = metadata.get("gift")
+    if not isinstance(gift, dict) or not gift.get("is_gift"):
+        return False
+    recipient = str(gift.get("recipient_email") or "").strip().lower()
+    return bool(recipient and recipient == normalized)
 
 
 def _has_managed_catalog_for_country(client: Client, country: str) -> bool:
@@ -641,6 +666,7 @@ def create_order(
     promo_subtotal_cents: Optional[int] = None,
     total_discount_cents: Optional[int] = None,
     affiliate_metadata: Optional[Dict[str, Any]] = None,
+    gift_metadata: Optional[Dict[str, Any]] = None,
     wants_topup: bool = False,
 ) -> CreatedOrder:
     client = get_supabase_client()
@@ -744,6 +770,9 @@ def create_order(
 
     if affiliate_metadata:
         metadata["affiliate"] = affiliate_metadata
+
+    if gift_metadata:
+        metadata["gift"] = gift_metadata
 
     applied_discount = int(total_discount_cents or 0)
     if applied_discount <= 0 and promo_code and promo_discount_cents is not None:
@@ -1026,7 +1055,7 @@ def lookup_order_by_stripe_payment_intent(
     row = get_order_row_by_stripe_payment_intent(payment_intent_id.strip())
     if not row:
         return None
-    if email and str(row.get("email") or "").strip().lower() != email.strip().lower():
+    if email and not order_access_email_matches(row, email):
         return None
     allowance = get_breakage_allowance_by_order_id(str(row["id"]))
     _, order = enrich_order_row(row, allowance_row=allowance)
@@ -1164,7 +1193,6 @@ def suspend_order_by_iccid(
 
 def lookup_order(order_id: str, email: str) -> Optional[Order]:
     client = get_supabase_client()
-    normalized_email = email.strip().lower()
     order_number = order_id.strip()
 
     try:
@@ -1172,7 +1200,6 @@ def lookup_order(order_id: str, email: str) -> Optional[Order]:
             client.table("orders")
             .select("*")
             .eq("order_number", order_number)
-            .eq("email", normalized_email)
             .limit(1)
             .execute()
         )
@@ -1183,6 +1210,8 @@ def lookup_order(order_id: str, email: str) -> Optional[Order]:
     if not result.data:
         return None
     row = result.data[0]
+    if not order_access_email_matches(row, email):
+        return None
     allowance = get_breakage_allowance_by_order_id(str(row["id"]))
     _, order = enrich_order_row(row, allowance_row=allowance)
     return order
@@ -1197,7 +1226,7 @@ def lookup_order_by_stripe_session(
     row = get_order_row_by_stripe_session(session_id.strip())
     if not row:
         return None
-    if email and str(row.get("email") or "").strip().lower() != email.strip().lower():
+    if email and not order_access_email_matches(row, email):
         return None
     allowance = get_breakage_allowance_by_order_id(str(row["id"]))
     _, order = enrich_order_row(row, allowance_row=allowance)

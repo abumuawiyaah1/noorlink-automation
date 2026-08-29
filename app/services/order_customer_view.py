@@ -107,6 +107,20 @@ def fulfillment_pending(row: Dict[str, Any]) -> bool:
     return False
 
 
+def gift_fields_from_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    metadata = row.get("metadata") or {}
+    if not isinstance(metadata, dict):
+        return {"is_gift": False}
+    gift = metadata.get("gift")
+    if not isinstance(gift, dict) or not gift.get("is_gift"):
+        return {"is_gift": False}
+    return {
+        "is_gift": True,
+        "gift_recipient_name": gift.get("recipient_name"),
+        "gift_recipient_email": gift.get("recipient_email"),
+    }
+
+
 def enrich_order_row(
     row: Dict[str, Any],
     *,
@@ -162,6 +176,7 @@ def enrich_order_row(
     )
 
     base = _row_to_order(row)
+    gift_fields = gift_fields_from_row(row)
     order = base.model_copy(
         update={
             "validity_days": validity_days,
@@ -169,6 +184,7 @@ def enrich_order_row(
             "data_remaining_gb": data_remaining_gb,
             "fulfillment_pending": fulfillment_pending(row),
             "allowance_status": allowance_status,
+            **gift_fields,
         }
     )
     extras = {
@@ -177,5 +193,6 @@ def enrich_order_row(
         "data_remaining_gb": data_remaining_gb,
         "fulfillment_pending": fulfillment_pending(row),
         "allowance_status": allowance_status,
+        **gift_fields,
     }
     return extras, order

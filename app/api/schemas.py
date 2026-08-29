@@ -125,14 +125,21 @@ class Order(BaseModel):
     )
     fulfillment_pending: bool = Field(False, serialization_alias="fulfillmentPending")
     allowance_status: Optional[str] = Field(None, serialization_alias="allowanceStatus")
+    is_gift: bool = Field(False, serialization_alias="isGift")
+    gift_recipient_name: Optional[str] = Field(None, serialization_alias="giftRecipientName")
+    gift_recipient_email: Optional[str] = Field(None, serialization_alias="giftRecipientEmail")
+    package_id: Optional[str] = Field(None, serialization_alias="packageId")
 
     model_config = {"populate_by_name": True}
 
 
-class OrderLookupResponse(BaseModel):
-    order: Optional[Order] = None
-    found: bool
-    message: Optional[str] = None
+class GiftCheckoutDetails(BaseModel):
+    recipient_email: EmailStr = Field(..., alias="recipientEmail")
+    recipient_name: str = Field(..., min_length=1, max_length=80, alias="recipientName")
+    gift_message: Optional[str] = Field(None, max_length=280, alias="giftMessage")
+    sender_name: Optional[str] = Field(None, max_length=80, alias="senderName")
+
+    model_config = {"populate_by_name": True}
 
 
 class CheckoutSessionRequest(BaseModel):
@@ -146,8 +153,16 @@ class CheckoutSessionRequest(BaseModel):
     promo_code: Optional[str] = Field(None, alias="promoCode")
     affiliate_ref: Optional[str] = Field(None, alias="affiliateRef")
     wants_topup: bool = Field(False, alias="wantsTopUp")
+    is_gift: bool = Field(False, alias="isGift")
+    gift: Optional[GiftCheckoutDetails] = None
 
     model_config = {"populate_by_name": True}
+
+
+class OrderLookupResponse(BaseModel):
+    order: Optional[Order] = None
+    found: bool
+    message: Optional[str] = None
 
 
 class PromoValidateRequest(BaseModel):
