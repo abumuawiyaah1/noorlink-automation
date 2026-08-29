@@ -888,7 +888,7 @@ def send_referral_reward_email(
         title="Your next-trip reward is ready",
         body_html=body,
         app_url=app_url,
-        cta=cta_button("Browse destinations", f"{app_url}/destinations"),
+        cta=cta_button(href=f"{app_url}/destinations", label="Browse destinations"),
         tip="Install before you fly — same calm NoorLink service.",
     )
     return send_email(
