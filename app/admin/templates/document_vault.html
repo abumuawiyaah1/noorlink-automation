@@ -115,7 +115,7 @@
                   <small>{{ doc.uploaded_by }}<br />{{ doc.created_at[:10] if doc.created_at else '—' }}</small>
                 </td>
                 <td class="text-nowrap">
-                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin:document-download', document_id=doc.id) }}">Download</a>
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin:document-vault') }}?download={{ doc.id }}">Download</a>
                   {% if can_delete %}
                   <form method="post" class="d-inline" onsubmit="return confirm('Archive this document? (soft delete)');">
                     <input type="hidden" name="action" value="delete" />

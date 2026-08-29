@@ -46,6 +46,32 @@ class DocumentVaultView(BaseView):
         year_raw = (request.query_params.get("year") or "").strip()
         year = int(year_raw) if year_raw.isdigit() else None
 
+        # Download via ?download=<id> so we don't register a second menu route
+        # (SQLAdmin menu calls url_for on every @expose identity without path params).
+        download_id = (request.query_params.get("download") or "").strip()
+        if request.method == "GET" and download_id:
+            try:
+                data, filename, content_type = download_document(
+                    document_id=download_id, role=role
+                )
+                _audit(
+                    request,
+                    action="document_download",
+                    record_id=download_id,
+                    new_values={"filename": filename},
+                )
+                return Response(
+                    content=data,
+                    media_type=content_type,
+                    headers={
+                        "Content-Disposition": f'attachment; filename="{filename}"',
+                        "Cache-Control": "no-store",
+                    },
+                )
+            except DocumentVaultError as exc:
+                request.session["flash_error"] = str(exc)
+                return RedirectResponse(request.url_for("admin:document-vault"), status_code=302)
+
         if request.method == "POST":
             form = await request.form()
             action = str(form.get("action") or "upload").strip().lower()
@@ -138,30 +164,6 @@ class DocumentVaultView(BaseView):
                 "flash_error": request.session.pop("flash_error", None),
             },
         )
-
-    @expose("/documents/{document_id}/download", identity="document-download", methods=["GET"])
-    async def download(self, request: Request):
-        role = session_role(request)
-        document_id = request.path_params.get("document_id", "")
-        try:
-            data, filename, content_type = download_document(document_id=document_id, role=role)
-            _audit(
-                request,
-                action="document_download",
-                record_id=document_id,
-                new_values={"filename": filename},
-            )
-            return Response(
-                content=data,
-                media_type=content_type,
-                headers={
-                    "Content-Disposition": f'attachment; filename="{filename}"',
-                    "Cache-Control": "no-store",
-                },
-            )
-        except DocumentVaultError as exc:
-            request.session["flash_error"] = str(exc)
-            return RedirectResponse(request.url_for("admin:document-vault"), status_code=302)
 
 
 def _audit(request: Request, *, action: str, record_id: str, new_values: dict) -> None:

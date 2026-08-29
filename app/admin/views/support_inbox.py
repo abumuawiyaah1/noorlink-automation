@@ -29,18 +29,7 @@ class SupportInboxView(BaseView):
     def is_visible(self, request: Request) -> bool:
         return self.is_accessible(request)
 
-    @expose("/support-inbox", identity="support-inbox", methods=["GET"])
-    async def inbox(self, request: Request):
-        try:
-            tickets = list_tickets_for_inbox(limit=200)
-        except SupportMessagingError:
-            tickets = []
-        return await self.templates.TemplateResponse(
-            request,
-            "support_inbox.html",
-            {"tickets": tickets},
-        )
-
+    # Secondary route first — sqladmin sets view.identity from the *last* @expose
     @expose("/support-inbox/{ticket_number}", identity="support-inbox-ticket", methods=["GET", "POST"])
     async def ticket_thread(self, request: Request):
         ticket_number = request.path_params.get("ticket_number", "").strip().upper()
@@ -119,4 +108,16 @@ class SupportInboxView(BaseView):
                 "flash_success": request.session.pop("flash_success", None),
                 "flash_error": request.session.pop("flash_error", None),
             },
+        )
+
+    @expose("/support-inbox", identity="support-inbox", methods=["GET"])
+    async def inbox(self, request: Request):
+        try:
+            tickets = list_tickets_for_inbox(limit=200)
+        except SupportMessagingError:
+            tickets = []
+        return await self.templates.TemplateResponse(
+            request,
+            "support_inbox.html",
+            {"tickets": tickets},
         )

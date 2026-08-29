@@ -31,6 +31,28 @@ class FinanceHubView(BaseView):
     def is_visible(self, request: Request) -> bool:
         return self.is_accessible(request)
 
+    # Secondary routes first — sqladmin sets view.identity from the *last* @expose
+    @expose("/finance/export/orders.csv", identity="finance-export-orders", methods=["GET"])
+    async def export_orders(self, request: Request):
+        if not has_role(request, (ROLE_ADMIN,)):
+            return RedirectResponse("/admin", status_code=302)
+        days = int(request.query_params.get("days", "90"))
+        return Response(
+            content=export_orders_csv(days=days),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=noorlink-orders.csv"},
+        )
+
+    @expose("/finance/export/commissions.csv", identity="finance-export-commissions", methods=["GET"])
+    async def export_commissions(self, request: Request):
+        if not has_role(request, (ROLE_ADMIN,)):
+            return RedirectResponse("/admin", status_code=302)
+        return Response(
+            content=export_commissions_csv(),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=noorlink-commissions.csv"},
+        )
+
     @expose("/finance", identity="finance-hub", methods=["GET", "POST"])
     async def hub(self, request: Request):
         days = int(request.query_params.get("days", "30"))
@@ -58,25 +80,4 @@ class FinanceHubView(BaseView):
                 "flash_success": request.session.pop("flash_success", None),
                 "flash_error": request.session.pop("flash_error", None),
             },
-        )
-
-    @expose("/finance/export/orders.csv", identity="finance-export-orders", methods=["GET"])
-    async def export_orders(self, request: Request):
-        if not has_role(request, (ROLE_ADMIN,)):
-            return RedirectResponse("/admin", status_code=302)
-        days = int(request.query_params.get("days", "90"))
-        return Response(
-            content=export_orders_csv(days=days),
-            media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=noorlink-orders.csv"},
-        )
-
-    @expose("/finance/export/commissions.csv", identity="finance-export-commissions", methods=["GET"])
-    async def export_commissions(self, request: Request):
-        if not has_role(request, (ROLE_ADMIN,)):
-            return RedirectResponse("/admin", status_code=302)
-        return Response(
-            content=export_commissions_csv(),
-            media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=noorlink-commissions.csv"},
         )

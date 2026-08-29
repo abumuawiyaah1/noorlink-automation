@@ -29,6 +29,19 @@ class NewsletterAdminView(BaseView):
     def is_visible(self, request: Request) -> bool:
         return False
 
+    # Secondary route first — sqladmin sets view.identity from the *last* @expose
+    @expose("/newsletter/export.csv", identity="newsletter-export", methods=["GET"])
+    async def export_csv(self, request: Request):
+        if not has_role(request, PROMO_MANAGER_ROLES):
+            return RedirectResponse("/admin", status_code=302)
+        active_only = request.query_params.get("active", "1") != "0"
+        csv_text = export_subscribers_csv(active_only=active_only)
+        return Response(
+            content=csv_text,
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=noorlink-subscribers.csv"},
+        )
+
     @expose("/newsletter", identity="newsletter-admin", methods=["GET", "POST"])
     async def admin(self, request: Request):
         active_only = request.query_params.get("active") != "0"
@@ -71,16 +84,4 @@ class NewsletterAdminView(BaseView):
                 "flash_success": request.session.pop("flash_success", None),
                 "flash_error": request.session.pop("flash_error", None),
             },
-        )
-
-    @expose("/newsletter/export.csv", identity="newsletter-export", methods=["GET"])
-    async def export_csv(self, request: Request):
-        if not has_role(request, PROMO_MANAGER_ROLES):
-            return RedirectResponse("/admin", status_code=302)
-        active_only = request.query_params.get("active", "1") != "0"
-        csv_text = export_subscribers_csv(active_only=active_only)
-        return Response(
-            content=csv_text,
-            media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=noorlink-subscribers.csv"},
         )
