@@ -639,6 +639,8 @@ def create_order(
     promo_code: Optional[str] = None,
     promo_discount_cents: Optional[int] = None,
     promo_subtotal_cents: Optional[int] = None,
+    total_discount_cents: Optional[int] = None,
+    affiliate_metadata: Optional[Dict[str, Any]] = None,
     wants_topup: bool = False,
 ) -> CreatedOrder:
     client = get_supabase_client()
@@ -739,7 +741,15 @@ def create_order(
             "discount_cents": int(promo_discount_cents),
             "subtotal_cents": int(promo_subtotal_cents or price_cents),
         }
-        price_cents = max(1, price_cents - int(promo_discount_cents))
+
+    if affiliate_metadata:
+        metadata["affiliate"] = affiliate_metadata
+
+    applied_discount = int(total_discount_cents or 0)
+    if applied_discount <= 0 and promo_code and promo_discount_cents is not None:
+        applied_discount = int(promo_discount_cents)
+    if applied_discount > 0:
+        price_cents = max(1, price_cents - applied_discount)
 
     payload: Dict[str, Any] = {
         "order_number": order_number,

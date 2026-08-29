@@ -241,6 +241,15 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     logger.info("Fulfillment complete for order %s", order_number)
+
+    try:
+        from app.services.affiliates import ensure_customer_affiliate, process_affiliate_on_fulfillment
+
+        ensure_customer_affiliate(email=str(delivered_row.get("email") or ""))
+        process_affiliate_on_fulfillment(delivered_row)
+    except Exception:
+        logger.exception("Affiliate post-fulfillment failed for %s", order_number)
+
     return delivered_row
 
 

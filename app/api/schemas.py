@@ -144,6 +144,7 @@ class CheckoutSessionRequest(BaseModel):
     travel_date: Optional[str] = Field(None, alias="travelDate")
     package_id: Optional[str] = Field(None, alias="packageId")
     promo_code: Optional[str] = Field(None, alias="promoCode")
+    affiliate_ref: Optional[str] = Field(None, alias="affiliateRef")
     wants_topup: bool = Field(False, alias="wantsTopUp")
 
     model_config = {"populate_by_name": True}
@@ -233,6 +234,7 @@ class CheckoutSessionResponse(BaseModel):
     discount_amount: Optional[float] = Field(None, serialization_alias="discountAmount")
     final_price: Optional[float] = Field(None, serialization_alias="finalPrice")
     promo_code: Optional[str] = Field(None, serialization_alias="promoCode")
+    affiliate_ref: Optional[str] = Field(None, serialization_alias="affiliateRef")
 
     model_config = {"populate_by_name": True}
 
@@ -249,7 +251,66 @@ class ExpressPaymentIntentResponse(BaseModel):
     payment_intent_id: Optional[str] = Field(None, serialization_alias="paymentIntentId")
     order_id: Optional[str] = Field(None, serialization_alias="orderId")
     final_price: Optional[float] = Field(None, serialization_alias="finalPrice")
+    discount_amount: Optional[float] = Field(None, serialization_alias="discountAmount")
+    affiliate_ref: Optional[str] = Field(None, serialization_alias="affiliateRef")
     message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class AffiliateResolveResponse(BaseModel):
+    valid: bool
+    code: Optional[str] = None
+    type: Optional[str] = None
+    display_name: Optional[str] = Field(None, serialization_alias="displayName")
+    organization_name: Optional[str] = Field(None, serialization_alias="organizationName")
+    customer_discount_percent: Optional[int] = Field(
+        None, serialization_alias="customerDiscountPercent"
+    )
+    landing_path: Optional[str] = Field(None, serialization_alias="landingPath")
+    pays_cash: Optional[bool] = Field(None, serialization_alias="paysCash")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class AffiliateReferralLinkResponse(BaseModel):
+    success: bool
+    code: Optional[str] = None
+    url: Optional[str] = None
+    customer_discount_percent: Optional[int] = Field(
+        None, serialization_alias="customerDiscountPercent"
+    )
+    referrer_reward_percent: Optional[int] = Field(
+        None, serialization_alias="referrerRewardPercent"
+    )
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class AffiliateCreateRequest(BaseModel):
+    code: str = Field(..., min_length=3, max_length=32)
+    type: Literal["influencer", "mosque", "connector", "customer"]
+    display_name: Optional[str] = Field(None, alias="displayName")
+    organization_name: Optional[str] = Field(None, alias="organizationName")
+    contact_email: Optional[EmailStr] = Field(None, alias="contactEmail")
+    payout_email: Optional[EmailStr] = Field(None, alias="payoutEmail")
+    referrer_email: Optional[EmailStr] = Field(None, alias="referrerEmail")
+    customer_discount_percent: Optional[int] = Field(None, alias="customerDiscountPercent")
+    commission_percent: Optional[int] = Field(None, alias="commissionPercent")
+    payout_minimum_cents: Optional[int] = Field(None, alias="payoutMinimumCents")
+    landing_path: Optional[str] = Field(None, alias="landingPath")
+    status: Literal["pending", "active", "paused"] = "active"
+
+    model_config = {"populate_by_name": True}
+
+
+class AffiliatePayoutRequest(BaseModel):
+    affiliate_id: str = Field(..., alias="affiliateId")
+    method: Optional[str] = "manual"
+    reference: Optional[str] = None
+    notes: Optional[str] = None
 
     model_config = {"populate_by_name": True}
 

@@ -17,7 +17,7 @@ from app.services.email_service import (
 from app.services.fulfillment import FulfillmentError, process_paid_order
 from app.services.ops_alerts import notify_fulfillment_failure
 from app.services.insider_release import expire_finished_promos, release_due_insider_issues
-from app.services.promo_codes import PromoCodeError, PromoDiscount, normalize_code, validate_promo_row
+from app.services.promo_codes import normalize_code
 from app.services.checkout_pricing import (
     CheckoutPricingError,
     authoritative_checkout_price,
@@ -28,7 +28,7 @@ from .analytics import router as analytics_router
 from .devices import check_device
 from .devices_router import router as devices_router
 from .plans_router import router as plans_router
-from .webhooks import router as webhooks_router
+from .affiliates_router import router as affiliates_router
 from . import supabase_repository as db
 from .stripe_checkout import (
     StripeCheckoutError,
@@ -93,6 +93,7 @@ app.include_router(analytics_router)
 app.include_router(devices_router)
 app.include_router(plans_router)
 app.include_router(webhooks_router)
+app.include_router(affiliates_router)
 
 
 def _db_error(exc: Exception) -> HTTPException:
@@ -124,7 +125,7 @@ def _db_error(exc: Exception) -> HTTPException:
     )
 
 
-def _prepare_checkout_pricing(body: CheckoutSessionRequest) -> tuple[float, int, Optional[PromoDiscount]]:
+def _prepare_checkout_pricing(body: CheckoutSessionRequest):
     if not body.package_id or not str(body.package_id).strip():
         raise HTTPException(
             status_code=400,
@@ -144,21 +145,21 @@ def _prepare_checkout_pricing(body: CheckoutSessionRequest) -> tuple[float, int,
     except CheckoutPricingError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    subtotal_cents = int(round(catalog_price * 100))
-    promo_discount: Optional[PromoDiscount] = None
+    from app.services.affiliates import AffiliateError, prepare_checkout_discounts
 
-    if body.promo_code and body.promo_code.strip():
-        try:
-            db.expire_promo_codes()
-        except db.SupabaseRepositoryError:
-            pass
-        try:
-            row = db.get_promo_code(normalize_code(body.promo_code))
-            promo_discount = validate_promo_row(row, subtotal_cents=subtotal_cents)
-        except PromoCodeError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+    try:
+        pricing = prepare_checkout_discounts(
+            catalog_price=catalog_price,
+            country=body.country,
+            buyer_email=str(body.email),
+            package_id=str(body.package_id),
+            promo_code=body.promo_code,
+            affiliate_ref=body.affiliate_ref,
+        )
+    except AffiliateError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return catalog_price, subtotal_cents, promo_discount
+    return catalog_price, pricing
 
 
 def _verify_stripe_paid_amount(order_row: dict, event) -> bool:
@@ -643,7 +644,15 @@ async def checkout_config():
 @app.post("/api/checkout/payment-intent", response_model=ExpressPaymentIntentResponse)
 async def checkout_payment_intent(body: CheckoutSessionRequest):
     """Create order + PaymentIntent for Apple Pay / Google Pay / Link on-page."""
-    catalog_price, subtotal_cents, promo_discount = _prepare_checkout_pricing(body)
+    catalog_price, pricing = _prepare_checkout_pricing(body)
+    from app.services.affiliates import affiliate_metadata_patch
+
+    promo = pricing.promo
+    affiliate_meta = (
+        affiliate_metadata_patch(pricing.affiliate).get("affiliate")
+        if pricing.affiliate
+        else None
+    )
 
     try:
         created = db.create_order(
@@ -654,9 +663,11 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
             travel_date=body.travel_date,
             package_id=body.package_id,
             phone=body.phone,
-            promo_code=promo_discount.code if promo_discount else None,
-            promo_discount_cents=promo_discount.discount_cents if promo_discount else None,
-            promo_subtotal_cents=subtotal_cents if promo_discount else None,
+            promo_code=promo.code if promo else None,
+            promo_discount_cents=promo.discount_cents if promo else None,
+            promo_subtotal_cents=pricing.subtotal_cents if promo else None,
+            total_discount_cents=pricing.discount_cents,
+            affiliate_metadata=affiliate_meta,
             wants_topup=bool(body.wants_topup),
         )
     except db.ManagedPackagePriceMismatchError as exc:
@@ -701,15 +712,25 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
         payment_intent_id=intent.id,
         order_id=order.order_number,
         final_price=float(order.price),
+        discount_amount=round(pricing.discount_cents / 100.0, 2) if pricing.discount_cents else None,
+        affiliate_ref=pricing.affiliate.code if pricing.affiliate else None,
         message="PaymentIntent created for express wallets.",
     )
 
 
 @app.post("/api/checkout/session", response_model=CheckoutSessionResponse)
 async def checkout_session(body: CheckoutSessionRequest):
-    catalog_price, subtotal_cents, promo_discount = _prepare_checkout_pricing(body)
+    catalog_price, pricing = _prepare_checkout_pricing(body)
+    from app.services.affiliates import affiliate_metadata_patch
+
+    promo = pricing.promo
     promo_code_value = (
         normalize_code(body.promo_code) if body.promo_code and body.promo_code.strip() else None
+    )
+    affiliate_meta = (
+        affiliate_metadata_patch(pricing.affiliate).get("affiliate")
+        if pricing.affiliate
+        else None
     )
 
     try:
@@ -721,9 +742,11 @@ async def checkout_session(body: CheckoutSessionRequest):
             travel_date=body.travel_date,
             package_id=body.package_id,
             phone=body.phone,
-            promo_code=promo_discount.code if promo_discount else None,
-            promo_discount_cents=promo_discount.discount_cents if promo_discount else None,
-            promo_subtotal_cents=subtotal_cents if promo_discount else None,
+            promo_code=promo.code if promo else None,
+            promo_discount_cents=promo.discount_cents if promo else None,
+            promo_subtotal_cents=pricing.subtotal_cents if promo else None,
+            total_discount_cents=pricing.discount_cents,
+            affiliate_metadata=affiliate_meta,
             wants_topup=bool(body.wants_topup),
         )
     except db.ManagedPackagePriceMismatchError as exc:
@@ -756,7 +779,7 @@ async def checkout_session(body: CheckoutSessionRequest):
             package_name=order.package_name,
             amount_cents=amount_cents,
             currency=order.currency,
-            force_custom_price=bool(promo_discount),
+            force_custom_price=pricing.force_custom_price,
         )
         db.update_order_stripe_session(order.order_number, session.id)
     except StripeCheckoutError as exc:
@@ -818,10 +841,11 @@ async def checkout_session(body: CheckoutSessionRequest):
         email_sent=email_sent,
         email_error=email_error,
         discount_amount=(
-            round(promo_discount.discount_cents / 100.0, 2) if promo_discount else None
+            round(pricing.discount_cents / 100.0, 2) if pricing.discount_cents else None
         ),
         final_price=float(order.price),
-        promo_code=promo_code_value,
+        promo_code=promo_code_value if promo else None,
+        affiliate_ref=pricing.affiliate.code if pricing.affiliate else None,
     )
 
 

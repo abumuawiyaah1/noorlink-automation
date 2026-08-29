@@ -857,3 +857,42 @@ def send_esim_low_data_email(
     )
     subject = "Recharge now to keep using your eSIM"
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
+
+
+def send_referral_reward_email(
+    *,
+    to_email: str,
+    reward_code: str,
+    friend_order_number: str,
+) -> str:
+    """Email a customer their refer-a-friend reward promo after a successful referral."""
+    settings = get_settings()
+    app_url = settings.app_url.rstrip("/")
+    safe_code = html.escape(reward_code)
+    body = f"""
+      <p style="margin:0 0 16px;color:{TEXT};font-size:16px;line-height:1.6;">
+        Someone you referred just completed a NoorLink order ({html.escape(friend_order_number)}).
+      </p>
+      <p style="margin:0 0 16px;color:{TEXT};font-size:16px;line-height:1.6;">
+        Here is <strong>10% off your next trip</strong>:
+      </p>
+      <p style="margin:0 0 20px;font-size:22px;font-weight:700;letter-spacing:0.04em;color:{PRIMARY};">
+        {safe_code}
+      </p>
+      <p style="margin:0 0 20px;color:{MUTED};font-size:14px;line-height:1.5;">
+        Single use · valid 12 months · enter at checkout.
+      </p>
+    """
+    html_body = wrap_branded_email(
+        eyebrow="Refer-a-friend",
+        title="Your next-trip reward is ready",
+        body_html=body,
+        app_url=app_url,
+        cta=cta_button("Browse destinations", f"{app_url}/destinations"),
+        tip="Install before you fly — same calm NoorLink service.",
+    )
+    return send_email(
+        to_email=to_email,
+        subject="10% off your next NoorLink trip — friend referral reward",
+        html_body=html_body,
+    )
