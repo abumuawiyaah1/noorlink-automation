@@ -81,6 +81,15 @@ ADMIN_TOOLS: Tuple[AdminTool, ...] = (
         badge="Marketing",
     ),
     AdminTool(
+        key="social-media-hub",
+        title="Social media toolkit",
+        summary="Partner media library, caption templates, and Meta quick links for FB/IG.",
+        icon="fa-solid fa-share-nodes",
+        endpoint="admin:social-media-hub",
+        roles=PROMO_MANAGER_ROLES,
+        badge="Marketing",
+    ),
+    AdminTool(
         key="catalog-overview",
         title="Catalog overview",
         summary="Compare checkout plans vs browse-page plans and spot mismatches.",

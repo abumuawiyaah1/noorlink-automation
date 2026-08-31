@@ -82,6 +82,16 @@ STAFF_WIZARDS: Tuple[StaffWizard, ...] = (
         badge="Marketing",
     ),
     StaffWizard(
+        key="social-media-hub",
+        title="Social media toolkit",
+        summary="Upload partner photos/videos, copy captions, and open Meta to post on Facebook and Instagram.",
+        steps=("Upload media", "Copy caption", "Post on Meta", "Mark posted"),
+        icon="fa-solid fa-share-nodes",
+        endpoint="admin:social-media-hub",
+        roles=PROMO_MANAGER_ROLES,
+        badge="Marketing",
+    ),
+    StaffWizard(
         key="newsletter-admin",
         title="Newsletter subscribers",
         summary="View who's subscribed, export a list, or unsubscribe someone.",

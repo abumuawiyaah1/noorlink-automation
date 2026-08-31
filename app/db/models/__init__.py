@@ -3,7 +3,7 @@ from app.db.models.affiliate import Affiliate, AffiliateCommission, AffiliatePay
 from app.db.models.catalog import EsimPackage, PlanFulfillmentMap
 from app.db.models.commerce import InsiderIssue, Order, PromoCode
 from app.db.models.documents import CompanyDocument
-from app.db.models.support import SupportMessage, SupportTicket
+from app.db.models.social_media import SocialMediaAsset
 
 __all__ = [
     "AdminAuditLog",
@@ -18,6 +18,7 @@ __all__ = [
     "Order",
     "PlanFulfillmentMap",
     "PromoCode",
+    "SocialMediaAsset",
     "SupportMessage",
     "SupportTicket",
 ]

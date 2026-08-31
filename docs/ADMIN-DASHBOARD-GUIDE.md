@@ -17,6 +17,14 @@ Search this document from **Help** using keywords like *fulfillment*, *refund*, 
 | **Operations** | Health stats, tools, cron, security, scripts | Admin + support tools |
 | **Tables** | Orders, promos, catalog, affiliates, audit log | Role-based |
 
+### Marketing
+
+| Tool | Purpose | Who |
+|------|---------|-----|
+| **Social media** | Partner photo/video library, captions, Meta links | Admin, marketing |
+| **Insider wizard** | Schedule newsletter issues | Admin, marketing, catalog |
+| **Newsletter subscribers** | Export / unsubscribe | Admin, marketing, catalog |
+
 Hidden tools (linked from Operations or Finance): Event log, Refund wizard, Breakage list, GDPR tools, Diagnostics.
 
 ---

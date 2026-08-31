@@ -1,0 +1,173 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <h1 class="h3 mb-2">Social media toolkit</h1>
+  <p class="text-muted mb-3">
+    Partner photos &amp; videos, captions, and Meta links — for Facebook and Instagram.
+    Marketing and admin roles only.
+  </p>
+
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <div class="alert {% if usage.percent >= 90 %}alert-danger{% elif usage.percent >= 75 %}alert-warning{% else %}alert-secondary{% endif %} mb-4">
+    <strong>Storage:</strong> {{ usage.used_label }} of {{ usage.quota_label }} used
+    ({{ usage.remaining_label }} remaining).
+    Videos fill space quickly — delete <strong>Posted</strong> assets once saved elsewhere.
+    Plan for ~10&nbsp;GB total on your storage account (Supabase + any other buckets).
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-lg-4">
+      {% if can_manage %}
+      <div class="nl-wizard-panel">
+        <h2 class="h6">Upload media</h2>
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="upload" />
+          <div class="mb-2">
+            <label class="form-label" for="file">Photo or video *</label>
+            <input class="form-control" id="file" name="file" type="file" required accept="image/*,video/*" />
+            <div class="form-text">Max 100 MB per file</div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="partner">Partner name</label>
+            <input class="form-control" id="partner" name="partner" maxlength="200" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="caption">Caption draft</label>
+            <textarea class="form-control" id="caption" name="caption" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="notes">Internal notes</label>
+            <input class="form-control" id="notes" name="notes" maxlength="500" placeholder="e.g. post next week" />
+          </div>
+          <button type="submit" class="btn btn-primary">Upload to library</button>
+        </form>
+      </div>
+      {% endif %}
+
+      <div class="nl-wizard-panel mt-3">
+        <h2 class="h6">Open Meta tools</h2>
+        <ul class="list-unstyled mb-0">
+          {% for link in quick_links %}
+          <li class="mb-2">
+            <a href="{{ link.href }}" target="_blank" rel="noopener noreferrer">{{ link.title }} ↗</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <form method="get" class="row g-2 mb-3">
+        <div class="col-auto">
+          <select class="form-select" name="status" onchange="this.form.submit()">
+            <option value="">All statuses</option>
+            {% for code, label in statuses %}
+            <option value="{{ code }}" {% if filter_status == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+
+      {% if assets %}
+      <div class="row g-3">
+        {% for asset in assets %}
+        <div class="col-md-6">
+          <div class="nl-wizard-panel h-100">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <strong class="small">{{ asset.original_filename }}</strong>
+              <span class="badge text-bg-light">{{ asset.status_label }}</span>
+            </div>
+            {% if asset.is_image %}
+            <img src="?preview={{ asset.id }}" alt="" class="img-fluid rounded mb-2" style="max-height:160px;object-fit:cover;width:100%;" />
+            {% elif asset.is_video %}
+            <video src="?preview={{ asset.id }}" controls preload="metadata" class="w-100 rounded mb-2" style="max-height:160px;"></video>
+            {% endif %}
+            <p class="small text-muted mb-2">{{ asset.file_size_label }} · {{ asset.uploaded_by }}</p>
+
+            <form method="post" class="small">
+              <input type="hidden" name="action" value="update" />
+              <input type="hidden" name="asset_id" value="{{ asset.id }}" />
+              <div class="mb-2">
+                <label class="form-label">Status</label>
+                <select class="form-select form-select-sm" name="status">
+                  {% for code, label in statuses %}
+                  <option value="{{ code }}" {% if asset.status == code %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Partner</label>
+                <input class="form-control form-control-sm" name="partner" value="{{ asset.partner }}" />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Caption</label>
+                <textarea class="form-control form-control-sm" name="caption" rows="3">{{ asset.caption }}</textarea>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Notes</label>
+                <input class="form-control form-control-sm" name="notes" value="{{ asset.notes }}" />
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                <a class="btn btn-sm btn-outline-secondary" href="?download={{ asset.id }}">Download</a>
+              </div>
+            </form>
+            <form method="post" class="mt-2" onsubmit="return confirm('Delete this file from the library?');">
+              <input type="hidden" name="action" value="delete" />
+              <input type="hidden" name="asset_id" value="{{ asset.id }}" />
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="nl-wizard-panel">
+        <p class="mb-0 text-muted">No uploads yet. Add partner photos or videos on the left.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="nl-wizard-panel">
+        <h2 class="h6">How to post today</h2>
+        <ol class="mb-0">
+          {% for step in workflow_steps %}
+          <li class="mb-1">{{ step }}</li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="nl-wizard-panel">
+        <h2 class="h6">Site brand assets</h2>
+        <ul class="list-unstyled mb-0">
+          {% for item in brand_assets %}
+          <li class="mb-2">
+            <a href="{{ site_base }}{{ item.path }}" target="_blank" rel="noopener noreferrer">{{ item.label }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="nl-wizard-panel mt-3">
+    <h2 class="h6">Caption templates</h2>
+    <div class="row g-3">
+      {% for template in caption_templates %}
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ template.label }}</label>
+        <textarea class="form-control font-monospace small" rows="8" readonly onclick="this.select()">{{ template.text }}</textarea>
+        <div class="form-text">Click to select, then copy.</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
