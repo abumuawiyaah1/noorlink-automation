@@ -53,7 +53,7 @@ Hit `POST https://api.noorlink.co/api/cron/run` once per day with header:
 
 (GitHub Actions workflow `.github/workflows/insider-cron.yml` already does this.)
 
-Tasks: expire promos, Insider send queue, Telna catalog sync, expiry reminders, usage sync, log retention (90 days), 48h auto-refunds, 72h affiliate payout auto-approve, monthly finance summary on the 1st UTC.
+Tasks: expire promos, Insider send queue, Telna catalog sync, expiry reminders, usage sync, log retention (90 days), 48h auto-refunds, 72h affiliate payout auto-approve, daily admin brief at 6:00 America/New_York, monthly finance summary on the 1st UTC.
 
 ## 5. Create admin user
 

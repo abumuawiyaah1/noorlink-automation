@@ -76,7 +76,7 @@ Env: `AFFILIATE_AUTO_PAYOUT_WAIT_HOURS` (default 72), `AFFILIATE_AUTO_PAYOUT_MAX
 Create username, role, password for new team member.
 
 ### Finance dashboard (admin)
-Revenue, estimated margin, affiliate liability, CSV exports, monthly summary email.
+Revenue, estimated margin, affiliate liability, CSV exports, daily morning brief (6:00 New York), monthly summary email.
 
 ### Refund a customer (admin)
 Stripe refund with policy: blocks if **>50% data used** unless admin override checked.
@@ -96,7 +96,7 @@ Check daily. Urgent items:
 
 ## Finance (admin vs support)
 
-**Admin:** revenue, margin %, affiliate owed, exports, refund link, email monthly summary.
+**Admin:** revenue, margin %, affiliate owed, exports, refund link, daily brief + email monthly summary.
 
 **Support (read-only):** revenue, order count, refunds count, stuck fulfillment — use to answer “did you charge me?” without refund access.
 

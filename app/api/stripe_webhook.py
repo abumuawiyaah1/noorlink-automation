@@ -67,7 +67,14 @@ def extract_checkout_session_completed(
         "payment_intent_id": payment_intent_id,
         "customer_email": getattr(session, "customer_email", None),
         "amount_cents": stripe_event_amount_cents(event),
+        "customer_patch": _stripe_session_customer_patch(session),
     }
+
+
+def _stripe_session_customer_patch(session: Any) -> Dict[str, Any]:
+    from app.services.order_attribution import stripe_checkout_customer_patch
+
+    return stripe_checkout_customer_patch(session)
 
 
 def extract_payment_intent_succeeded(

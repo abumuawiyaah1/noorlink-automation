@@ -17,6 +17,8 @@ from app.services.admin_finance import (
     export_orders_csv,
 )
 from app.services.admin_monthly_summary import send_monthly_summary_email
+from app.services.admin_daily_summary import send_daily_summary_email
+from app.services.admin_weekly_summary import send_weekly_summary_email
 from app.services.stripe_mode import stripe_mode_info
 
 
@@ -61,12 +63,36 @@ class FinanceHubView(BaseView):
 
         if request.method == "POST" and not read_only:
             form = await request.form()
-            if str(form.get("action")) == "send_summary":
-                result = send_monthly_summary_email(days=days)
+            if str(form.get("action")) == "send_daily":
+                result = send_daily_summary_email(force=True)
                 if result.get("sent"):
-                    request.session["flash_success"] = f"Summary emailed to {result['sent']} recipient(s)."
+                    request.session["flash_success"] = (
+                        f"Daily brief emailed to {result['sent']} recipient(s)."
+                    )
                 else:
-                    request.session["flash_error"] = result.get("error") or "Could not send summary."
+                    request.session["flash_error"] = (
+                        result.get("error") or result.get("skipped") or "Could not send daily brief."
+                    )
+            elif str(form.get("action")) == "send_weekly":
+                result = send_weekly_summary_email(force=True)
+                if result.get("sent"):
+                    request.session["flash_success"] = (
+                        f"Weekly scorecard emailed to {result['sent']} recipient(s)."
+                    )
+                else:
+                    request.session["flash_error"] = (
+                        result.get("error") or result.get("skipped") or "Could not send weekly scorecard."
+                    )
+            elif str(form.get("action")) == "send_monthly":
+                result = send_monthly_summary_email(force=True)
+                if result.get("sent"):
+                    request.session["flash_success"] = (
+                        f"Monthly review emailed to {result['sent']} recipient(s)."
+                    )
+                else:
+                    request.session["flash_error"] = (
+                        result.get("error") or result.get("skipped") or "Could not send monthly review."
+                    )
 
         return await self.templates.TemplateResponse(
             request,

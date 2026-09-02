@@ -681,6 +681,7 @@ def create_order(
     promo_subtotal_cents: Optional[int] = None,
     total_discount_cents: Optional[int] = None,
     affiliate_metadata: Optional[Dict[str, Any]] = None,
+    attribution_metadata: Optional[Dict[str, Any]] = None,
     gift_metadata: Optional[Dict[str, Any]] = None,
     wants_topup: bool = False,
 ) -> CreatedOrder:
@@ -786,6 +787,9 @@ def create_order(
 
     if affiliate_metadata:
         metadata["affiliate"] = affiliate_metadata
+
+    if attribution_metadata:
+        metadata["attribution"] = attribution_metadata
 
     if gift_metadata:
         metadata["gift"] = gift_metadata
@@ -908,6 +912,14 @@ def merge_order_metadata(order_number: str, patch: Dict[str, Any]) -> Dict[str, 
 
     if isinstance(patch.get("usage_snapshot"), dict):
         merged["usage_snapshot"] = patch["usage_snapshot"]
+
+    if isinstance(patch.get("customer"), dict):
+        existing = metadata.get("customer") if isinstance(metadata.get("customer"), dict) else {}
+        merged["customer"] = {**existing, **patch["customer"]}
+
+    if isinstance(patch.get("attribution"), dict):
+        existing = metadata.get("attribution") if isinstance(metadata.get("attribution"), dict) else {}
+        merged["attribution"] = {**existing, **patch["attribution"]}
 
     try:
         client.table("orders").update({"metadata": merged}).eq(

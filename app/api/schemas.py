@@ -153,6 +153,18 @@ class GiftCheckoutDetails(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class CheckoutAttribution(BaseModel):
+    utm_source: Optional[str] = Field(None, alias="utmSource", max_length=120)
+    utm_medium: Optional[str] = Field(None, alias="utmMedium", max_length=120)
+    utm_campaign: Optional[str] = Field(None, alias="utmCampaign", max_length=120)
+    utm_content: Optional[str] = Field(None, alias="utmContent", max_length=120)
+    utm_term: Optional[str] = Field(None, alias="utmTerm", max_length=120)
+    landing_path: Optional[str] = Field(None, alias="landingPath", max_length=240)
+    referrer: Optional[str] = Field(None, max_length=240)
+
+    model_config = {"populate_by_name": True}
+
+
 class CheckoutSessionRequest(BaseModel):
     country: str
     price: float
@@ -163,6 +175,7 @@ class CheckoutSessionRequest(BaseModel):
     package_id: Optional[str] = Field(None, alias="packageId")
     promo_code: Optional[str] = Field(None, alias="promoCode")
     affiliate_ref: Optional[str] = Field(None, alias="affiliateRef")
+    attribution: Optional[CheckoutAttribution] = None
     wants_topup: bool = Field(False, alias="wantsTopUp")
     is_gift: bool = Field(False, alias="isGift")
     gift: Optional[GiftCheckoutDetails] = None
@@ -276,6 +289,28 @@ class CronRunResponse(BaseModel):
     auto_refunds: Optional[dict] = Field(None, serialization_alias="autoRefunds")
     affiliate_payouts: Optional[dict] = Field(None, serialization_alias="affiliatePayouts")
     message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class DailyReportResponse(BaseModel):
+    success: bool
+    sent: int = 0
+    skipped: Optional[str] = None
+    error: Optional[str] = None
+    subject: Optional[str] = None
+    ny_date: Optional[str] = Field(None, serialization_alias="nyDate")
+    recipients: Optional[list[str]] = None
+    errors: Optional[list[str]] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class AdminReportsResponse(BaseModel):
+    success: bool
+    daily: Optional[dict] = None
+    weekly: Optional[dict] = None
+    monthly: Optional[dict] = None
 
     model_config = {"populate_by_name": True}
 

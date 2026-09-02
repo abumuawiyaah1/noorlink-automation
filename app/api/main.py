@@ -53,6 +53,8 @@ from .schemas import (
     ContactFormRequest,
     ContactFormResponse,
     CronRunResponse,
+    DailyReportResponse,
+    AdminReportsResponse,
     DeviceCheckRequest,
     DeviceCheckResponse,
     EmailDiagnosticsResponse,
@@ -172,6 +174,15 @@ def _prepare_checkout_pricing(body: CheckoutSessionRequest):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return catalog_price, pricing
+
+
+def _checkout_attribution_metadata(body: CheckoutSessionRequest) -> Optional[dict]:
+    from app.services.order_attribution import clean_attribution_payload
+
+    if not body.attribution:
+        return None
+    raw = body.attribution.model_dump(by_alias=False, exclude_none=True)
+    return clean_attribution_payload(raw)
 
 
 def _validate_gift_checkout(body: CheckoutSessionRequest) -> None:
@@ -431,14 +442,7 @@ async def cron_run(authorization: Optional[str] = Header(None)):
         usage_sync = {"success": False, "error": str(exc)[:240]}
 
     monthly_summary = None
-    if datetime.now(timezone.utc).day == 1:
-        try:
-            from app.services.admin_monthly_summary import send_monthly_summary_email
-
-            monthly_summary = send_monthly_summary_email(days=30)
-        except Exception as exc:
-            logger.warning("Monthly summary email failed during cron: %s", exc)
-            monthly_summary = {"sent": 0, "error": str(exc)[:240]}
+    # Monthly admin brief sends on the 1st at 6:00 New York via /api/cron/admin-reports.
 
     log_retention = None
     try:
@@ -479,6 +483,71 @@ async def cron_run(authorization: Optional[str] = Header(None)):
         auto_refunds=auto_refunds,
         affiliate_payouts=affiliate_payouts,
         message="Cron tasks completed.",
+    )
+
+
+@app.post("/api/cron/daily-report", response_model=DailyReportResponse)
+async def cron_daily_report(authorization: Optional[str] = Header(None)):
+    """Send the 6:00 New York admin daily brief. Requires CRON_SECRET."""
+    _require_cron_secret(authorization)
+    try:
+        from app.services.admin_daily_summary import send_daily_summary_email
+
+        result = send_daily_summary_email()
+    except Exception as exc:
+        logger.warning("Daily summary email failed: %s", exc)
+        return DailyReportResponse(success=False, sent=0, error=str(exc)[:240])
+
+    return DailyReportResponse(
+        success=bool(result.get("sent")) or bool(result.get("skipped")),
+        sent=int(result.get("sent") or 0),
+        skipped=result.get("skipped"),
+        error=result.get("error"),
+        subject=result.get("subject"),
+        ny_date=result.get("ny_date"),
+        recipients=result.get("recipients"),
+        errors=result.get("errors") or None,
+    )
+
+
+@app.post("/api/cron/admin-reports", response_model=AdminReportsResponse)
+async def cron_admin_reports(authorization: Optional[str] = Header(None)):
+    """Send scheduled daily, weekly (Monday), and monthly (1st) admin briefs."""
+    _require_cron_secret(authorization)
+
+    daily_result: dict = {"sent": 0}
+    weekly_result: dict = {"sent": 0}
+    monthly_result: dict = {"sent": 0}
+
+    try:
+        from app.services.admin_daily_summary import send_daily_summary_email
+
+        daily_result = send_daily_summary_email()
+    except Exception as exc:
+        logger.warning("Daily summary email failed: %s", exc)
+        daily_result = {"sent": 0, "error": str(exc)[:240]}
+
+    try:
+        from app.services.admin_weekly_summary import send_weekly_summary_email
+
+        weekly_result = send_weekly_summary_email()
+    except Exception as exc:
+        logger.warning("Weekly summary email failed: %s", exc)
+        weekly_result = {"sent": 0, "error": str(exc)[:240]}
+
+    try:
+        from app.services.admin_monthly_summary import send_monthly_summary_email
+
+        monthly_result = send_monthly_summary_email()
+    except Exception as exc:
+        logger.warning("Monthly summary email failed: %s", exc)
+        monthly_result = {"sent": 0, "error": str(exc)[:240]}
+
+    return AdminReportsResponse(
+        success=True,
+        daily=daily_result,
+        weekly=weekly_result,
+        monthly=monthly_result,
     )
 
 
@@ -1024,6 +1093,7 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
         if pricing.affiliate
         else None
     )
+    attribution_meta = _checkout_attribution_metadata(body)
 
     try:
         created = db.create_order(
@@ -1039,6 +1109,7 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
             promo_subtotal_cents=pricing.subtotal_cents if promo else None,
             total_discount_cents=pricing.discount_cents,
             affiliate_metadata=affiliate_meta,
+            attribution_metadata=attribution_meta,
             wants_topup=bool(body.wants_topup),
         )
     except db.ManagedPackagePriceMismatchError as exc:
@@ -1107,6 +1178,7 @@ async def checkout_session(body: CheckoutSessionRequest):
         else None
     )
     gift_meta = _build_gift_metadata(body)
+    attribution_meta = None if body.is_gift else _checkout_attribution_metadata(body)
 
     try:
         created = db.create_order(
@@ -1122,6 +1194,7 @@ async def checkout_session(body: CheckoutSessionRequest):
             promo_subtotal_cents=pricing.subtotal_cents if promo and not body.is_gift else None,
             total_discount_cents=pricing.discount_cents if not body.is_gift else 0,
             affiliate_metadata=affiliate_meta,
+            attribution_metadata=attribution_meta,
             gift_metadata=gift_meta,
             wants_topup=bool(body.wants_topup),
         )
@@ -1474,6 +1547,14 @@ async def stripe_webhook(
                 "order_number": row.get("order_number") or order_number,
             }
         )
+
+    resolved_order_number = str(order_number or (row or {}).get("order_number") or "")
+    customer_patch = session_data.get("customer_patch") if isinstance(session_data, dict) else None
+    if resolved_order_number and isinstance(customer_patch, dict) and customer_patch:
+        try:
+            db.merge_order_metadata(resolved_order_number, customer_patch)
+        except db.SupabaseRepositoryError as exc:
+            logger.warning("Stripe customer metadata merge failed for %s: %s", resolved_order_number, exc)
 
     try:
         process_paid_order(

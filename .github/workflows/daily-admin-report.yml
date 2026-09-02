@@ -1,0 +1,23 @@
+name: Daily admin report
+
+on:
+  schedule:
+    # 10:00 and 11:00 UTC covers 6:00 America/New_York in EDT and EST.
+    - cron: "0 10,11 * * *"
+  workflow_dispatch:
+
+jobs:
+  send-admin-reports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send NoorLink admin reports
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET not set — skipping"
+            exit 0
+          fi
+          curl -fsS -X POST "https://api.noorlink.co/api/cron/admin-reports" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Content-Type: application/json"

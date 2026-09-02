@@ -58,9 +58,17 @@
         <a class="btn btn-outline-primary btn-sm me-2 mb-2" href="{{ url_for('admin:finance-export-orders') }}?days={{ days }}">Export orders CSV</a>
         <a class="btn btn-outline-primary btn-sm me-2 mb-2" href="{{ url_for('admin:finance-export-commissions') }}">Export commissions CSV</a>
         <a class="btn btn-outline-secondary btn-sm mb-2" href="{{ url_for('admin:refund-order') }}">Refund an order</a>
+        <form method="post" class="mt-2 d-flex flex-wrap gap-2">
+          <input type="hidden" name="action" value="send_daily" />
+          <button type="submit" class="btn btn-sm btn-primary">Email daily brief now</button>
+        </form>
+        <form method="post" class="mt-2 d-flex flex-wrap gap-2">
+          <input type="hidden" name="action" value="send_weekly" />
+          <button type="submit" class="btn btn-sm btn-outline-primary">Email weekly scorecard now</button>
+        </form>
         <form method="post" class="mt-2">
-          <input type="hidden" name="action" value="send_summary" />
-          <button type="submit" class="btn btn-sm btn-primary">Email monthly summary now</button>
+          <input type="hidden" name="action" value="send_monthly" />
+          <button type="submit" class="btn btn-sm btn-outline-primary">Email monthly review now</button>
         </form>
       </div>
     </div>
