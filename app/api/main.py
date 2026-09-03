@@ -543,11 +543,21 @@ async def cron_admin_reports(authorization: Optional[str] = Header(None)):
         logger.warning("Monthly summary email failed: %s", exc)
         monthly_result = {"sent": 0, "error": str(exc)[:240]}
 
+    device_catalog = None
+    try:
+        from app.services.device_catalog_monitor import run_device_catalog_monitor
+
+        device_catalog = run_device_catalog_monitor()
+    except Exception as exc:
+        logger.warning("Device catalog monitor failed: %s", exc)
+        device_catalog = {"sent": 0, "error": str(exc)[:240]}
+
     return AdminReportsResponse(
         success=True,
         daily=daily_result,
         weekly=weekly_result,
         monthly=monthly_result,
+        device_catalog=device_catalog,
     )
 
 
@@ -733,6 +743,13 @@ async def device_check_get(
     device_name: str = Query(..., alias="deviceName", min_length=3),
 ):
     compatible, matched = check_device(device_name)
+    if not compatible:
+        try:
+            from app.services.device_catalog_monitor import record_device_check_miss
+
+            record_device_check_miss(device_name, source="api")
+        except Exception:
+            logger.debug("Device check miss logging failed", exc_info=True)
     return DeviceCheckResponse(
         compatible=compatible,
         device_name=device_name,
@@ -748,6 +765,13 @@ async def device_check_get(
 @app.post("/api/device-check", response_model=DeviceCheckResponse)
 async def device_check_post(body: DeviceCheckRequest):
     compatible, matched = check_device(body.device_name)
+    if not compatible:
+        try:
+            from app.services.device_catalog_monitor import record_device_check_miss
+
+            record_device_check_miss(body.device_name, source="api")
+        except Exception:
+            logger.debug("Device check miss logging failed", exc_info=True)
     return DeviceCheckResponse(
         compatible=compatible,
         device_name=body.device_name,

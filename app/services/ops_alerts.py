@@ -326,6 +326,27 @@ def notify_staff_governance(
             logger.error("Slack staff governance alert failed: %s", exc)
 
 
+def notify_device_catalog_review(*, subject: str, html_body: str, text_body: Optional[str] = None) -> None:
+    """Slack alert for device catalog drift — email goes to admin report recipients separately."""
+    settings = get_settings()
+    slack_url = (settings.slack_webhook_url or "").strip()
+    if not slack_url:
+        return
+    try:
+        payload = {
+            "text": subject,
+            "blocks": [
+                {"type": "header", "text": {"type": "plain_text", "text": "eSIM device catalog review"}},
+                {"type": "section", "text": {"type": "mrkdwn", "text": _escape(text_body or subject)}},
+            ],
+        }
+        with httpx.Client(timeout=10.0) as client:
+            response = client.post(slack_url, json=payload)
+            response.raise_for_status()
+    except Exception as exc:
+        logger.error("Slack device catalog alert failed: %s", exc)
+
+
 def notify_affiliate_payout_request(
     *,
     code: str,

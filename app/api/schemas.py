@@ -311,6 +311,7 @@ class AdminReportsResponse(BaseModel):
     daily: Optional[dict] = None
     weekly: Optional[dict] = None
     monthly: Optional[dict] = None
+    device_catalog: Optional[dict] = Field(None, serialization_alias="deviceCatalog")
 
     model_config = {"populate_by_name": True}
 
@@ -531,6 +532,16 @@ class DeviceBrandItem(BaseModel):
 class CompatibleDevicesResponse(BaseModel):
     success: bool
     brands: list[DeviceBrandItem]
+
+
+class DeviceCheckMissRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=120)
+    brand_hint: Optional[str] = Field(default=None, max_length=40)
+
+
+class DeviceCheckMissResponse(BaseModel):
+    success: bool
+    recorded: bool
 
 
 PricingStrategy = Literal["MANUAL", "AUTOMATED"]

@@ -84,6 +84,15 @@ def _count_open_unassigned_tickets() -> int:
         ) or 0
 
 
+def _count_device_catalog_review() -> int:
+    try:
+        from app.services.device_catalog_monitor import device_catalog_notification_count
+
+        return device_catalog_notification_count()
+    except Exception:
+        return 0
+
+
 def notifications_for_role(role: str) -> List[AdminNotification]:
     summary = get_operations_summary()
     items: List[AdminNotification] = []
@@ -187,6 +196,18 @@ def notifications_for_role(role: str) -> List[AdminNotification]:
                 roles=(ROLE_ADMIN,),
             )
         )
+
+    add(
+        AdminNotification(
+            key="device-catalog",
+            title="eSIM device catalog needs review",
+            detail="New models in the reference list or repeated failed device checks — update devices.py.",
+            count=_count_device_catalog_review(),
+            severity="warning",
+            link_path="/admin/system-diagnostics",
+            roles=(ROLE_ADMIN,),
+        )
+    )
 
     severity_order = {"urgent": 0, "warning": 1, "info": 2}
     items.sort(key=lambda n: (severity_order.get(n.severity, 9), -n.count))
