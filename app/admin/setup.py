@@ -40,6 +40,7 @@ from app.admin.views.promo_wizard import PromoWizardView
 from app.admin.views.refund_wizard import RefundWizardView
 from app.admin.views.social_media_hub import SocialMediaHubView
 from app.admin.views.staff_wizards_hub import StaffWizardsHubView
+from app.admin.views.staff_user_wizard import StaffUserWizardView
 from app.admin.views.suspended_orders import SuspendedOrdersView
 from app.admin.views.system_diagnostics import ProviderCatalogBrowserView, SystemDiagnosticsView
 from app.admin.views.support import SupportTicketAdmin
