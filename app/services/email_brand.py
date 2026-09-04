@@ -88,6 +88,90 @@ def cta_button(*, href: str, label: str, secondary: bool = False) -> str:
     """
 
 
+_PILGRIMAGE_ORDER_TOKENS = (
+    "umrah",
+    "hajj",
+    "saudi",
+    "pilgrim",
+    "makkah",
+    "mecca",
+    "madinah",
+    "medina",
+    "haramayn",
+    "haramain",
+)
+
+
+def is_pilgrimage_order(*, country: str = "", package_name: str = "") -> bool:
+    """True for Saudi / Umrah / Hajj / multi-stop pilgrimage brands."""
+    haystack = f"{country} {package_name}".strip().lower()
+    if not haystack:
+        return False
+    return any(token in haystack for token in _PILGRIMAGE_ORDER_TOKENS)
+
+
+# Hosted gift PDFs (Next.js public/guides/pilgrimage/)
+PILGRIM_GIFT_GUIDES = (
+    (
+        "Duas for the Journey",
+        "Arabic, transliteration, and meaning — save offline.",
+        "/guides/pilgrimage/noorlink-gift-duas-al-haramayn.pdf",
+    ),
+    (
+        "Makkah & Madinah Orientation",
+        "A simple calm overview of al-Haramayn.",
+        "/guides/pilgrimage/noorlink-gift-orientation-makkah-madinah.pdf",
+    ),
+    (
+        "Places of Meaning",
+        "Short ziyārah list with respectful etiquette.",
+        "/guides/pilgrimage/noorlink-gift-places-of-meaning.pdf",
+    ),
+)
+
+
+def pilgrimage_gift_guides_block(*, app_url: str) -> str:
+    """Light surface card — complimentary PDF links after pilgrimage purchase."""
+    base = app_url.rstrip("/")
+    rows = ""
+    for title, blurb, path in PILGRIM_GIFT_GUIDES:
+        href = f"{base}{path}"
+        rows += f"""
+        <tr>
+          <td style="padding:12px 0;border-bottom:1px solid #E5E7EB;">
+            <a href="{html.escape(href)}"
+               style="color:{PRIMARY};font-weight:700;text-decoration:none;font-size:15px;">
+              {html.escape(title)}
+            </a>
+            <br/>
+            <span style="color:{MUTED};font-size:13px;line-height:1.45;">{html.escape(blurb)}</span>
+          </td>
+          <td style="padding:12px 0;border-bottom:1px solid #E5E7EB;text-align:right;white-space:nowrap;vertical-align:middle;">
+            <a href="{html.escape(href)}"
+               style="display:inline-block;background:{SURFACE};color:{PRIMARY};padding:8px 14px;border-radius:999px;text-decoration:none;font-size:13px;font-weight:700;border:1.5px solid {PRIMARY};">
+              Download PDF
+            </a>
+          </td>
+        </tr>"""
+
+    return f"""
+      <div style="background:#F3F7F7;border-radius:12px;padding:20px 22px;margin:28px 0 8px;border:1px solid #E5E7EB;">
+        <p style="margin:0 0 6px;color:{MUTED};font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+          Complimentary gift with your purchase
+        </p>
+        <p style="margin:0 0 14px;color:{TEXT};font-size:16px;line-height:1.45;font-weight:700;">
+          Free al-Haramayn guides — save on Wi‑Fi before you fly
+        </p>
+        <p style="margin:0 0 12px;color:{MUTED};font-size:13px;line-height:1.5;">
+          Not required to use your eSIM. Open the PDFs offline on your phone.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          {rows}
+        </table>
+      </div>
+    """
+
+
 def review_request_block(
     *,
     app_url: str,

@@ -26,6 +26,25 @@ def test_gift_fulfillment_email_includes_message():
     assert "A gift for you" in html_body
     assert "Yusuf" in html_body
     assert "Install before you fly" in html_body
+    assert "al-Haramayn guides" not in html_body
+
+
+def test_pilgrimage_fulfillment_email_includes_guide_links():
+    html_body = build_fulfillment_email_html(
+        order_number="NL-UMRAH1",
+        country="Saudi Arabia",
+        package_name="Connected Pilgrim 10GB",
+        flag_emoji="🇸🇦",
+        qr_code_url="https://example.com/qr.png",
+        activation_code="ABC123",
+        travel_guide={"highlights": [], "itinerary": [], "maps": []},
+        app_url="https://noorlink.co",
+    )
+    assert "Complimentary gift with your purchase" in html_body
+    assert "al-Haramayn guides" in html_body
+    assert "noorlink-gift-duas-al-haramayn.pdf" in html_body
+    assert "noorlink-gift-orientation-makkah-madinah.pdf" in html_body
+    assert "noorlink-gift-places-of-meaning.pdf" in html_body
 
 
 def test_send_gift_emails_build():

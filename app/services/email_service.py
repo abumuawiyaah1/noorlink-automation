@@ -18,6 +18,8 @@ from app.services.email_brand import (
     SURFACE,
     TEXT,
     cta_button,
+    is_pilgrimage_order,
+    pilgrimage_gift_guides_block,
     review_request_block,
     wrap_branded_email,
 )
@@ -392,6 +394,7 @@ def build_fulfillment_email_html(
         </td></tr>
       </table>
       {coverage_block}
+      {pilgrimage_gift_guides_block(app_url=app_url) if is_pilgrimage_order(country=country, package_name=package_name) else ""}
 
       <h2 style="margin:0 0 12px;color:{PRIMARY};font-size:18px;font-weight:700;border-bottom:3px solid {ACCENT};padding-bottom:8px;display:inline-block;">
         Your travel assistant

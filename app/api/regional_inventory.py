@@ -1352,6 +1352,20 @@ REGIONAL_ROUTE_TO_PRODUCT: Dict[str, str] = {
     "regional-asia-pacific": "regional-asia-pacific",
     "middle-east": "regional-middle-east",
     "regional-middle-east": "regional-middle-east",
+    # Pilgrimage multi-stop brands (same ME regional wholesale SKUs).
+    "saudi-turkey": "regional-middle-east",
+    "saudi-egypt": "regional-middle-east",
+    "saudi-morocco": "regional-middle-east",
+    "saudi-plus-turkey": "regional-middle-east",
+    "saudi-plus-egypt": "regional-middle-east",
+    "saudi-plus-morocco": "regional-middle-east",
+    "umrah-turkey": "regional-middle-east",
+    "umrah-egypt": "regional-middle-east",
+    "umrah-morocco": "regional-middle-east",
+    "hajj-turkey": "regional-middle-east",
+    "hajj-egypt": "regional-middle-east",
+    "hajj-morocco": "regional-middle-east",
+
     "caribbean": "regional-caribbean",
     "regional-caribbean": "regional-caribbean",
     "carribean": "regional-caribbean",
@@ -1385,6 +1399,20 @@ def resolve_regional_product_by_display_name(name: str) -> Optional[str]:
     normalized = name.strip().lower()
     if not normalized:
         return None
+    # Pilgrimage path brands → same Middle East regional catalog.
+    brand_aliases = {
+        "saudi + turkey": "regional-middle-east",
+        "saudi+turkey": "regional-middle-east",
+        "saudi turkey": "regional-middle-east",
+        "saudi + egypt": "regional-middle-east",
+        "saudi+egypt": "regional-middle-east",
+        "saudi egypt": "regional-middle-east",
+        "saudi + morocco": "regional-middle-east",
+        "saudi+morocco": "regional-middle-east",
+        "saudi morocco": "regional-middle-east",
+    }
+    if normalized in brand_aliases:
+        return brand_aliases[normalized]
     for product_id, product in REGIONAL_PRODUCTS.items():
         display = str(product["display_name"]).lower()
         if normalized == display or normalized.startswith(display):

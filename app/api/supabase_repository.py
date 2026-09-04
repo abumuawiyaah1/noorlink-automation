@@ -6,6 +6,7 @@ Requires SUPABASE_URL + SUPABASE_SERVICE_KEY in the environment.
 from __future__ import annotations
 
 import logging
+import re
 import secrets
 from datetime import date, datetime, timezone
 from functools import lru_cache
@@ -381,7 +382,10 @@ def _validate_managed_package_price(
     package: Optional[Dict[str, Any]],
     price_cents: int,
 ) -> None:
+    """Enforce catalog price only for managed (DB-priced) packages."""
     if not package:
+        return
+    if not package.get("is_managed"):
         return
     catalog_cents = package.get("price_cents")
     if catalog_cents is None:
@@ -1318,8 +1322,15 @@ def _normalize_country_id(country_id: str) -> str:
         "hajj": "saudi-arabia",
         "eu": "europe",
         "schengen": "europe",
+        "saudi-turkey": "saudi-turkey",
+        "saudi-egypt": "saudi-egypt",
+        "saudi-morocco": "saudi-morocco",
+        "saudi + turkey": "saudi-turkey",
+        "saudi + egypt": "saudi-egypt",
+        "saudi + morocco": "saudi-morocco",
     }
-    return aliases.get(raw, raw)
+    cleaned = re.sub(r"[^a-z0-9]+", "-", raw).strip("-")
+    return aliases.get(raw, aliases.get(cleaned, cleaned))
 
 
 def _parse_plan_price(row: Dict[str, Any]) -> float:
@@ -1447,6 +1458,10 @@ def get_plans_by_country(country_id: str) -> Dict[str, Any]:
     client = get_supabase_client()
     normalized = _normalize_country_id(country_id)
     regional_product_id = resolve_regional_product_slug(normalized)
+    if not regional_product_id:
+        regional_product_id = resolve_regional_product_by_display_name(country_id)
+    if not regional_product_id:
+        regional_product_id = resolve_regional_product_by_display_name(normalized)
 
     if regional_product_id:
         source_rows = build_regional_product_rows(regional_product_id)
