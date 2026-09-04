@@ -231,11 +231,28 @@ def build_fulfillment_email_html(
     activation_code: str,
     travel_guide: Dict[str, Any],
     app_url: str,
+    lpa_string: str = "",
+    ios_tap_link: str = "",
+    android_tap_link: str = "",
     gift_sender_name: Optional[str] = None,
     gift_recipient_name: Optional[str] = None,
     gift_message: Optional[str] = None,
 ) -> str:
+    from app.utils.qr_generator import build_install_artifacts
+
     flag = flag_emoji or ""
+    lpa = (lpa_string or "").strip()
+    ios_link = (ios_tap_link or "").strip()
+    android_link = (android_tap_link or "").strip()
+    branded_qr = (qr_code_url or "").strip()
+    if lpa:
+        artifacts = build_install_artifacts(lpa)
+        # Always prefer NoorLink-branded QR when we have the LPA
+        branded_qr = artifacts["qr_code_url"]
+        ios_link = ios_link or artifacts["ios_tap_link"]
+        android_link = android_link or artifacts["android_tap_link"]
+        if not (activation_code or "").strip():
+            activation_code = artifacts["activation_code"]
     gift_block = ""
     if gift_sender_name and gift_recipient_name:
         message_html = ""
@@ -319,6 +336,37 @@ def build_fulfillment_email_html(
         google_review_url=(settings.google_review_url or "").strip() or None,
     )
 
+    tap_buttons = ""
+    if ios_link or android_link:
+        ios_btn = (
+            cta_button(href=ios_link, label="Install on iPhone")
+            if ios_link
+            else ""
+        )
+        android_btn = (
+            cta_button(href=android_link, label="Install on Android", secondary=True)
+            if android_link
+            else ""
+        )
+        tap_buttons = f"""
+          <p style="margin:20px 0 8px;color:{MUTED};font-size:13px;line-height:1.45;">
+            Can’t scan? Open this email on your phone and tap:
+          </p>
+          <p style="margin:0 0 8px;">{ios_btn}</p>
+          <p style="margin:0;">{android_btn}</p>
+        """
+
+    lpa_block = ""
+    if lpa:
+        lpa_block = f"""
+          <p style="margin:18px 0 6px;color:{MUTED};font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+            Or enter manually
+          </p>
+          <p style="margin:0;padding:12px 14px;background:{SURFACE};border:1px solid #E5E7EB;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:{PRIMARY};word-break:break-all;line-height:1.45;text-align:left;">
+            {html.escape(lpa)}
+          </p>
+        """
+
     body = f"""
       {gift_block}
       <p style="margin:0 0 20px;">
@@ -327,15 +375,20 @@ def build_fulfillment_email_html(
       </p>
       {regional_intro}
 
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:{BG};border-radius:12px;margin-bottom:28px;border:1px solid #E5E7EB;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:{SURFACE};border-radius:12px;margin-bottom:28px;border:1px solid #E5E7EB;">
         <tr><td style="padding:24px;text-align:center;">
           <p style="margin:0 0 12px;color:{PRIMARY};font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
             Scan to install
           </p>
-          <img src="{html.escape(qr_code_url)}" alt="eSIM QR Code" width="200" height="200" style="border-radius:8px;border:3px solid {ACCENT};"/>
-          <p style="margin:16px 0 0;font-family:ui-monospace,Menlo,monospace;font-size:15px;color:{PRIMARY};letter-spacing:1px;">
+          <img src="{html.escape(branded_qr)}" alt="NoorLink eSIM QR Code" width="220" height="220" style="border-radius:12px;border:3px solid {ACCENT};background:{SURFACE};"/>
+          <p style="margin:14px 0 0;color:{MUTED};font-size:13px;">
+            Matching ID
+          </p>
+          <p style="margin:4px 0 0;font-family:ui-monospace,Menlo,monospace;font-size:15px;color:{PRIMARY};letter-spacing:1px;">
             {html.escape(activation_code)}
           </p>
+          {tap_buttons}
+          {lpa_block}
         </td></tr>
       </table>
       {coverage_block}

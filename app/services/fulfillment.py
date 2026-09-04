@@ -178,6 +178,8 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
         "fulfillment": {
             "provider": esim.get("provider"),
             "lpa_string": esim.get("lpa_string"),
+            "ios_tap_link": esim.get("ios_tap_link"),
+            "android_tap_link": esim.get("android_tap_link"),
             "travel_assistant_included": True,
             "iccid": esim.get("iccid"),
             "provider_order_id": esim.get("provider_order_id"),
@@ -241,6 +243,9 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
         activation_code=esim["activation_code"],
         travel_guide=travel_guide,
         app_url=settings.app_url,
+        lpa_string=str(esim.get("lpa_string") or ""),
+        ios_tap_link=str(esim.get("ios_tap_link") or ""),
+        android_tap_link=str(esim.get("android_tap_link") or ""),
         gift_sender_name=str(gift.get("sender_name") or "A friend") if is_gift else None,
         gift_recipient_name=str(gift.get("recipient_name") or "") if is_gift else None,
         gift_message=str(gift.get("message") or "") if is_gift else None,

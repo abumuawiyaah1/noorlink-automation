@@ -4,14 +4,16 @@ eSIM provisioning adapter.
 Providers:
   - mock (default / development)
   - citrus (Citrus Mobile reseller API)
-  - esimaccess (eSIM Access / Redtea — Saudi Phase A)
-  - telna (Telna Connect Flex)
+  - esimaccess (eSIM Access / Redtea — Saudi fixed GB)
+  - telna (Telna Connect Flex — Caribbean + non-cutover regionals)
+  - zesimo (Zesimo reseller — 24-SKU winner cutover)
+  - weconnect (WeConnect / Droam Platform API — breakage PAYG)
   - simbase (reserved; not wired for auto-provision yet)
 
 Routing:
   1. plan_fulfillment_map (or static SA seeds) when matched
   2. else global ESIM_PROVIDER
-  Saudi enforcement: must map to esimaccess when ESIM_ACCESS_ENFORCE_SAUDI=true
+  Saudi enforcement: fixed GB → esimaccess; unlimited 7d/10d may use zesimo
 """
 
 from __future__ import annotations
@@ -37,17 +39,41 @@ MOCK_SMDP_HOST = "smdp.noorlink-demo.example"
 
 
 def _activation_code_from_lpa(lpa_string: str) -> str:
-    parts = (lpa_string or "").split("$")
-    if len(parts) >= 3 and parts[-1].strip():
-        return parts[-1].strip()
-    return lpa_string.strip()
+    from app.utils.qr_generator import matching_id_from_lpa
+
+    return matching_id_from_lpa(lpa_string)
 
 
 def _smdp_from_lpa(lpa_string: str) -> str:
-    parts = (lpa_string or "").split("$")
-    if len(parts) >= 2:
-        return parts[1].strip()
-    return ""
+    from app.utils.qr_generator import smdp_from_lpa
+
+    return smdp_from_lpa(lpa_string)
+
+
+def _with_branded_install(result: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Replace provider QR chrome with NoorLink-branded QR + one-tap install links.
+    Keeps the same LPA payload so the eSIM still installs.
+    """
+    from app.utils.qr_generator import build_install_artifacts
+
+    lpa = str(result.get("lpa_string") or "").strip()
+    if not lpa:
+        return result
+
+    settings = get_settings()
+    logo = (settings.email_logo_url or "").strip() or None
+    artifacts = build_install_artifacts(lpa, logo_url=logo)
+    enriched = dict(result)
+    enriched["lpa_string"] = artifacts["lpa_string"]
+    enriched["qr_code_url"] = artifacts["qr_code_url"]
+    enriched["ios_tap_link"] = artifacts["ios_tap_link"]
+    enriched["android_tap_link"] = artifacts["android_tap_link"]
+    if not str(enriched.get("activation_code") or "").strip():
+        enriched["activation_code"] = artifacts["activation_code"]
+    if not str(enriched.get("smdp_address") or "").strip():
+        enriched["smdp_address"] = artifacts["smdp_address"]
+    return enriched
 
 
 def _run_async(coro):
@@ -382,6 +408,194 @@ def _telna_provision(
     return _run_async(_telna_provision_async(order_row, target))
 
 
+async def _weconnect_provision_async(
+    order_row: Dict[str, Any],
+    target: FulfillmentTarget,
+) -> Dict[str, Any]:
+    """
+    Purchase a store Prepaid/Daypass eSIM via WeConnect wallet, then read LPA.
+
+    target.provider_sku must be the WeConnect plan UUID.
+    """
+    from app.services.weconnect import (
+        WeConnectClient,
+        extract_iccid,
+        extract_lpa,
+        page_items,
+    )
+
+    order_number = str(order_row["order_number"])
+    plan_uuid = (target.provider_sku or target.provider_slug or "").strip()
+    if not plan_uuid:
+        raise RuntimeError("WeConnect map missing provider_sku (plan UUID)")
+
+    async with WeConnectClient() as client:
+        existing = await client.list_sims(page=1, page_size=100)
+        known = {
+            iccid
+            for row in page_items(existing, "sim_cards", "sims")
+            if (iccid := extract_iccid(row))
+        }
+
+        order_payload = await client.purchase_esim_from_wallet(plan_uuid)
+        sim = await client.wait_for_purchased_esim(
+            known_iccids=known,
+            timeout_seconds=120.0,
+            poll_interval=2.0,
+        )
+
+        if not extract_lpa(sim):
+            iccid = extract_iccid(sim)
+            if iccid:
+                try:
+                    await client.activate_sim(iccid)
+                except Exception as exc:
+                    logger.warning(
+                        "WeConnect activate_sim failed order=%s iccid=%s: %s",
+                        order_number,
+                        iccid,
+                        exc,
+                    )
+                refreshed = await client.find_sim_by_iccid(iccid)
+                if refreshed:
+                    sim = refreshed
+
+        profile = client.normalize_profile(sim)
+
+    lpa_string = str(profile.get("lpa_string") or "").strip()
+    if not lpa_string:
+        raise RuntimeError("WeConnect purchase completed but eSIM LPA is missing")
+
+    qr_code = (
+        "https://api.qrserver.com/v1/create-qr-code/"
+        f"?size=320x320&data={quote(lpa_string)}"
+    )
+    activation_code = _activation_code_from_lpa(lpa_string)
+    smdp = _smdp_from_lpa(lpa_string)
+    iccid = str(profile.get("iccid") or "").strip()
+    provider_order_id = ""
+    if isinstance(order_payload, dict):
+        order_obj = (order_payload.get("data") or {}).get("order") or {}
+        if isinstance(order_obj, dict):
+            provider_order_id = str(order_obj.get("uuid") or "")
+
+    logger.info(
+        "Provisioned WeConnect eSIM for order %s iccid=%s plan=%s",
+        order_number,
+        iccid or "(none)",
+        plan_uuid,
+    )
+    return {
+        "activation_code": activation_code,
+        "qr_code_url": qr_code,
+        "lpa_string": lpa_string,
+        "provider": "weconnect",
+        "iccid": iccid,
+        "smdp_address": smdp,
+        "provider_order_id": provider_order_id,
+        "provider_sku": plan_uuid,
+        "catalog_key": target.catalog_key,
+        "raw": {"order": order_payload, "sim": sim},
+    }
+
+
+def _weconnect_provision(
+    order_row: Dict[str, Any], target: FulfillmentTarget
+) -> Dict[str, Any]:
+    return _run_async(_weconnect_provision_async(order_row, target))
+
+
+async def _zesimo_provision_async(
+    order_row: Dict[str, Any],
+    target: FulfillmentTarget,
+) -> Dict[str, Any]:
+    from app.services.zesimo import (
+        ZesimoClient,
+        ZesimoError,
+        first_esim_from_order_payload,
+    )
+
+    order_number = str(order_row["order_number"])
+    package_raw = (target.provider_sku or target.provider_slug or "").strip()
+    if not package_raw:
+        raise RuntimeError("Zesimo map missing provider_sku (package id)")
+    try:
+        package_id = int(package_raw)
+    except ValueError as exc:
+        raise RuntimeError(
+            f"Zesimo provider_sku must be numeric package id, got {package_raw!r}"
+        ) from exc
+
+    async with ZesimoClient() as client:
+        try:
+            payload = await client.place_order(
+                package_id=package_id,
+                quantity=1,
+                idempotency_key=order_number,
+            )
+        except ZesimoError:
+            raise
+
+        esim = first_esim_from_order_payload(payload)
+        lpa_string = str(esim.get("activation_code") or "").strip()
+        iccid = str(esim.get("iccid") or "").strip()
+        provider_order_id = ""
+        order_obj = payload.get("order") if isinstance(payload, dict) else None
+        if isinstance(order_obj, dict):
+            provider_order_id = str(order_obj.get("id") or "")
+
+        # Rare: activation_code still null — poll GET /orders/{id}
+        if (not lpa_string) and provider_order_id:
+            for _ in range(6):
+                await asyncio.sleep(1.5)
+                refreshed = await client.get_order(provider_order_id)
+                try:
+                    esim = first_esim_from_order_payload(refreshed)
+                except ZesimoError:
+                    continue
+                lpa_string = str(esim.get("activation_code") or "").strip()
+                iccid = str(esim.get("iccid") or iccid).strip()
+                if lpa_string:
+                    payload = refreshed
+                    break
+
+    if not lpa_string:
+        raise RuntimeError("Zesimo order missing activation_code / LPA")
+
+    qr_code = (
+        "https://api.qrserver.com/v1/create-qr-code/"
+        f"?size=320x320&data={quote(lpa_string)}"
+    )
+    activation_code = _activation_code_from_lpa(lpa_string)
+    smdp = _smdp_from_lpa(lpa_string)
+
+    logger.info(
+        "Provisioned Zesimo eSIM for order %s provider_order=%s iccid=%s sku=%s",
+        order_number,
+        provider_order_id or "(none)",
+        iccid or "(none)",
+        package_id,
+    )
+    return {
+        "activation_code": activation_code,
+        "qr_code_url": qr_code,
+        "lpa_string": lpa_string,
+        "provider": "zesimo",
+        "iccid": iccid,
+        "smdp_address": smdp,
+        "provider_order_id": provider_order_id,
+        "provider_sku": str(package_id),
+        "catalog_key": target.catalog_key,
+        "raw": {"order": payload, "esim": esim},
+    }
+
+
+def _zesimo_provision(
+    order_row: Dict[str, Any], target: FulfillmentTarget
+) -> Dict[str, Any]:
+    return _run_async(_zesimo_provision_async(order_row, target))
+
+
 def resolve_provider(explicit: Optional[str] = None) -> str:
     settings = get_settings()
     provider = (explicit or settings.esim_provider or "mock").strip().lower()
@@ -396,6 +610,16 @@ def resolve_provider(explicit: Optional[str] = None) -> str:
     if provider == "telna" and not settings.telna_api_token.strip():
         logger.warning("ESIM_PROVIDER=telna but TELNA_API_TOKEN empty; using mock")
         return "mock"
+    if provider == "zesimo" and not settings.zesimo_api_key.strip():
+        logger.warning("ESIM_PROVIDER=zesimo but ZESIMO_API_KEY empty; using mock")
+        return "mock"
+    if provider == "weconnect" and (
+        not settings.weconnect_email.strip() or not settings.weconnect_password.strip()
+    ):
+        logger.warning(
+            "ESIM_PROVIDER=weconnect but WECONNECT_EMAIL/PASSWORD empty; using mock"
+        )
+        return "mock"
     if provider == "simbase" and not settings.simbase_api_key.strip():
         logger.warning("ESIM_PROVIDER=simbase but SIMBASE_API_KEY empty; using mock")
         return "mock"
@@ -408,28 +632,28 @@ def provision_esim(order_row: Dict[str, Any]) -> Dict[str, Any]:
     Uses virtual catalog map when present; otherwise global ESIM_PROVIDER.
     """
     # Idempotency: already has LPA/ICCID on the order row
-    existing_lpa = str(order_row.get("lpa_string") or "").strip()
+    from app.utils.qr_generator import resolve_lpa_from_order_row
+
+    existing_lpa = resolve_lpa_from_order_row(order_row)
     existing_qr = str(order_row.get("qr_code_url") or "").strip()
     if existing_lpa and (existing_qr or order_row.get("activation_code")):
         logger.info(
             "Order %s already has eSIM credentials; skipping re-provision",
             order_row.get("order_number"),
         )
-        return {
-            "activation_code": str(order_row.get("activation_code") or ""),
-            "qr_code_url": existing_qr
-            or (
-                "https://api.qrserver.com/v1/create-qr-code/"
-                f"?size=320x320&data={quote(existing_lpa)}"
-            ),
-            "lpa_string": existing_lpa,
-            "provider": (order_row.get("metadata") or {}).get("fulfillment", {}).get(
-                "provider"
-            )
-            or "existing",
-            "iccid": str(order_row.get("iccid") or ""),
-            "smdp_address": str(order_row.get("smdp_address") or ""),
-        }
+        return _with_branded_install(
+            {
+                "activation_code": str(order_row.get("activation_code") or ""),
+                "qr_code_url": existing_qr,
+                "lpa_string": existing_lpa,
+                "provider": (order_row.get("metadata") or {}).get("fulfillment", {}).get(
+                    "provider"
+                )
+                or "existing",
+                "iccid": str(order_row.get("iccid") or ""),
+                "smdp_address": str(order_row.get("smdp_address") or ""),
+            }
+        )
 
     target = resolve_fulfillment_target(order_row)
     try:
@@ -455,17 +679,31 @@ def provision_esim(order_row: Dict[str, Any]) -> Dict[str, Any]:
             raise FulfillmentMapError(
                 "esimaccess selected but no fulfillment map target on order"
             )
-        return _esimaccess_provision(order_row, target)
+        return _with_branded_install(_esimaccess_provision(order_row, target))
     if provider == "telna":
         if target is None:
             raise FulfillmentMapError(
                 "telna selected but no fulfillment map target on order"
             )
-        return _telna_provision(order_row, target)
+        return _with_branded_install(_telna_provision(order_row, target))
+    if provider == "zesimo":
+        if target is None:
+            raise FulfillmentMapError(
+                "zesimo selected but no fulfillment map target on order "
+                "(provider_sku must be Zesimo package id)"
+            )
+        return _with_branded_install(_zesimo_provision(order_row, target))
+    if provider == "weconnect":
+        if target is None:
+            raise FulfillmentMapError(
+                "weconnect selected but no fulfillment map target on order "
+                "(provider_sku must be WeConnect plan UUID)"
+            )
+        return _with_branded_install(_weconnect_provision(order_row, target))
     if provider == "citrus":
-        return _citrus_provision(order_row)
+        return _with_branded_install(_citrus_provision(order_row))
     if provider == "simbase":
         raise NotImplementedError(
             "Simbase auto-provision is not wired yet; set ESIM_PROVIDER=citrus or mock"
         )
-    return _mock_provision(order_row)
+    return _with_branded_install(_mock_provision(order_row))

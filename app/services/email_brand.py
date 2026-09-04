@@ -72,7 +72,14 @@ def brand_header_lockup(*, href: str, logo_url: Optional[str] = None) -> str:
     """
 
 
-def cta_button(*, href: str, label: str) -> str:
+def cta_button(*, href: str, label: str, secondary: bool = False) -> str:
+    if secondary:
+        return f"""
+      <a href="{html.escape(href)}"
+         style="display:inline-block;background:{SURFACE};color:{PRIMARY};padding:14px 28px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;border:2px solid {PRIMARY};">
+        {html.escape(label)}
+      </a>
+    """
     return f"""
       <a href="{html.escape(href)}"
          style="display:inline-block;background:{ACCENT};color:{PRIMARY_DARK};padding:14px 28px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;">

@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     citrus_api_base_url: str = "https://citrusmobile.com/api/v2/reseller"
     # HMAC signing secret from POST /webhooks (whsec_...) — verify X-Citrus-Signature
     citrus_webhook_secret: str = ""
-    # mock | citrus | esimaccess | telna | simbase  (default when no plan_fulfillment_map hit)
+    # mock | citrus | esimaccess | telna | zesimo | simbase  (default when no map hit)
     esim_provider: str = "mock"
 
     # —— eSIM Access (Redtea) ——
@@ -79,6 +79,19 @@ class Settings(BaseSettings):
     telna_diagnostic_base_url: str = "https://ppo-api.telna.com/v1/diagnostic"
     # Optional account id required by some Flex tenants on /products and work-orders
     telna_account_id: str = ""
+
+    # —— Zesimo Reseller API ——
+    # Portal → API Keys. Authorization: Bearer {token}
+    # Docs: https://zesimo.com/portal/docs
+    zesimo_api_key: str = ""
+    zesimo_api_base_url: str = "https://zesimo.com/api/v1"
+
+    # —— WeConnect / Droam Platform API (portal.noorlink.co) ——
+    # OAuth: POST {base}/oauth/v1/token with client_id=email, client_secret=password.
+    # Docs: https://api.droam.com/#907965c8-7d87-4b75-a4db-1d089aebd08d
+    weconnect_email: str = ""
+    weconnect_password: str = ""
+    weconnect_base_url: str = "https://portal.noorlink.co/rest/v3"
 
     # —— Resend (email delivery) ——
     # From address must use a domain verified in Resend (prefer noorlink.co).

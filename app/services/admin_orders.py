@@ -42,6 +42,13 @@ def resend_order_esim_email(order_row: Dict[str, Any]) -> str:
     if not isinstance(travel_guide, dict):
         travel_guide = {}
 
+    fulfillment = metadata.get("fulfillment") if isinstance(metadata.get("fulfillment"), dict) else {}
+    from app.utils.qr_generator import resolve_lpa_from_order_row
+
+    lpa_string = resolve_lpa_from_order_row(order_row)
+    ios_tap_link = str(fulfillment.get("ios_tap_link") or "")
+    android_tap_link = str(fulfillment.get("android_tap_link") or "")
+
     gift = metadata.get("gift")
     is_gift = isinstance(gift, dict) and bool(gift.get("is_gift"))
     recipient_email = (
@@ -72,6 +79,9 @@ def resend_order_esim_email(order_row: Dict[str, Any]) -> str:
         activation_code=activation_code,
         travel_guide=travel_guide,
         app_url=settings.app_url,
+        lpa_string=lpa_string,
+        ios_tap_link=ios_tap_link,
+        android_tap_link=android_tap_link,
         gift_sender_name=str(gift.get("sender_name") or "A friend") if is_gift else None,
         gift_recipient_name=str(gift.get("recipient_name") or "") if is_gift else None,
         gift_message=str(gift.get("message") or "") if is_gift else None,

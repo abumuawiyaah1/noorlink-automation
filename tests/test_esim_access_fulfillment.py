@@ -74,6 +74,22 @@ def test_resolve_static_sa_map(monkeypatch):
     assert target.catalog_key == "sa-10gb-30"
 
 
+def test_resolve_static_sa_umrah_unlimited_day_pass(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.fulfillment_map._fetch_db_maps",
+        lambda: [],
+    )
+    target = resolve_fulfillment_target(
+        {"country": "Saudi Arabia", "data_total_gb": 3},
+        package={"validity_days": 7},
+    )
+    assert target is not None
+    assert target.provider == "zesimo"
+    assert target.provider_sku == "10903"
+    assert target.provider_slug == "zesimo-sa-unlimited-7d"
+    assert target.catalog_key == "sa-unlimited-3gb-7d"
+
+
 def test_enforce_saudi_requires_access(monkeypatch):
     monkeypatch.setattr(
         "app.services.fulfillment_map._fetch_db_maps",

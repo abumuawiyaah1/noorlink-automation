@@ -186,6 +186,7 @@ def enrich_order_row(
             "data_total_gb": data_total_gb,
         },
     )
+    install_fields = _install_fields_from_row(row)
     order = base.model_copy(
         update={
             "validity_days": validity_days,
@@ -195,6 +196,7 @@ def enrich_order_row(
             "allowance_status": allowance_status,
             **gift_fields,
             **usage_fields,
+            **install_fields,
         }
     )
     extras = {
@@ -205,8 +207,26 @@ def enrich_order_row(
         "allowance_status": allowance_status,
         **gift_fields,
         **usage_fields,
+        **install_fields,
     }
     return extras, order
+
+
+def _install_fields_from_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Branded QR + one-tap links derived from stored LPA."""
+    from app.utils.qr_generator import build_install_artifacts, resolve_lpa_from_order_row
+
+    lpa = resolve_lpa_from_order_row(row)
+    if not lpa:
+        return {}
+    artifacts = build_install_artifacts(lpa)
+    return {
+        "lpa_string": artifacts["lpa_string"],
+        "qr_code_url": artifacts["qr_code_url"],
+        "ios_tap_link": artifacts["ios_tap_link"],
+        "android_tap_link": artifacts["android_tap_link"],
+        "activation_code": row.get("activation_code") or artifacts["activation_code"],
+    }
 
 
 def _usage_fields_from_row(row: Dict[str, Any], extras: Dict[str, Any]) -> Dict[str, Any]:

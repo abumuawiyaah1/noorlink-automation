@@ -120,6 +120,9 @@ class Order(BaseModel):
     activation_code: Optional[str] = Field(
         None, serialization_alias="activationCode"
     )
+    lpa_string: Optional[str] = Field(None, serialization_alias="lpaString")
+    ios_tap_link: Optional[str] = Field(None, serialization_alias="iosTapLink")
+    android_tap_link: Optional[str] = Field(None, serialization_alias="androidTapLink")
     data_used_gb: Optional[float] = Field(None, serialization_alias="dataUsedGb")
     data_total_gb: Optional[float] = Field(None, serialization_alias="dataTotalGb")
     validity_days: Optional[int] = Field(None, serialization_alias="validityDays")

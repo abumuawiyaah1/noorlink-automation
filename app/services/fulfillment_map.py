@@ -71,6 +71,45 @@ STATIC_SA_MAP: List[Dict[str, Any]] = [
         "period_num": None,
         "is_active": True,
     },
+    {
+        "catalog_key": "sa-unlimited-3gb-7d",
+        "country_code": "SA",
+        "country_slug": "saudi-arabia",
+        "data_gb": 3.0,
+        "validity_days": 7,
+        "provider": "zesimo",
+        "provider_sku": "10903",
+        "provider_slug": "zesimo-sa-unlimited-7d",
+        "wholesale_cents": 2142,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "sa-unlimited-3gb-10d",
+        "country_code": "SA",
+        "country_slug": "saudi-arabia",
+        "data_gb": 3.0,
+        "validity_days": 10,
+        "provider": "zesimo",
+        "provider_sku": "10905",
+        "provider_slug": "zesimo-sa-unlimited-10d",
+        "wholesale_cents": 2786,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "sa-unlimited-3gb-14d",
+        "country_code": "SA",
+        "country_slug": "saudi-arabia",
+        "data_gb": 3.0,
+        "validity_days": 14,
+        "provider": "esimaccess",
+        "provider_sku": "PVEXXS543",
+        "provider_slug": "SA_3_Daily_1Mbps",
+        "wholesale_cents": 6804,
+        "period_num": 14,
+        "is_active": True,
+    },
 ]
 
 
@@ -468,7 +507,8 @@ def enforce_saudi_access_policy(
     target: Optional[FulfillmentTarget],
 ) -> None:
     """
-    Restriction: Saudi / Umrah must fulfill via eSIM Access when enforcement is on.
+    Restriction: Saudi / Umrah must fulfill via eSIM Access when enforcement is on,
+    except Zesimo-mapped SA unlimited 7d/10d catalog keys.
     """
     settings = get_settings()
     if not settings.esim_access_enforce_saudi:
@@ -479,8 +519,17 @@ def enforce_saudi_access_policy(
     if target is None:
         raise FulfillmentMapError(
             "Saudi Arabia orders require a plan_fulfillment_map entry "
-            "(sa-5gb-30 / sa-10gb-30 / sa-20gb-30 / sa-50gb-30)."
+            "(sa-5gb-30 / sa-10gb-30 / sa-20gb-30 / sa-50gb-30 / sa-unlimited-*)."
         )
+
+    catalog_key = (target.catalog_key or "").strip().lower()
+    if target.provider == "zesimo" and catalog_key.startswith("sa-unlimited"):
+        if not settings.zesimo_api_key.strip():
+            raise FulfillmentMapError(
+                "Saudi unlimited Zesimo fulfillment requires ZESIMO_API_KEY"
+            )
+        return
+
     if target.provider != "esimaccess":
         raise FulfillmentMapError(
             f"Saudi Arabia must use esimaccess, got provider={target.provider}"

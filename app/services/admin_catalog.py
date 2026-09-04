@@ -17,7 +17,9 @@ KNOWN_FULFILLMENT_PROVIDERS: Set[str] = {
     "citrus",
     "esimaccess",
     "telna",
+    "zesimo",
     "simbase",
+    "weconnect",
     "mock",
 }
 
