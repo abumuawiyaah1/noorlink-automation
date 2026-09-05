@@ -90,6 +90,15 @@ ADMIN_TOOLS: Tuple[AdminTool, ...] = (
         badge="Marketing",
     ),
     AdminTool(
+        key="creator-outreach-hub",
+        title="Creator outreach",
+        summary="Creator databank, premade pitches, and branded partnership emails via Resend.",
+        icon="fa-solid fa-envelope-open-text",
+        endpoint="admin:creator-outreach-hub",
+        roles=PROMO_MANAGER_ROLES,
+        badge="Marketing",
+    ),
+    AdminTool(
         key="catalog-overview",
         title="Catalog overview",
         summary="Compare checkout plans vs browse-page plans and spot mismatches.",

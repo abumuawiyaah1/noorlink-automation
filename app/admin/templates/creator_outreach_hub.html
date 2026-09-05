@@ -1,0 +1,222 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<div class="container-fluid">
+  <h1 class="h3 mb-2">Creator outreach</h1>
+  <p class="text-muted mb-3">
+    Databank for DIY Umrah / Muslim travel creators — handles, links, premade messages,
+    and branded NoorLink emails (uses the same Resend + brand chrome as order mail).
+  </p>
+
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="nl-wizard-panel">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+          <h2 class="h6 mb-0">Creators</h2>
+          <a class="btn btn-sm btn-primary" href="{{ url_for('admin:creator-outreach-hub') }}?new=1">Add</a>
+        </div>
+        <form method="get" class="row g-2 mb-3">
+          <div class="col-12">
+            <input class="form-control form-control-sm" type="search" name="q" value="{{ query }}" placeholder="Search name, handle, email…" />
+          </div>
+          <div class="col-12">
+            <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+              <option value="">All statuses</option>
+              {% for code, label in statuses %}
+              <option value="{{ code }}" {% if filter_status == code %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Filter</button>
+          </div>
+        </form>
+
+        {% if contacts %}
+        <div class="list-group list-group-flush" style="max-height:65vh;overflow:auto;">
+          {% for contact in contacts %}
+          <a
+            href="{{ url_for('admin:creator-outreach-hub') }}?id={{ contact.id }}{% if filter_status %}&status={{ filter_status }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}"
+            class="list-group-item list-group-item-action {% if selected_id == contact.id and not is_new %}active{% endif %}"
+          >
+            <div class="fw-semibold">{{ contact.name }}</div>
+            <div class="small {% if selected_id == contact.id and not is_new %}opacity-75{% else %}text-muted{% endif %}">
+              {{ contact.handle or contact.email or 'No handle' }} · {{ contact.status_label }}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0">No creators yet. Click Add.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="nl-wizard-panel mb-3">
+        <h2 class="h6 mb-3">{% if is_new %}Add creator{% else %}Contact details{% endif %}</h2>
+
+        {% if not is_new and not selected %}
+        <p class="text-muted mb-0">Select a creator from the list, or add a new one.</p>
+        {% else %}
+        <form method="post">
+          <input type="hidden" name="action" value="{% if is_new %}create{% else %}update{% endif %}" />
+          {% if selected %}<input type="hidden" name="contact_id" value="{{ selected.id }}" />{% endif %}
+
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label" for="name">Name *</label>
+              <input class="form-control" id="name" name="name" required value="{{ selected.name if selected else '' }}" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="handle">Handle</label>
+              <input class="form-control" id="handle" name="handle" placeholder="@handle" value="{{ selected.handle if selected else '' }}" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="email">Email</label>
+              <input class="form-control" id="email" name="email" type="email" placeholder="creator@email.com" value="{{ selected.email if selected else '' }}" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="promo_code">Promo code</label>
+              <input class="form-control" id="promo_code" name="promo_code" placeholder="SAFFIYAH10" value="{{ selected.promo_code if selected else '' }}" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="platform">Platform</label>
+              <select class="form-select" id="platform" name="platform">
+                {% for code, label in platforms %}
+                <option value="{{ code }}" {% if (selected.platform if selected else 'instagram') == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="wave">Wave</label>
+              <select class="form-select" id="wave" name="wave">
+                {% for code, label in waves %}
+                <option value="{{ code }}" {% if (selected.wave if selected else 'search') == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="status">Status</label>
+              <select class="form-select" id="status" name="status">
+                {% for code, label in statuses %}
+                <option value="{{ code }}" {% if (selected.status if selected else 'to_contact') == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="profile_url">Profile / page link</label>
+              <input class="form-control" id="profile_url" name="profile_url" value="{{ selected.profile_url if selected else '' }}" />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="content_url">Best video / post link</label>
+              <input class="form-control" id="content_url" name="content_url" value="{{ selected.content_url if selected else '' }}" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="contacted_at">Contacted date</label>
+              <input class="form-control" id="contacted_at" name="contacted_at" type="date" value="{{ selected.contacted_at if selected else '' }}" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="replied_at">Replied date</label>
+              <input class="form-control" id="replied_at" name="replied_at" type="date" value="{{ selected.replied_at if selected else '' }}" />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="notes">Notes</label>
+              <textarea class="form-control" id="notes" name="notes" rows="2">{{ selected.notes if selected else '' }}</textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="message_sent">Last message / DM copy</label>
+              <textarea class="form-control" id="message_sent" name="message_sent" rows="4">{{ selected.message_sent if selected else '' }}</textarea>
+            </div>
+          </div>
+
+          {% if selected and selected.last_email_at %}
+          <p class="small text-muted mt-2 mb-0">
+            Last branded email: {{ selected.last_email_subject or '(no subject)' }} · {{ selected.last_email_at }}
+          </p>
+          {% endif %}
+
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <button type="submit" class="btn btn-primary">{% if is_new %}Add to databank{% else %}Save changes{% endif %}</button>
+            {% if selected and not is_new %}
+            <button
+              type="submit"
+              class="btn btn-outline-danger"
+              name="action"
+              value="delete"
+              formaction="{{ url_for('admin:creator-outreach-hub') }}"
+              onclick="return confirm('Delete this contact?');"
+            >Delete</button>
+            {% endif %}
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin:creator-outreach-hub') }}?new=1">New blank</a>
+          </div>
+        </form>
+        {% endif %}
+      </div>
+
+      {% if selected and not is_new %}
+      <div class="nl-wizard-panel">
+        <h2 class="h6 mb-2">Send branded email</h2>
+        <p class="small text-muted mb-3">
+          Pick a premade message, edit it, then send. Uses Resend + NoorLink email brand
+          (same as order emails on this backend).
+        </p>
+
+        <div class="row g-2 mb-3">
+          {% for template in templates %}
+          <div class="col-md-6">
+            <a
+              class="btn btn-sm w-100 {% if template_id == template.id %}btn-warning{% else %}btn-outline-secondary{% endif %} text-start"
+              href="{{ url_for('admin:creator-outreach-hub') }}?id={{ selected.id }}&template={{ template.id }}"
+            >
+              <strong class="d-block">{{ template.label }}</strong>
+              <span class="small">{{ template.description }}</span>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+
+        <form method="post">
+          <input type="hidden" name="action" value="send" />
+          <input type="hidden" name="contact_id" value="{{ selected.id }}" />
+          <input type="hidden" name="template_id" value="{{ template_id }}" />
+          {# Keep contact fields so send also saves latest edits #}
+          <input type="hidden" name="name" value="{{ selected.name }}" />
+          <input type="hidden" name="handle" value="{{ selected.handle }}" />
+          <input type="hidden" name="platform" value="{{ selected.platform }}" />
+          <input type="hidden" name="profile_url" value="{{ selected.profile_url }}" />
+          <input type="hidden" name="content_url" value="{{ selected.content_url }}" />
+          <input type="hidden" name="wave" value="{{ selected.wave }}" />
+          <input type="hidden" name="status" value="{{ selected.status }}" />
+          <input type="hidden" name="promo_code" value="{{ selected.promo_code }}" />
+          <input type="hidden" name="notes" value="{{ selected.notes }}" />
+          <input type="hidden" name="message_sent" value="{{ selected.message_sent }}" />
+          <input type="hidden" name="contacted_at" value="{{ selected.contacted_at }}" />
+          <input type="hidden" name="replied_at" value="{{ selected.replied_at }}" />
+
+          <div class="mb-2">
+            <label class="form-label" for="send_email">Send to</label>
+            <input class="form-control" id="send_email" name="email" type="email" required value="{{ selected.email }}" placeholder="creator@email.com" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="email_subject">Subject</label>
+            <input class="form-control" id="email_subject" name="email_subject" required value="{{ email_subject }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="email_body">Message body</label>
+            <textarea class="form-control" id="email_body" name="email_body" rows="10" required>{{ email_body }}</textarea>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">Send branded email</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('email_body').value)">Copy for DM</button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

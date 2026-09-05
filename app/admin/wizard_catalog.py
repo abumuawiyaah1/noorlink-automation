@@ -92,6 +92,16 @@ STAFF_WIZARDS: Tuple[StaffWizard, ...] = (
         badge="Marketing",
     ),
     StaffWizard(
+        key="creator-outreach-hub",
+        title="Creator outreach",
+        summary="Track DIY Umrah creators, premade pitches, and send branded NoorLink partnership emails.",
+        steps=("Add creator", "Pick template", "Send branded email", "Track replies"),
+        icon="fa-solid fa-envelope-open-text",
+        endpoint="admin:creator-outreach-hub",
+        roles=PROMO_MANAGER_ROLES,
+        badge="Marketing",
+    ),
+    StaffWizard(
         key="newsletter-admin",
         title="Newsletter subscribers",
         summary="View who's subscribed, export a list, or unsubscribe someone.",

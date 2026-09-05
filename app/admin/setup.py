@@ -39,6 +39,7 @@ from app.admin.views.order_insight import OrderInsightView
 from app.admin.views.promo_wizard import PromoWizardView
 from app.admin.views.refund_wizard import RefundWizardView
 from app.admin.views.social_media_hub import SocialMediaHubView
+from app.admin.views.creator_outreach_hub import CreatorOutreachHubView
 from app.admin.views.staff_wizards_hub import StaffWizardsHubView
 from app.admin.views.staff_user_wizard import StaffUserWizardView
 from app.admin.views.suspended_orders import SuspendedOrdersView
@@ -106,6 +107,7 @@ def mount_admin(app: FastAPI) -> Admin | None:
     admin.add_base_view(InsiderWizardView)
     admin.add_base_view(NewsletterAdminView)
     admin.add_base_view(SocialMediaHubView)
+    admin.add_base_view(CreatorOutreachHubView)
     admin.add_base_view(CatalogOverviewView)
     admin.add_base_view(ProviderCatalogBrowserView)
     admin.add_base_view(AffiliatePayoutWizardView)
