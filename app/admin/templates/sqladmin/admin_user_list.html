@@ -1,0 +1,15 @@
+{% extends "list.html" %}
+{% block content %}
+<div class="container-fluid mb-3 px-0">
+  <div class="alert mb-3" style="border:1px solid #e5e7eb;background:#F3F7F7;color:#334155;">
+    <strong style="color:#0F3D3E;">How staff permissions work</strong>
+    <ul class="mb-2 mt-2 small">
+      <li><strong>Add a new person</strong> — use <a href="{{ url_for('admin:staff-user') }}">Add staff</a> (this list has no “Create” button on purpose).</li>
+      <li><strong>Change permission</strong> — open a row → <strong>Edit</strong> → change <em>role</em> → Save.</li>
+      <li><strong>Remove access</strong> — Edit → turn off <em>Is active</em> → Save.</li>
+    </ul>
+    <a class="btn btn-sm btn-primary" href="{{ url_for('admin:staff-user') }}">Add staff member</a>
+  </div>
+</div>
+{{ super() }}
+{% endblock %}

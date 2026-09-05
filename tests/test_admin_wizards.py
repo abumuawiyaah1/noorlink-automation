@@ -18,6 +18,11 @@ def test_wizards_for_admin_sees_all():
     assert len(wizards_for_role("admin")) == len(STAFF_WIZARDS)
 
 
+def test_wizards_for_owner_sees_all():
+    assert len(wizards_for_role("owner")) == len(STAFF_WIZARDS)
+    assert "staff-user" in {w.key for w in wizards_for_role("owner")}
+
+
 def test_wizards_for_support_only_help():
     keys = {wizard.key for wizard in wizards_for_role("support")}
     assert keys == {"help-customer", "fulfill-order", "order-insight"}
@@ -25,12 +30,25 @@ def test_wizards_for_support_only_help():
 
 def test_wizards_for_marketing_promo_only():
     keys = {wizard.key for wizard in wizards_for_role("marketing")}
-    assert keys == {"new-promo", "insider-wizard", "newsletter-admin"}
+    assert keys == {
+        "new-promo",
+        "insider-wizard",
+        "newsletter-admin",
+        "social-media-hub",
+        "creator-outreach-hub",
+    }
 
 
 def test_wizards_for_catalog_plan_and_promo():
     keys = {wizard.key for wizard in wizards_for_role("catalog")}
-    assert keys == {"new-promo", "new-custom-plan", "insider-wizard", "newsletter-admin"}
+    assert keys == {
+        "new-promo",
+        "new-custom-plan",
+        "insider-wizard",
+        "newsletter-admin",
+        "social-media-hub",
+        "creator-outreach-hub",
+    }
 
 
 def test_parse_promo_wizard_percent():

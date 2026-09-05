@@ -4,23 +4,35 @@
 <div class="container-fluid" style="max-width:720px;">
   {% include "includes/wizard_chrome.html" %}
   <h1 class="h3 mb-2">Add a staff member</h1>
-  <p class="text-muted mb-4">Create a dashboard login. Share the password securely — it is not shown again.</p>
+  <p class="text-muted mb-4">
+    Create their login and optionally email everything they need (link, username, password, role).
+  </p>
+
+  {% if flash_success %}<div class="alert alert-success">{{ flash_success }}</div>{% endif %}
+  {% if flash_error %}<div class="alert alert-danger">{{ flash_error }}</div>{% endif %}
+
+  <div class="nl-wizard-help mb-3" style="background:#F3F7F7;border-radius:10px;padding:.85rem 1rem;font-size:14px;color:#334155;">
+    They will need: the sign-in page, username, password, and their role.
+    Check <strong>Email them everything</strong> below to send a branded invite automatically.
+  </div>
 
   <form method="post" class="nl-wizard-panel">
     <div class="mb-3">
       <label class="form-label" for="username">Username *</label>
       <input class="form-control" id="username" name="username" required value="{{ form_values.get('username', '') }}" autocomplete="off" />
+      <div class="form-text">Lowercase letters. They type this to sign in.</div>
     </div>
     <div class="mb-3">
       <label class="form-label" for="display_name">Display name</label>
       <input class="form-control" id="display_name" name="display_name" value="{{ form_values.get('display_name', '') }}" />
     </div>
     <div class="mb-3">
-      <label class="form-label" for="notify_email">Notify email (for alerts)</label>
-      <input class="form-control" type="email" id="notify_email" name="notify_email" value="{{ form_values.get('notify_email', '') }}" />
+      <label class="form-label" for="notify_email">Their work email *</label>
+      <input class="form-control" type="email" id="notify_email" name="notify_email" required value="{{ form_values.get('notify_email', '') }}" />
+      <div class="form-text">Used for the invite email and later alerts (tickets, payouts).</div>
     </div>
     <div class="mb-3">
-      <label class="form-label" for="role">Role *</label>
+      <label class="form-label" for="role">Permission (role) *</label>
       <select class="form-select" id="role" name="role" required>
         {% for r in roles %}
         <option value="{{ r }}" {% if form_values.get('role', 'support') == r %}selected{% endif %}>{{ r }}</option>
@@ -32,13 +44,22 @@
         {% else %}
         As <strong>admin</strong> you can create support, catalog, marketing, finance, and legal — not admin/owner.
         {% endif %}
+        Prefer <em>support</em> / <em>marketing</em> / <em>catalog</em> for most people.
       </div>
     </div>
     <div class="mb-3">
-      <label class="form-label" for="password">Password * (min 12 characters)</label>
-      <input class="form-control" type="password" id="password" name="password" required autocomplete="new-password" />
+      <label class="form-label" for="password">Temporary password * (min 12 characters)</label>
+      <input class="form-control" type="password" id="password" name="password" required autocomplete="new-password" minlength="12" />
+    </div>
+    <div class="form-check mb-4">
+      <input class="form-check-input" type="checkbox" id="send_invite_email" name="send_invite_email" value="on"
+        {% if form_values.get('send_invite_email', 'on') == 'on' %}checked{% endif %} />
+      <label class="form-check-label" for="send_invite_email">
+        Email them everything (sign-in link, username, password, role)
+      </label>
     </div>
     <button type="submit" class="btn btn-primary">Create staff login</button>
+    <a class="btn btn-outline-secondary ms-2" href="{{ url_for('admin:list', identity='admin-user') }}">View Admin Users</a>
   </form>
 </div>
 {% endblock %}

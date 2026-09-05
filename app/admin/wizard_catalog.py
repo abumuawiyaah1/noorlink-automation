@@ -10,6 +10,7 @@ from app.admin.roles import (
     CATALOG_MANAGER_ROLES,
     PROMO_MANAGER_ROLES,
     ROLE_ADMIN,
+    ROLE_OWNER,
     ROLE_SUPPORT,
 )
 
@@ -138,7 +139,7 @@ STAFF_WIZARDS: Tuple[StaffWizard, ...] = (
         steps=("Pick affiliate", "Payment details", "Save"),
         icon="fa-solid fa-money-bill-transfer",
         endpoint="admin:affiliate-payout",
-        roles=(ROLE_ADMIN,),
+        roles=(ROLE_ADMIN, ROLE_OWNER),
         badge="Admin",
     ),
     StaffWizard(
@@ -148,7 +149,7 @@ STAFF_WIZARDS: Tuple[StaffWizard, ...] = (
         steps=("Username & role", "Set password", "Save"),
         icon="fa-solid fa-user-plus",
         endpoint="admin:staff-user",
-        roles=(ROLE_ADMIN,),
+        roles=(ROLE_ADMIN, ROLE_OWNER),
         badge="Admin",
     ),
     StaffWizard(
@@ -158,7 +159,7 @@ STAFF_WIZARDS: Tuple[StaffWizard, ...] = (
         steps=("Review snapshot", "Export if needed", "Email summary"),
         icon="fa-solid fa-chart-line",
         endpoint="admin:finance-hub",
-        roles=(ROLE_ADMIN,),
+        roles=(ROLE_ADMIN, ROLE_OWNER),
         badge="Finance",
     ),
     StaffWizard(
@@ -168,13 +169,13 @@ STAFF_WIZARDS: Tuple[StaffWizard, ...] = (
         steps=("Order number", "Reason", "Confirm refund"),
         icon="fa-solid fa-rotate-left",
         endpoint="admin:refund-order",
-        roles=(ROLE_ADMIN,),
+        roles=(ROLE_ADMIN, ROLE_OWNER),
         badge="Finance",
     ),
 )
 
 
 def wizards_for_role(role: str) -> list[StaffWizard]:
-    if role == ROLE_ADMIN:
+    if role in (ROLE_ADMIN, ROLE_OWNER):
         return list(STAFF_WIZARDS)
     return [wizard for wizard in STAFF_WIZARDS if role in wizard.roles]

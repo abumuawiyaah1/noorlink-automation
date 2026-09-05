@@ -2,9 +2,17 @@ from __future__ import annotations
 
 from typing import Any
 
+from wtforms import SelectField
 from starlette.requests import Request
 
-from app.admin.roles import ROLE_ADMIN, ROLE_OWNER, is_owner, session_role, session_username
+from app.admin.roles import (
+    ALL_ROLES,
+    ROLE_ADMIN,
+    ROLE_OWNER,
+    is_owner,
+    session_role,
+    session_username,
+)
 from app.admin.views.base import AuditedModelView
 from app.db.models import AdminAuditLog, AdminUser
 from app.services.admin_owner_guard import OwnerGuardError, apply_owner_defaults, validate_staff_update
@@ -18,6 +26,7 @@ class AdminUserAdmin(AuditedModelView, model=AdminUser):
     allowed_roles = (ROLE_ADMIN, ROLE_OWNER)
 
     can_create = False
+    list_template = "sqladmin/admin_user_list.html"
 
     column_list = [
         AdminUser.username,
@@ -41,6 +50,12 @@ class AdminUserAdmin(AuditedModelView, model=AdminUser):
         AdminUser.is_active,
         AdminUser.is_protected,
     ]
+    form_args = {
+        "role": {
+            "choices": [(r, r) for r in sorted(ALL_ROLES)],
+        },
+    }
+    form_overrides = {"role": SelectField}
 
     can_delete = False
 

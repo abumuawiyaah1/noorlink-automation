@@ -23,7 +23,7 @@ class StaffUserWizardView(BaseView):
         return has_role(request, (ROLE_ADMIN,))
 
     def is_visible(self, request: Request) -> bool:
-        return False
+        return self.is_accessible(request)
 
     @expose("/staff-user", identity="staff-user", methods=["GET", "POST"])
     async def wizard(self, request: Request):
@@ -62,11 +62,20 @@ class StaffUserWizardView(BaseView):
                         "role": result["role"],
                         "by": actor_username,
                         "actor_role": actor_role,
+                        "invite_sent": result.get("invite_sent"),
                     },
                 )
-                request.session["flash_success"] = (
-                    f"Created staff login '{result['username']}' with role {result['role']}."
+                msg = (
+                    f"Created “{result['username']}” with role {result['role']}. "
+                    f"Sign-in: {result.get('login_url') or 'https://api.noorlink.co/admin'}"
                 )
+                if result.get("invite_sent"):
+                    msg += f" Invite email sent to {result.get('notify_email')}."
+                elif result.get("invite_error"):
+                    msg += f" {result['invite_error']}"
+                else:
+                    msg += " Share username + password with them yourself."
+                request.session["flash_success"] = msg
                 return RedirectResponse(request.url_for("admin:staff-user"), status_code=302)
             except AdminStaffUserError as exc:
                 request.session["flash_error"] = str(exc)

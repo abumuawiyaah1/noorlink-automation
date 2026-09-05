@@ -10,6 +10,7 @@ from app.admin.roles import (
     CATALOG_MANAGER_ROLES,
     PROMO_MANAGER_ROLES,
     ROLE_ADMIN,
+    ROLE_OWNER,
     ROLE_SUPPORT,
 )
 
@@ -192,6 +193,6 @@ ADMIN_TOOLS: Tuple[AdminTool, ...] = (
 
 
 def tools_for_role(role: str) -> list[AdminTool]:
-    if role == ROLE_ADMIN:
+    if role in (ROLE_ADMIN, ROLE_OWNER):
         return list(ADMIN_TOOLS)
     return [tool for tool in ADMIN_TOOLS if role in tool.roles]
