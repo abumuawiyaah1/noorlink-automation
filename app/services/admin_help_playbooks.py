@@ -512,6 +512,21 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         area="getting-started",
     ),
     HelpPlaybook(
+        id="layout-shortcuts",
+        title="Move the menu and use Your shortcuts",
+        problem="Want the sidebar on the other side, or faster jumps to tools you use often.",
+        steps=(
+            "Top bar → A− / A / A+ / A++ — change word size for easier reading (saved on this browser)",
+            "Top bar → Menu on right (or Menu on left) — moves the sidebar; saved on this browser",
+            "Visit the tools you use most (Creator outreach, Order lookup, etc.)",
+            "A Your shortcuts row appears under the top bar with your top pages",
+            "Click Reset on that row if you want to clear learned shortcuts",
+        ),
+        tags=("shortcuts", "sidebar", "layout", "menu", "quick", "personalize", "text", "font", "size", "accessibility"),
+        wizard_path="/admin/wizards",
+        area="getting-started",
+    ),
+    HelpPlaybook(
         id="monday-routine",
         title="Weekly ops routine (Monday)",
         problem="Quick health check to keep the business running smoothly.",

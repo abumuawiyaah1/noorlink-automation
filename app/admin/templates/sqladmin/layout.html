@@ -15,14 +15,92 @@
     justify-content: space-between;
   }
   .nl-session-bar strong { color: #0F3D3E; }
+  .nl-theme-toggle, .nl-sidebar-toggle, .nl-shortcuts-clear, .nl-text-size-btn {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #0F3D3E;
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    font-size: 12px;
+    cursor: pointer;
+    line-height: 1.3;
+  }
+  .nl-theme-toggle:hover, .nl-sidebar-toggle:hover, .nl-shortcuts-clear:hover, .nl-text-size-btn:hover {
+    border-color: #0F3D3E;
+  }
+  .nl-text-size-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .nl-text-size-btn.is-active {
+    background: #0F3D3E;
+    color: #fff;
+    border-color: #0F3D3E;
+  }
+  /* Text size — scales body copy across the dashboard */
+  html[data-nl-text="sm"] { font-size: 14px; }
+  html[data-nl-text="md"] { font-size: 16px; }
+  html[data-nl-text="lg"] { font-size: 18px; }
+  html[data-nl-text="xl"] { font-size: 20px; }
+  html[data-nl-text="sm"] .page-title, html[data-nl-text="sm"] h1.h3 { font-size: 1.35rem !important; }
+  html[data-nl-text="lg"] .page-title, html[data-nl-text="lg"] h1.h3 { font-size: 1.65rem !important; }
+  html[data-nl-text="xl"] .page-title, html[data-nl-text="xl"] h1.h3 { font-size: 1.85rem !important; }
+  html[data-nl-text="lg"] .nl-shortcut-btn, html[data-nl-text="xl"] .nl-shortcut-btn { font-size: 0.85em; padding: 0.3rem 0.8rem; }
+  html[data-nl-text="lg"] .table, html[data-nl-text="xl"] .table { font-size: 1em; }
+  html[data-nl-text="lg"] .form-control, html[data-nl-text="xl"] .form-control,
+  html[data-nl-text="lg"] .form-select, html[data-nl-text="xl"] .form-select { font-size: 1em; }
+  .nl-shortcuts-bar {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.4rem 1rem;
+    display: none;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .nl-shortcuts-bar.is-visible { display: flex; }
+  .nl-shortcuts-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6B7280;
+    margin-right: 0.25rem;
+  }
+  .nl-shortcut-btn {
+    display: inline-block;
+    border: 1px solid #e5e7eb;
+    background: #F3F7F7;
+    color: #0F3D3E;
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nl-shortcut-btn:hover {
+    border-color: #FF9500;
+    color: #05191A;
+    text-decoration: none;
+  }
+  .nl-shortcut-btn.is-current {
+    background: #0F3D3E;
+    color: #fff;
+    border-color: #0F3D3E;
+  }
+  /* Sidebar on the right — work area on the left */
+  html[data-nl-sidebar="right"] .wrapper {
+    flex-direction: row-reverse !important;
+  }
   @media (max-width: 768px) {
     .wrapper { flex-direction: column !important; }
+    html[data-nl-sidebar="right"] .wrapper { flex-direction: column !important; }
     .navbar-vertical {
       width: 100% !important;
       min-height: auto !important;
       position: relative !important;
     }
-    .page-wrapper { width: 100% !important; margin-left: 0 !important; }
+    .page-wrapper { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; }
     .nl-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     .nl-wizard-panel { padding: 1rem !important; }
     .table-responsive { font-size: 12px; }
@@ -31,39 +109,105 @@
     h1.h3, .page-title { font-size: 1.25rem !important; }
   }
 </style>
+<script>
+/* Apply sidebar side + text size before paint to avoid layout jump */
+(function () {
+  try {
+    if (localStorage.getItem("nl-admin-sidebar") === "right") {
+      document.documentElement.setAttribute("data-nl-sidebar", "right");
+    }
+    var textSize = localStorage.getItem("nl-admin-text") || "md";
+    if (["sm", "md", "lg", "xl"].indexOf(textSize) >= 0 && textSize !== "md") {
+      document.documentElement.setAttribute("data-nl-text", textSize);
+    }
+  } catch (e) {}
+})();
+</script>
 {% if request.session.get("admin_user_id") and request.session.get("admin_session_started") %}
 <div class="nl-session-bar" id="nl-session-bar"
   data-started="{{ request.session.get('admin_session_started') }}"
   data-max-age="{{ admin_session_max_age | default(86400) }}">
   <span>Signed in as <strong>{{ request.session.get('admin_display_name') or request.session.get('admin_username') }}</strong></span>
-  <span style="display:flex;gap:0.5rem;align-items:center;">
+  <span style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+    <span class="nl-text-size-group" role="group" aria-label="Text size">
+      <button type="button" class="nl-text-size-btn" data-nl-text-size="sm" title="Smaller text">A−</button>
+      <button type="button" class="nl-text-size-btn" data-nl-text-size="md" title="Default text">A</button>
+      <button type="button" class="nl-text-size-btn" data-nl-text-size="lg" title="Larger text">A+</button>
+      <button type="button" class="nl-text-size-btn" data-nl-text-size="xl" title="Largest text">A++</button>
+    </span>
+    <button type="button" class="nl-sidebar-toggle" id="nl-sidebar-toggle" aria-label="Move menu to the other side">Menu on right</button>
     <button type="button" class="nl-theme-toggle" id="nl-theme-toggle" aria-label="Toggle dark mode">Dark mode</button>
     <span id="nl-session-remaining">Session active</span>
   </span>
 </div>
+<div class="nl-shortcuts-bar" id="nl-shortcuts-bar" aria-label="Your most-used tools">
+  <span class="nl-shortcuts-label">Your shortcuts</span>
+  <span id="nl-shortcuts-list"></span>
+  <button type="button" class="nl-shortcuts-clear" id="nl-shortcuts-clear" title="Reset learned shortcuts">Reset</button>
+</div>
 <script>
 (function () {
   var root = document.documentElement;
-  var toggle = document.getElementById("nl-theme-toggle");
-  var stored = localStorage.getItem("nl-admin-theme");
-  if (stored === "dark") {
+  var themeToggle = document.getElementById("nl-theme-toggle");
+  var sideToggle = document.getElementById("nl-sidebar-toggle");
+  var storedTheme = localStorage.getItem("nl-admin-theme");
+  if (storedTheme === "dark") {
     root.setAttribute("data-nl-theme", "dark");
-    if (toggle) toggle.textContent = "Light mode";
+    if (themeToggle) themeToggle.textContent = "Light mode";
   }
-  if (toggle) {
-    toggle.addEventListener("click", function () {
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
       var dark = root.getAttribute("data-nl-theme") === "dark";
       if (dark) {
         root.removeAttribute("data-nl-theme");
         localStorage.setItem("nl-admin-theme", "light");
-        toggle.textContent = "Dark mode";
+        themeToggle.textContent = "Dark mode";
       } else {
         root.setAttribute("data-nl-theme", "dark");
         localStorage.setItem("nl-admin-theme", "dark");
-        toggle.textContent = "Light mode";
+        themeToggle.textContent = "Light mode";
       }
     });
   }
+  function syncSideLabel() {
+    if (!sideToggle) return;
+    var right = root.getAttribute("data-nl-sidebar") === "right";
+    sideToggle.textContent = right ? "Menu on left" : "Menu on right";
+  }
+  syncSideLabel();
+  if (sideToggle) {
+    sideToggle.addEventListener("click", function () {
+      var right = root.getAttribute("data-nl-sidebar") === "right";
+      if (right) {
+        root.removeAttribute("data-nl-sidebar");
+        localStorage.setItem("nl-admin-sidebar", "left");
+      } else {
+        root.setAttribute("data-nl-sidebar", "right");
+        localStorage.setItem("nl-admin-sidebar", "right");
+      }
+      syncSideLabel();
+    });
+  }
+
+  function syncTextButtons() {
+    var current = root.getAttribute("data-nl-text") || "md";
+    document.querySelectorAll("[data-nl-text-size]").forEach(function (btn) {
+      btn.classList.toggle("is-active", btn.getAttribute("data-nl-text-size") === current);
+    });
+  }
+  syncTextButtons();
+  document.querySelectorAll("[data-nl-text-size]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var size = btn.getAttribute("data-nl-text-size") || "md";
+      if (size === "md") {
+        root.removeAttribute("data-nl-text");
+      } else {
+        root.setAttribute("data-nl-text", size);
+      }
+      localStorage.setItem("nl-admin-text", size);
+      syncTextButtons();
+    });
+  });
 })();
 </script>
 <script>
@@ -85,6 +229,123 @@
   }
   tick();
   setInterval(tick, 30000);
+})();
+</script>
+<script>
+(function () {
+  var STORAGE_KEY = "nl-admin-shortcuts";
+  var MAX_SHOW = 6;
+  var LABELS = {
+    "/admin/": "Home",
+    "/admin/wizards": "Quick start",
+    "/admin/notifications": "Notifications",
+    "/admin/help": "Help",
+    "/admin/help-customer": "Help a customer",
+    "/admin/support-inbox": "Support Inbox",
+    "/admin/fulfill-order": "Fulfill order",
+    "/admin/order-insight": "Order lookup",
+    "/admin/suspended-orders": "Suspended orders",
+    "/admin/promo-wizard": "Promo code",
+    "/admin/insider-wizard": "Insider",
+    "/admin/newsletter": "Subscribers",
+    "/admin/social-media": "Social media",
+    "/admin/creator-outreach": "Creator outreach",
+    "/admin/catalog-overview": "Catalog",
+    "/admin/new-custom-plan": "New plan",
+    "/admin/provider-catalog": "Provider SKUs",
+    "/admin/finance": "Finance",
+    "/admin/refund-order": "Refund",
+    "/admin/affiliate-payout": "Affiliate payout",
+    "/admin/documents": "Documents",
+    "/admin/operations": "Operations",
+    "/admin/insights": "Insights",
+    "/admin/complimentary-esim": "Free eSIM",
+    "/admin/staff-user": "Add staff",
+    "/admin/diagnostics": "Diagnostics",
+    "/admin/event-log": "Event log",
+    "/admin/gdpr": "Privacy",
+    "/admin/breakage": "Breakage"
+  };
+
+  function normalizePath(pathname) {
+    var p = (pathname || "").replace(/\/+$/, "") || "/admin";
+    if (p.indexOf("/admin/support-inbox/") === 0) return "/admin/support-inbox";
+    if (p.indexOf("/admin/finance/") === 0) return "/admin/finance";
+    if (p.indexOf("/admin/newsletter/") === 0) return "/admin/newsletter";
+    return p;
+  }
+
+  function loadCounts() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveCounts(counts) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(counts));
+    } catch (e) {}
+  }
+
+  function labelFor(path) {
+    if (LABELS[path]) return LABELS[path];
+    var parts = path.split("/");
+    var last = parts[parts.length - 1] || "page";
+    return last.replace(/-/g, " ");
+  }
+
+  var path = normalizePath(window.location.pathname);
+  if (path.indexOf("/admin") === 0 && path !== "/admin/login") {
+    var counts = loadCounts();
+    counts[path] = (counts[path] || 0) + 1;
+    saveCounts(counts);
+  }
+
+  function topShortcuts() {
+    var counts = loadCounts();
+    return Object.keys(counts)
+      .filter(function (p) { return (counts[p] || 0) > 0 && p !== "/admin/login"; })
+      .sort(function (a, b) {
+        return (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b);
+      })
+      .slice(0, MAX_SHOW)
+      .map(function (p) {
+        return { path: p, label: labelFor(p), count: counts[p] };
+      });
+  }
+
+  var bar = document.getElementById("nl-shortcuts-bar");
+  var list = document.getElementById("nl-shortcuts-list");
+  var clearBtn = document.getElementById("nl-shortcuts-clear");
+  if (!bar || !list) return;
+
+  function render() {
+    var items = topShortcuts();
+    list.innerHTML = "";
+    if (!items.length) {
+      bar.classList.remove("is-visible");
+      return;
+    }
+    bar.classList.add("is-visible");
+    items.forEach(function (item) {
+      var a = document.createElement("a");
+      a.className = "nl-shortcut-btn" + (item.path === path ? " is-current" : "");
+      a.href = item.path;
+      a.textContent = item.label;
+      a.title = "Opened " + item.count + " time" + (item.count === 1 ? "" : "s");
+      list.appendChild(a);
+    });
+  }
+
+  render();
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function () {
+      localStorage.removeItem(STORAGE_KEY);
+      render();
+    });
+  }
 })();
 </script>
 {% endif %}

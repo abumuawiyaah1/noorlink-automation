@@ -62,6 +62,7 @@ class HelpCenterView(BaseView):
             featured_order = (
                 "notifications-daily",
                 "monday-routine",
+                "layout-shortcuts",
                 "no-esim-after-payment",
                 "support-ticket",
                 "create-promo",

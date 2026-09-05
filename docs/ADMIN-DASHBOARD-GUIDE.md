@@ -33,6 +33,12 @@ Hidden tools (linked from Operations or Finance): Event log, Refund wizard, Brea
 
 Sidebar → **Help**. Browse by **area** (Support, Marketing, Catalog…) or **tag** (refund, promo, creator…). Each how-to has steps + **Open tool**.
 
+### Your layout (per browser)
+
+- **Text size** — top bar **A− / A / A+ / A++** makes words smaller or larger (saved on this device).
+- **Menu on right / left** — button in the top bar moves the sidebar to the other side (saved on this device).
+- **Your shortcuts** — after you visit tools a few times, quick buttons appear for your most-used pages. **Reset** clears them.
+
 ---
 
 ## Roles
