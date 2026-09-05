@@ -7,6 +7,7 @@ from sqladmin import BaseView, expose
 from app.admin.nav_catalog import HELP_CATEGORY
 from app.admin.roles import ALL_ROLES, ROLE_ADMIN, ROLE_OWNER, session_role
 from app.services.admin_help_playbooks import (
+    PLAYBOOKS,
     filter_playbooks,
     get_doc_meta,
     get_playbook,
@@ -56,9 +57,9 @@ class HelpCenterView(BaseView):
 
         how_to = get_playbook(how_id, role=role) if how_id else None
         playbooks = filter_playbooks(role=role, query=query, area=area, tag=tag)
-        if not query and not area and not tag and not how_to:
-            # Home: show a curated short list — prefer getting-started + common problems
-            featured_ids = {
+        if not query and not area and not tag and not how_to and not doc_slug:
+            # Home: curated short list — getting-started + common marketing/support tasks
+            featured_order = (
                 "notifications-daily",
                 "monday-routine",
                 "no-esim-after-payment",
@@ -67,10 +68,21 @@ class HelpCenterView(BaseView):
                 "social-media-post",
                 "creator-outreach-email",
                 "order-lookup-howto",
-            }
-            featured = [p for p in playbooks if p.id in featured_ids]
-            if featured:
-                playbooks = featured + [p for p in playbooks if p.id not in featured_ids][:8]
+            )
+            by_id = {p.id: p for p in playbooks}
+            featured = [by_id[i] for i in featured_order if i in by_id]
+            featured_set = set(featured_order)
+            rest = [p for p in playbooks if p.id not in featured_set]
+            playbooks = featured + rest[:8]
+
+        # When reading a full guide, surface matching short how-tos above the article
+        related_how_tos = []
+        if doc_slug:
+            related_how_tos = [
+                p
+                for p in PLAYBOOKS
+                if p.doc_slug == doc_slug and get_playbook(p.id, role=role) is not None
+            ]
 
         doc_hits = search_docs(query, role=role) if query else []
         pinned_docs = [d for d in list_doc_summaries(role=role) if d.get("pinned")]
@@ -90,6 +102,7 @@ class HelpCenterView(BaseView):
                 "tags": tags,
                 "how_to": how_to,
                 "playbooks": playbooks,
+                "related_how_tos": related_how_tos,
                 "doc_hits": doc_hits,
                 "pinned_docs": pinned_docs,
                 "docs": list_doc_summaries(role=role),

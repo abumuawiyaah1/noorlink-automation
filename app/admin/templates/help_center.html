@@ -84,6 +84,26 @@
     {% else %}
     <span class="badge bg-secondary ms-2">Staff guide</span>
     {% endif %}
+
+    {% if related_how_tos %}
+    <div class="mt-3 mb-3">
+      <p class="small text-muted text-uppercase mb-2" style="letter-spacing:.04em;">Short how-to for this guide</p>
+      {% for p in related_how_tos %}
+      <article class="nl-help-playbook nl-help-playbook--focus">
+        <h2 class="h5 mb-1">{{ p.title }}</h2>
+        <p class="mb-2">{{ p.problem }}</p>
+        <ol class="mb-3">
+          {% for step in p.steps %}<li class="mb-1">{{ step }}</li>{% endfor %}
+        </ol>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-primary" href="{{ p.wizard_path }}">Open tool</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin:help-center') }}?how={{ p.id }}">Open as how-to</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="nl-doc-article mt-3">{{ doc_html | safe }}</div>
     <p class="small text-muted mt-3">This page is read-only. Ask an admin if something needs updating.</p>
   </div>
@@ -174,7 +194,14 @@
         </div>
         <p class="small text-muted mb-2 mt-1">{{ doc.summary }}</p>
         {% if doc.available %}
-        <a class="btn btn-sm btn-primary" href="{{ url_for('admin:help-center') }}?doc={{ doc.slug }}">Read guide</a>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('admin:help-center') }}?doc={{ doc.slug }}">Read guide</a>
+          {% if doc.slug == 'creator-outreach' %}
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin:help-center') }}?how=creator-outreach-email">How-to</a>
+          {% elif doc.slug == 'social-media' %}
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin:help-center') }}?how=social-media-post">How-to</a>
+          {% endif %}
+        </div>
         {% else %}
         <span class="text-danger small">File missing in docs/</span>
         {% endif %}
