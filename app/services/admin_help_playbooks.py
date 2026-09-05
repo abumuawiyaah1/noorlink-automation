@@ -1,9 +1,10 @@
-"""Help center playbooks, full documentation search, and read-only doc viewer."""
+"""Help center playbooks, how-to wiki browse, and read-only doc viewer."""
 
 from __future__ import annotations
 
 import html
 import re
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Literal, Optional, Tuple
@@ -23,6 +24,16 @@ DOCS_DIR = REPO_ROOT / "docs"
 
 DocAudience = Literal["staff", "dev"]
 
+# Wiki browse areas — plain-language staff training sections
+HELP_AREAS: Tuple[Tuple[str, str, str], ...] = (
+    ("getting-started", "Getting started", "Sign-in, roles, daily checks, first-day checklists"),
+    ("support", "Support", "Tickets, orders, eSIM delivery, suspended plans"),
+    ("marketing", "Marketing", "Promos, Insider, social posts, creator outreach"),
+    ("catalog", "Catalog", "Travel plans, provider SKUs, browse vs checkout"),
+    ("finance", "Finance", "Revenue, refunds, affiliates, document vault"),
+    ("admin", "Admin & ops", "Staff logins, security, operations, GDPR"),
+)
+
 
 @dataclass(frozen=True)
 class HelpPlaybook:
@@ -34,6 +45,7 @@ class HelpPlaybook:
     wizard_path: str
     doc_slug: Optional[str] = None
     roles: Tuple[str, ...] = ()
+    area: str = "support"
 
 
 @dataclass(frozen=True)
@@ -70,6 +82,22 @@ HELP_DOCS: Tuple[HelpDoc, ...] = (
         title="Developer codebase guide",
         summary="API routes, services, migrations, env vars, repos — read-only research.",
         audience="dev",
+        pinned=True,
+    ),
+    HelpDoc(
+        slug="social-media",
+        filename="SOCIAL-MEDIA-HUB.md",
+        title="Social media toolkit",
+        summary="Partner photo/video library, captions, Meta posting workflow.",
+        audience="staff",
+        pinned=True,
+    ),
+    HelpDoc(
+        slug="creator-outreach",
+        filename="CREATOR-OUTREACH.md",
+        title="Creator outreach",
+        summary="Creator databank, premade pitches, branded partnership emails.",
+        audience="staff",
         pinned=True,
     ),
     HelpDoc(
@@ -119,7 +147,6 @@ HELP_DOCS: Tuple[HelpDoc, ...] = (
     ),
 )
 
-# Legacy slug map for playbooks that reference old keys
 DOC_SLUG_ALIASES = {
     "telna-runbook": "telna-runbook",
     "stripe-wallets": "stripe-wallets",
@@ -136,9 +163,10 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "If status is paid with no QR, open Fulfill stuck order",
             "If already delivered, use Resend eSIM email on the order",
         ),
-        tags=("webhook", "stripe", "fulfillment", "qr", "email", "paid"),
+        tags=("fulfill", "esim", "qr", "email", "paid", "stuck-order", "stripe", "webhook"),
         wizard_path="/admin/fulfill-order",
         doc_slug="stripe-wallets",
+        area="support",
     ),
     HelpPlaybook(
         id="suspended-order",
@@ -149,9 +177,9 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Check usage in Order lookup",
             "Reactivate only if you've confirmed with the provider",
         ),
-        tags=("suspended", "data", "cap", "usage", "citrus", "simbase"),
+        tags=("suspended", "data", "cap", "usage", "esim", "citrus"),
         wizard_path="/admin/suspended-orders",
-        doc_slug="breakage-fulfillment",
+        area="support",
     ),
     HelpPlaybook(
         id="auto-refund-48h",
@@ -167,6 +195,7 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         tags=("refund", "auto", "48", "sla", "stripe", "money"),
         wizard_path="/admin/refund-order",
         roles=(ROLE_ADMIN, ROLE_SUPPORT),
+        area="support",
     ),
     HelpPlaybook(
         id="support-auto-reply",
@@ -179,9 +208,10 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Refunds and stuck paid-no-QR always flag Needs human + Slack/email",
             "Staff-created tickets from Help a customer skip auto-reply",
         ),
-        tags=("support", "auto", "automatic", "qr", "inbox", "bot", "self-serve"),
+        tags=("support", "auto", "qr", "inbox", "ticket"),
         wizard_path="/admin/support-inbox",
         roles=(ROLE_ADMIN, ROLE_SUPPORT),
+        area="support",
     ),
     HelpPlaybook(
         id="support-ticket",
@@ -192,8 +222,23 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Open Support Inbox to reply with a branded email",
             "Tie the ticket to their order number if you have it",
         ),
-        tags=("support", "ticket", "email", "customer", "help"),
+        tags=("support", "ticket", "email", "customer", "help", "inbox"),
         wizard_path="/admin/help-customer",
+        area="support",
+    ),
+    HelpPlaybook(
+        id="order-lookup-howto",
+        title="Look up an order",
+        problem="Need gift details, usage, reminders, or breakage for a paid order.",
+        steps=(
+            "Open Look up an order (Quick start or Operations)",
+            "Enter the order number (and confirm email if asked)",
+            "Review gift recipient, QR status, usage, and reminder history",
+        ),
+        tags=("order", "lookup", "gift", "usage", "esim"),
+        wizard_path="/admin/order-insight",
+        roles=(ROLE_ADMIN, ROLE_SUPPORT),
+        area="support",
     ),
     HelpPlaybook(
         id="promo-not-working",
@@ -204,9 +249,24 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Codes above 20% need admin approval before checkout works",
             "Create a replacement code in the promo wizard if needed",
         ),
-        tags=("promo", "discount", "checkout", "approval"),
+        tags=("promo", "discount", "checkout", "approval", "marketing"),
         wizard_path="/admin/promo-wizard",
         roles=(ROLE_ADMIN, ROLE_MARKETING, ROLE_CATALOG),
+        area="marketing",
+    ),
+    HelpPlaybook(
+        id="create-promo",
+        title="Create a promo code",
+        problem="Need a discount code for a campaign or partner.",
+        steps=(
+            "Open Create a promo code from Quick start",
+            "Enter code, discount %, start/end dates, and optional usage limit",
+            "Save — if over 20%, ask an admin to approve before customers can use it",
+        ),
+        tags=("promo", "discount", "campaign", "marketing", "create"),
+        wizard_path="/admin/promo-wizard",
+        roles=(ROLE_ADMIN, ROLE_MARKETING, ROLE_CATALOG),
+        area="marketing",
     ),
     HelpPlaybook(
         id="insider-send",
@@ -215,11 +275,73 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         steps=(
             "Create the issue in Send Insider wizard",
             "Send a test email to yourself first",
-            "Schedule send date — cron delivers on that day",
+            "Schedule send date — the system delivers on that day",
         ),
         tags=("insider", "newsletter", "email", "marketing"),
         wizard_path="/admin/insider-wizard",
         roles=(ROLE_ADMIN, ROLE_MARKETING),
+        area="marketing",
+    ),
+    HelpPlaybook(
+        id="newsletter-subscribers",
+        title="Manage newsletter subscribers",
+        problem="Need to export the list or unsubscribe someone.",
+        steps=(
+            "Open Newsletter subscribers under Marketing",
+            "Browse or search by email",
+            "Export CSV for a campaign, or unsubscribe on request",
+        ),
+        tags=("newsletter", "subscribers", "export", "unsubscribe", "marketing"),
+        wizard_path="/admin/newsletter-admin",
+        roles=(ROLE_ADMIN, ROLE_MARKETING, ROLE_CATALOG),
+        area="marketing",
+    ),
+    HelpPlaybook(
+        id="social-media-post",
+        title="Post partner photos on Facebook or Instagram",
+        problem="You have partner media ready and need to publish on Meta.",
+        steps=(
+            "Open Social media under Marketing",
+            "Upload the photo or video (keep files under ~100 MB)",
+            "Copy the caption, then open Meta Business Suite / Instagram to post",
+            "Mark the asset as Posted, and delete old posted files when storage fills up",
+        ),
+        tags=("social", "instagram", "facebook", "meta", "caption", "media", "marketing"),
+        wizard_path="/admin/social-media",
+        doc_slug="social-media",
+        roles=(ROLE_ADMIN, ROLE_MARKETING, ROLE_CATALOG),
+        area="marketing",
+    ),
+    HelpPlaybook(
+        id="creator-outreach-email",
+        title="Email a travel creator (partnership)",
+        problem="Reach DIY Umrah / Muslim travel creators with a branded pitch.",
+        steps=(
+            "Open Creator outreach under Marketing",
+            "Pick a creator (or Add one) and enter their email",
+            "Choose a premade template, edit the body, then Send branded email",
+            "Or use Copy for DM if you're messaging on Instagram instead",
+            "Update status as they reply → gifted → posted",
+        ),
+        tags=("outreach", "creator", "influencer", "email", "affiliate", "marketing", "instagram"),
+        wizard_path="/admin/creator-outreach",
+        doc_slug="creator-outreach",
+        roles=(ROLE_ADMIN, ROLE_MARKETING, ROLE_CATALOG),
+        area="marketing",
+    ),
+    HelpPlaybook(
+        id="complimentary-esim",
+        title="Send a free eSIM to staff or a partner",
+        problem="Gift a complimentary plan without a customer checkout.",
+        steps=(
+            "Open Send a free eSIM (admin only)",
+            "Pick the plan and enter the recipient email",
+            "Send — they get the QR email automatically; the gift is audit-logged",
+        ),
+        tags=("gift", "complimentary", "esim", "partner", "staff"),
+        wizard_path="/admin/complimentary-esim",
+        roles=(ROLE_ADMIN,),
+        area="admin",
     ),
     HelpPlaybook(
         id="telna-catalog",
@@ -230,10 +352,11 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Check Provider SKU browser for the correct SKU",
             "See Telna runbook for Cloudflare 1010 / 403 errors",
         ),
-        tags=("telna", "provider", "catalog", "sku", "api", "403"),
+        tags=("telna", "provider", "catalog", "sku", "api"),
         wizard_path="/admin/provider-catalog",
         doc_slug="telna-runbook",
         roles=(ROLE_ADMIN, ROLE_CATALOG),
+        area="catalog",
     ),
     HelpPlaybook(
         id="catalog-mismatch",
@@ -247,6 +370,22 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         tags=("catalog", "plans", "checkout", "browse", "mismatch"),
         wizard_path="/admin/catalog-overview",
         roles=(ROLE_ADMIN, ROLE_CATALOG),
+        area="catalog",
+    ),
+    HelpPlaybook(
+        id="add-travel-plan",
+        title="Add a new travel plan",
+        problem="Need a new package customers can buy on the site.",
+        steps=(
+            "Open Add a new travel plan from Quick start",
+            "Enter plan name, destination, data amount, and price",
+            "Connect the provider SKU (Citrus, eSIM Access, or Telna)",
+            "Publish when ready — confirm it appears in Catalog overview",
+        ),
+        tags=("catalog", "plans", "create", "sku", "checkout"),
+        wizard_path="/admin/new-custom-plan",
+        roles=(ROLE_ADMIN, ROLE_CATALOG),
+        area="catalog",
     ),
     HelpPlaybook(
         id="gift-order",
@@ -256,33 +395,36 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Order lookup shows gift recipient and sender",
             "Resend eSIM email goes to the gift recipient automatically",
         ),
-        tags=("gift", "recipient", "email", "qr"),
+        tags=("gift", "recipient", "email", "qr", "esim"),
         wizard_path="/admin/order-insight",
+        area="support",
     ),
     HelpPlaybook(
         id="affiliate-payout",
         title="Pay an affiliate partner",
         problem="Approved commissions ready to mark as paid.",
         steps=(
-            "Send payment via PayPal/Wise/bank",
-            "Record affiliate payout wizard marks commissions paid",
+            "Check Notifications for payout requests (attend within 72 hours)",
+            "Send payment via PayPal / Wise / bank",
+            "Record affiliate payout wizard marks commissions paid and closes the request",
         ),
-        tags=("affiliate", "payout", "commission"),
+        tags=("affiliate", "payout", "commission", "finance"),
         wizard_path="/admin/affiliate-payout",
         roles=(ROLE_ADMIN,),
+        area="finance",
     ),
     HelpPlaybook(
         id="email-delivery",
         title="Emails not sending",
         problem="Customers or staff not receiving transactional email.",
         steps=(
-            "Operations → Admin → Email probe script",
-            "Confirm RESEND_FROM_EMAIL uses @noorlink.co",
-            "Check spam; Resend dashboard for bounces",
+            "Operations → Admin scripts → Email probe",
+            "Confirm the from-address uses @noorlink.co",
+            "Ask the customer to check spam; review Resend for bounces if needed",
         ),
-        tags=("email", "resend", "delivery", "noreply"),
+        tags=("email", "resend", "delivery", "ops"),
         wizard_path="/admin/diagnostics",
-        doc_slug="stripe-wallets",
+        area="admin",
     ),
     HelpPlaybook(
         id="refund-order",
@@ -293,8 +435,10 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Open Refund order wizard and enter order ID + reason",
             "Confirm status shows refunded in Finance dashboard",
         ),
-        tags=("refund", "stripe", "chargeback", "money"),
+        tags=("refund", "stripe", "money", "finance"),
         wizard_path="/admin/refund-order",
+        roles=(ROLE_ADMIN,),
+        area="finance",
     ),
     HelpPlaybook(
         id="finance-review",
@@ -303,11 +447,12 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         steps=(
             "Open Finance dashboard for revenue, margin, and affiliate liability",
             "Export orders CSV for accounting",
-            "Send monthly summary email to ops inbox",
+            "Send monthly summary email to ops inbox if needed",
         ),
         tags=("finance", "revenue", "margin", "accounting", "csv"),
         wizard_path="/admin/finance",
         roles=(ROLE_ADMIN, ROLE_SUPPORT),
+        area="finance",
     ),
     HelpPlaybook(
         id="gdpr-request",
@@ -321,6 +466,7 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         tags=("gdpr", "privacy", "delete", "export", "data"),
         wizard_path="/admin/gdpr",
         roles=(ROLE_ADMIN,),
+        area="admin",
     ),
     HelpPlaybook(
         id="event-log",
@@ -331,8 +477,10 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Cross-check with Order lookup status",
             "Use Fulfill stuck order if payment succeeded but no QR",
         ),
-        tags=("webhook", "event", "log", "stripe", "fulfillment", "debug"),
+        tags=("webhook", "event", "log", "stripe", "fulfillment"),
         wizard_path="/admin/event-log",
+        roles=(ROLE_ADMIN,),
+        area="admin",
     ),
     HelpPlaybook(
         id="security-threats",
@@ -342,11 +490,26 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Open Operations → Security → External threats",
             "Check repeated IPs on failed admin login",
             "Ops email/Slack fires automatically after 5 failures from one IP in 60 minutes",
-            "Filter Event log by type security_ for full history",
-            "If Cloudflare is in front, review WAF/firewall events and block abusive IPs",
+            "Ask admin to review Cloudflare WAF if abuse continues",
         ),
-        tags=("security", "login", "webhook", "unauthorized", "threat", "brute force", "waf"),
+        tags=("security", "login", "threat", "ops"),
         wizard_path="/admin/operations",
+        roles=(ROLE_ADMIN,),
+        area="admin",
+    ),
+    HelpPlaybook(
+        id="notifications-daily",
+        title="Check Notifications (daily)",
+        problem="Don't miss stuck orders, SLA tickets, or payout requests.",
+        steps=(
+            "Open Notifications from the sidebar",
+            "Clear Paid but not fulfilled first",
+            "Handle Support SLA (tickets open >24h) and payout requests next",
+            "Security signals go to Operations (admin)",
+        ),
+        tags=("notifications", "daily", "sla", "fulfill", "routine"),
+        wizard_path="/admin/notifications",
+        area="getting-started",
     ),
     HelpPlaybook(
         id="monday-routine",
@@ -357,35 +520,53 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Finance — review revenue, margin, and pending affiliate liability",
             "Operations — scan external threats and run background tasks if Insider is due",
             "Support Inbox — assign open tickets and reply to anything over 24h",
-            "Help → search if something looks stuck (webhook, Telna, email)",
+            "Help → browse how-tos if something looks stuck",
         ),
-        tags=("routine", "monday", "weekly", "checklist", "ops", "health"),
+        tags=("routine", "monday", "weekly", "checklist", "ops"),
         wizard_path="/admin/notifications",
+        area="getting-started",
+    ),
+    HelpPlaybook(
+        id="add-staff-user",
+        title="Add a staff member",
+        problem="New teammate needs a dashboard login.",
+        steps=(
+            "Open Add a staff member (admin only)",
+            "Choose username, role (support / marketing / catalog / finance / legal), and password",
+            "Save — share login privately; they should change password on first use if your process requires it",
+            "Point them to Help → Getting started for their role checklist",
+        ),
+        tags=("staff", "login", "user", "onboarding", "admin"),
+        wizard_path="/admin/staff-user",
+        roles=(ROLE_ADMIN,),
+        area="admin",
     ),
     HelpPlaybook(
         id="cloudflare-admin",
         title="Lock down /admin with Cloudflare",
         problem="Reduce brute-force risk on the staff dashboard.",
         steps=(
-            "Cloudflare → Zero Trust → Access → add application for api.noorlink.co/admin",
-            "Require email OTP or team identity provider for /admin/*",
-            "Set ADMIN_ALLOWED_IPS on Railway to your office/home IPs as backup",
-            "Enable WAF managed rules and bot fight mode on the zone",
+            "Cloudflare → Zero Trust → Access → protect api.noorlink.co/admin",
+            "Require email OTP or team identity for /admin/*",
+            "Ask engineering to set allowed office/home IPs as backup if needed",
         ),
-        tags=("cloudflare", "access", "admin", "security", "waf", "2fa", "ip"),
+        tags=("cloudflare", "access", "admin", "security"),
         wizard_path="/admin/operations",
+        roles=(ROLE_ADMIN,),
+        area="admin",
     ),
     HelpPlaybook(
         id="full-dashboard-docs",
         title="Read the full admin dashboard guide",
         problem="Need complete documentation of every sidebar section and role.",
         steps=(
-            "Open Admin dashboard — full staff guide from the sidebar",
+            "Open Admin dashboard — full staff guide from the Help sidebar",
             "Or search Help for wizard names, roles, finance, operations",
         ),
-        tags=("documentation", "guide", "dashboard", "admin", "help", "manual", "reference"),
+        tags=("documentation", "guide", "dashboard", "help", "manual"),
         wizard_path="/admin/help?doc=admin-dashboard",
         doc_slug="admin-dashboard",
+        area="getting-started",
     ),
     HelpPlaybook(
         id="developer-docs",
@@ -395,10 +576,11 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Open Developer codebase guide (admin only)",
             "Search for api, webhook, migration, cron, fulfillment",
         ),
-        tags=("developer", "code", "api", "architecture", "engineering", "research"),
+        tags=("developer", "code", "api", "architecture"),
         wizard_path="/admin/help?doc=developer-codebase",
         doc_slug="developer-codebase",
         roles=(ROLE_ADMIN,),
+        area="admin",
     ),
     HelpPlaybook(
         id="onboarding-support",
@@ -407,27 +589,30 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         steps=(
             "Notifications — check fulfillment failures and tickets over 24h",
             "Support Inbox — reply with templates; assign tickets to yourself",
-            "Order lookup wizard — verify email + order ID before sharing QR details",
+            "Order lookup — verify email + order ID before sharing QR details",
             "Finance (read-only) — confirm charges when customers ask about billing",
             "Help → Customer paid but no eSIM if fulfillment is stuck",
         ),
-        tags=("onboarding", "support", "checklist", "first day", "staff"),
+        tags=("onboarding", "support", "checklist", "first-day"),
         wizard_path="/admin/support-inbox",
         roles=(ROLE_SUPPORT,),
+        area="getting-started",
     ),
     HelpPlaybook(
         id="onboarding-marketing",
         title="Marketing team — first day checklist",
-        problem="New marketing staff need promo, Insider, and analytics paths.",
+        problem="New marketing staff need promo, Insider, social, and outreach paths.",
         steps=(
             "Promo wizard — create codes; remember 20%+ needs admin approval",
-            "Send Insider wizard — test email first, then schedule",
-            "Insights — review promo performance and Insider send counts",
-            "Help → Promo code rejected if customers report checkout issues",
+            "Send Insider — test email first, then schedule",
+            "Social media — upload partner media and copy captions for Meta",
+            "Creator outreach — track creators and send branded partnership emails",
+            "Help → Marketing area for more how-tos",
         ),
-        tags=("onboarding", "marketing", "checklist", "insider", "promo"),
+        tags=("onboarding", "marketing", "checklist", "insider", "promo", "outreach", "social"),
         wizard_path="/admin/promo-wizard",
         roles=(ROLE_MARKETING,),
+        area="getting-started",
     ),
     HelpPlaybook(
         id="onboarding-catalog",
@@ -442,6 +627,7 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         tags=("onboarding", "catalog", "checklist", "plans", "sku"),
         wizard_path="/admin/catalog-overview",
         roles=(ROLE_CATALOG,),
+        area="getting-started",
     ),
     HelpPlaybook(
         id="onboarding-admin",
@@ -451,28 +637,29 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Pre-ship checklist doc — migrations, webhooks, cron before launch",
             "Finance — confirm Stripe live vs test badge before processing refunds",
             "Documents — upload legal/accounting papers; grant finance or legal roles when ready",
-            "Operations → Security — review threats and set ADMIN_ALLOWED_IPS",
-            "Backup & restore doc — know Supabase PITR and weekly CSV exports",
+            "Operations → Security — review threats",
             "Privacy tools — GDPR export/delete when customers request data",
         ),
         tags=("onboarding", "admin", "checklist", "finance", "security"),
         wizard_path="/admin/finance",
         roles=(ROLE_ADMIN,),
+        area="getting-started",
     ),
     HelpPlaybook(
         id="owner-lockout",
         title="Locked out of admin / rogue staff account",
         problem="Someone with admin access deactivated you or changed passwords.",
         steps=(
-            "Use Railway CLI with OWNER_RECOVERY_SECRET — scripts/recover_owner.py",
-            "Optionally set DEACTIVATE_USERNAME to disable the rogue account",
-            "Log in as owner, then rotate SECRET_KEY to kill old sessions",
+            "Use the owner recovery process with your break-glass secret (ask engineering if unsure)",
+            "Disable the rogue account if needed",
+            "Log in as owner, then rotate sessions",
             "Read Owner protection & break-glass in Help docs",
         ),
-        tags=("owner", "security", "lockout", "break-glass", "recovery", "admin"),
+        tags=("owner", "security", "lockout", "recovery", "admin"),
         wizard_path="/admin/help?doc=owner-protection",
         doc_slug="owner-protection",
         roles=(ROLE_ADMIN,),
+        area="admin",
     ),
     HelpPlaybook(
         id="document-vault",
@@ -484,10 +671,11 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
             "Use Admin only for highly sensitive originals",
             "Create finance or legal staff logins when those teams need access",
         ),
-        tags=("documents", "legal", "accounting", "tax", "contracts", "vault", "upload"),
+        tags=("documents", "legal", "accounting", "tax", "contracts", "vault"),
         wizard_path="/admin/documents",
         doc_slug="document-vault",
         roles=(ROLE_ADMIN, ROLE_FINANCE, ROLE_LEGAL),
+        area="finance",
     ),
     HelpPlaybook(
         id="onboarding-finance",
@@ -496,11 +684,12 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         steps=(
             "Finance dashboard — revenue, refunds, exports (admin still owns margin/exports)",
             "Documents — upload tax and accounting papers; download vault files",
-            "Help → search refund or finance if a charge dispute arrives",
+            "Help → Finance area for refund and payout how-tos",
         ),
         tags=("onboarding", "finance", "checklist", "accounting", "documents"),
         wizard_path="/admin/documents",
         roles=(ROLE_FINANCE,),
+        area="getting-started",
     ),
     HelpPlaybook(
         id="onboarding-legal",
@@ -514,6 +703,7 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         tags=("onboarding", "legal", "checklist", "contracts", "documents"),
         wizard_path="/admin/documents",
         roles=(ROLE_LEGAL,),
+        area="getting-started",
     ),
 )
 
@@ -543,6 +733,53 @@ def _can_view_doc(doc: HelpDoc, role: str) -> bool:
     return True
 
 
+def list_help_areas() -> List[dict]:
+    return [
+        {"key": key, "label": label, "summary": summary}
+        for key, label, summary in HELP_AREAS
+    ]
+
+
+def get_playbook(playbook_id: str, *, role: str = ROLE_ADMIN) -> Optional[HelpPlaybook]:
+    for playbook in PLAYBOOKS:
+        if playbook.id == playbook_id and _playbook_visible(playbook, role):
+            return playbook
+    return None
+
+
+def filter_playbooks(
+    *,
+    role: str = ROLE_ADMIN,
+    query: str = "",
+    area: str = "",
+    tag: str = "",
+) -> List[HelpPlaybook]:
+    results = search_playbooks(query, role=role)
+    area_key = (area or "").strip().lower()
+    tag_key = (tag or "").strip().lower()
+    if area_key:
+        results = [p for p in results if p.area == area_key]
+    if tag_key:
+        results = [
+            p
+            for p in results
+            if tag_key in {t.lower() for t in p.tags}
+            or tag_key in _normalize(p.title)
+            or tag_key in _normalize(p.problem)
+        ]
+    return results
+
+
+def popular_tags(*, role: str = ROLE_ADMIN, limit: int = 24) -> List[str]:
+    counts: Counter[str] = Counter()
+    for playbook in PLAYBOOKS:
+        if not _playbook_visible(playbook, role):
+            continue
+        for tag in playbook.tags:
+            counts[tag.lower()] += 1
+    return [tag for tag, _ in counts.most_common(limit)]
+
+
 def search_playbooks(query: str, *, role: str = ROLE_ADMIN) -> List[HelpPlaybook]:
     needle = _normalize(query)
     if not needle:
@@ -553,7 +790,15 @@ def search_playbooks(query: str, *, role: str = ROLE_ADMIN) -> List[HelpPlaybook
         if not _playbook_visible(playbook, role):
             continue
         haystack = _normalize(
-            " ".join([playbook.title, playbook.problem, *playbook.steps, *playbook.tags])
+            " ".join(
+                [
+                    playbook.title,
+                    playbook.problem,
+                    playbook.area,
+                    *playbook.steps,
+                    *playbook.tags,
+                ]
+            )
         )
         if needle in haystack:
             score = haystack.count(needle)

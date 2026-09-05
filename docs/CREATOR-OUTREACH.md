@@ -2,31 +2,27 @@
 
 Staff CRM for DIY Umrah / Muslim travel creators: contacts, premade pitches, and branded emails.
 
-**URL:** https://api.noorlink.co/admin/creator-outreach  
-**Roles:** `admin`, `marketing` (same as Social media / promos)
+**Where:** Sidebar → Marketing → **Creator outreach**  
+**Who:** Admin and marketing (same as Social media)
 
-## Setup (one time)
+## How to use (staff)
 
-1. Run migration in Supabase SQL editor (or `supabase db push`):
+1. Open Creator outreach (or Quick start → Creator outreach).
+2. First visit loads starter Wave 1–3 creators — edit freely.
+3. Select a creator, add their email if missing.
+4. Pick a premade template (gifted collab, follow-up, group trip, thank-you).
+5. Click **Send branded email** — they get a NoorLink-branded message (same look as order emails).
+6. Or **Copy for DM** if you’re messaging on Instagram instead.
+7. Update status as you go: **To contact → Messaged → Replied → Gifted → Posted → Closed**.
 
-   `supabase/migrations/20260905000000_creator_outreach_contacts.sql`
+Tips:
+- Keep notes short (what they asked for, code you offered).
+- Prefer gifted eSIM + a small affiliate % over cash sponsorships for micro creators.
+- Search Help → tag **outreach** for the short how-to.
 
-2. Confirm Railway already has `RESEND_API_KEY` and `RESEND_FROM_EMAIL` (same as order emails). No extra Cloudflare secrets needed for this tool.
+## Setup (admin / engineering — one time)
 
-## Usage
+1. Run migration: `supabase/migrations/20260905000000_creator_outreach_contacts.sql`
+2. Confirm Railway has Resend configured (same as order emails).
 
-1. Sign in at https://api.noorlink.co/admin  
-2. Sidebar → **Marketing** → **Creator outreach** (or Quick start card)  
-3. First open seeds Wave 1–3 starter creators (edit freely)  
-4. Add email + pick a premade template → **Send branded email**  
-5. Or **Copy for DM** for Instagram outreach  
-
-Statuses: To contact → Messaged → Replied → Gifted → Posted → Closed
-
-## Branding
-
-Emails use `wrap_branded_email` from `app/services/email_brand.py` (teal header, orange CTA, light body) — same chrome as transactional mail.
-
-## Note
-
-The temporary website tool at `https://noorlink.co/team/outreach` can stay as a backup or be retired later. Prefer this admin hub going forward.
+Prefer this admin hub over the temporary website page at `/team/outreach`.

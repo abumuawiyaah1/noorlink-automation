@@ -22,10 +22,16 @@ Search this document from **Help** using keywords like *fulfillment*, *refund*, 
 | Tool | Purpose | Who |
 |------|---------|-----|
 | **Social media** | Partner photo/video library, captions, Meta links | Admin, marketing |
+| **Creator outreach** | Creator databank, premade pitches, branded partnership emails | Admin, marketing |
 | **Insider wizard** | Schedule newsletter issues | Admin, marketing, catalog |
 | **Newsletter subscribers** | Export / unsubscribe | Admin, marketing, catalog |
+| **Promo wizard** | Campaign discount codes (20%+ needs admin approval) | Admin, marketing, catalog |
 
 Hidden tools (linked from Operations or Finance): Event log, Refund wizard, Breakage list, GDPR tools, Diagnostics.
+
+### Help & how-to wiki
+
+Sidebar → **Help**. Browse by **area** (Support, Marketing, Catalog…) or **tag** (refund, promo, creator…). Each how-to has steps + **Open tool**.
 
 ---
 
@@ -60,6 +66,12 @@ Write issue → test email to yourself → schedule send date. Cron sends on tha
 
 ### Newsletter subscribers
 Export CSV or unsubscribe someone on request.
+
+### Social media toolkit
+Upload partner photos/videos → copy caption → post in Meta → mark Posted. Delete old posted files when storage fills up.
+
+### Creator outreach
+Track DIY Umrah / travel creators. Pick a premade template → send branded email (or copy for Instagram DM). Update status: To contact → Messaged → Replied → Gifted → Posted → Closed.
 
 ### Send free eSIM
 Complimentary plans for staff/partners — logged in audit trail.
@@ -124,7 +136,7 @@ Reply to customers with branded email. Inbound email via Resend webhook creates/
 2. Finance — revenue & margin (admin)  
 3. Operations — threats + run cron if Insider due  
 4. Support Inbox — assign & reply to >24h tickets  
-5. Help search if something is stuck  
+5. Help → browse how-tos by area/tag if something is stuck  
 
 ---
 
@@ -165,4 +177,4 @@ Reply to customers with branded email. Inbound email via Resend webhook creates/
 
 ---
 
-*Last updated: dashboard phase complete. Search Help for playbooks on specific problems.*
+*Last updated: Help how-to wiki (areas + tags). Search or browse Help for any dashboard task.*

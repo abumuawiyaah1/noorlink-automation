@@ -3,6 +3,7 @@
 {% include "includes/admin_panel_styles.html" %}
 <style>
   .nl-help-playbook { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: #fff; }
+  .nl-help-playbook--focus { border-color: #0F3D3E; box-shadow: 0 0 0 1px rgba(15,61,62,.12); }
   .nl-doc-article {
     background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1.5rem 2rem;
     max-height: 75vh; overflow: auto; color: #334155; line-height: 1.55;
@@ -18,49 +19,107 @@
   }
   .nl-doc-sidebar-card--dev { border-color: #0F3D3E; background: #F3F7F7; }
   .nl-readonly-badge { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #6B7280; }
+  .nl-area-chip {
+    display: inline-block; border: 1px solid #e5e7eb; background: #fff; color: #0F3D3E;
+    border-radius: 999px; padding: .35rem .85rem; font-size: 13px; text-decoration: none; margin: 0 .35rem .5rem 0;
+  }
+  .nl-area-chip:hover { border-color: #0F3D3E; text-decoration: none; color: #0F3D3E; }
+  .nl-area-chip.is-active { background: #0F3D3E; color: #fff; border-color: #0F3D3E; }
+  .nl-tag-chip {
+    display: inline-block; border: 1px solid #e5e7eb; background: #F3F7F7; color: #334155;
+    border-radius: 6px; padding: .2rem .55rem; font-size: 12px; text-decoration: none; margin: 0 .3rem .4rem 0;
+  }
+  .nl-tag-chip:hover { border-color: #FF9500; color: #05191A; text-decoration: none; }
+  .nl-tag-chip.is-active { background: #FF9500; color: #05191A; border-color: #FF9500; font-weight: 600; }
+  .nl-help-tag-mini { font-size: 11px; color: #6B7280; margin-right: .35rem; }
 </style>
 <div class="container-fluid">
-  <h1 class="h3 mb-2">Help</h1>
-  <p class="text-muted mb-2">Search playbooks and <strong>full documentation</strong> — read-only reference.</p>
-  <p class="nl-readonly-badge mb-4">Read-only · research & training</p>
+  <h1 class="h3 mb-2">Help &amp; how-to wiki</h1>
+  <p class="text-muted mb-2">Learn any dashboard task in plain language — browse by area or tag, or search.</p>
+  <p class="nl-readonly-badge mb-4">Read-only · staff training</p>
 
   {% if flash_error %}<div class="alert alert-warning">{{ flash_error }}</div>{% endif %}
 
-  <form method="get" action="{{ url_for('admin:help-center') }}" class="row g-2 mb-4">
+  <form method="get" action="{{ url_for('admin:help-center') }}" class="row g-2 mb-3">
     <div class="col-md-8">
-      <input class="form-control form-control-lg" name="q" value="{{ query }}" placeholder="Search dashboard guide, API, webhooks, refunds, Telna, roles…" autofocus />
+      <input class="form-control form-control-lg" name="q" value="{{ query }}" placeholder="Search: refund, promo, creator, eSIM, Insider…" autofocus />
+      {% if area %}<input type="hidden" name="area" value="{{ area }}" />{% endif %}
+      {% if tag %}<input type="hidden" name="tag" value="{{ tag }}" />{% endif %}
     </div>
     <div class="col-auto">
       <button type="submit" class="btn btn-primary btn-lg">Search</button>
     </div>
-    {% if query or doc_slug %}
+    {% if query or doc_slug or area or tag or how_to %}
     <div class="col-auto align-self-center">
-      <a href="{{ url_for('admin:help-center') }}" class="small">Clear</a>
+      <a href="{{ url_for('admin:help-center') }}" class="small">Clear filters</a>
     </div>
     {% endif %}
   </form>
 
+  {% if not doc_html %}
+  <div class="mb-3">
+    <p class="small text-muted text-uppercase mb-2" style="letter-spacing:.04em;">Browse by area</p>
+    <a class="nl-area-chip{% if not area %} is-active{% endif %}" href="{{ url_for('admin:help-center') }}{% if query %}?q={{ query | urlencode }}{% endif %}">All</a>
+    {% for a in areas %}
+    <a class="nl-area-chip{% if area == a.key %} is-active{% endif %}"
+       href="{{ url_for('admin:help-center') }}?area={{ a.key }}{% if query %}&amp;q={{ query | urlencode }}{% endif %}{% if tag %}&amp;tag={{ tag | urlencode }}{% endif %}"
+       title="{{ a.summary }}">{{ a.label }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="mb-4">
+    <p class="small text-muted text-uppercase mb-2" style="letter-spacing:.04em;">Popular tags</p>
+    {% for t in tags %}
+    <a class="nl-tag-chip{% if tag == t %} is-active{% endif %}"
+       href="{{ url_for('admin:help-center') }}?tag={{ t | urlencode }}{% if area %}&amp;area={{ area }}{% endif %}{% if query %}&amp;q={{ query | urlencode }}{% endif %}">{{ t }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {% if doc_html %}
   <div class="mb-4">
-    <a href="{{ url_for('admin:help-center') }}{% if query %}?q={{ query | urlencode }}{% endif %}" class="small">&larr; Back to search</a>
+    <a href="{{ url_for('admin:help-center') }}{% if query %}?q={{ query | urlencode }}{% endif %}" class="small">&larr; Back to how-tos</a>
     {% if doc_meta and doc_meta.audience == 'dev' %}
     <span class="badge bg-dark ms-2">Developer · admin only</span>
     {% else %}
     <span class="badge bg-secondary ms-2">Staff guide</span>
     {% endif %}
     <div class="nl-doc-article mt-3">{{ doc_html | safe }}</div>
-    <p class="small text-muted mt-3">This page is read-only. To change docs, edit the markdown file in the repo <code>docs/</code> folder.</p>
+    <p class="small text-muted mt-3">This page is read-only. Ask an admin if something needs updating.</p>
   </div>
   {% else %}
 
   <div class="row">
     <div class="col-lg-8">
+      {% if how_to %}
+      <article class="nl-help-playbook nl-help-playbook--focus mb-4">
+        <p class="small text-muted mb-1">How-to · {{ how_to.area | replace('-', ' ') | title }}</p>
+        <h2 class="h5 mb-1">{{ how_to.title }}</h2>
+        <p class="mb-3">{{ how_to.problem }}</p>
+        <ol class="mb-3">
+          {% for step in how_to.steps %}<li class="mb-1">{{ step }}</li>{% endfor %}
+        </ol>
+        <div class="mb-3">
+          {% for t in how_to.tags %}
+          <a class="nl-tag-chip" href="{{ url_for('admin:help-center') }}?tag={{ t | urlencode }}">{{ t }}</a>
+          {% endfor %}
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-primary" href="{{ how_to.wizard_path }}">Open tool</a>
+          {% if how_to.doc_slug %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin:help-center') }}?doc={{ how_to.doc_slug }}">Read full guide</a>
+          {% endif %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin:help-center') }}{% if area %}?area={{ area }}{% endif %}">Back to list</a>
+        </div>
+      </article>
+      {% endif %}
+
       {% if query and doc_hits %}
       <h2 class="h6 text-muted text-uppercase mb-3">Documentation matches</h2>
       {% for hit in doc_hits %}
       <article class="nl-doc-hit">
         <h3 class="h6 mb-1">
-          <a href="{{ url_for('admin:help-center') }}?doc={{ hit.slug }}{% if query %}&q={{ query | urlencode }}{% endif %}">{{ hit.title }}</a>
+          <a href="{{ url_for('admin:help-center') }}?doc={{ hit.slug }}{% if query %}&amp;q={{ query | urlencode }}{% endif %}">{{ hit.title }}</a>
           {% if hit.audience == 'dev' %}<span class="badge bg-dark ms-1">Dev</span>{% endif %}
         </h3>
         <p class="small text-muted mb-1">{{ hit.excerpt }}</p>
@@ -69,31 +128,43 @@
       {% endfor %}
       {% endif %}
 
-      <h2 class="h6 text-muted text-uppercase mb-3 mt-2">{% if query %}Playbooks{% else %}Common problems{% endif %}</h2>
+      <h2 class="h6 text-muted text-uppercase mb-3 mt-2">
+        {% if area_label %}{{ area_label }} how-tos
+        {% elif tag %}Tagged “{{ tag }}”
+        {% elif query %}Matching how-tos
+        {% else %}Featured how-tos
+        {% endif %}
+      </h2>
       {% for p in playbooks %}
       <article class="nl-help-playbook">
-        <h3 class="h6 mb-1">{{ p.title }}</h3>
+        <h3 class="h6 mb-1">
+          <a href="{{ url_for('admin:help-center') }}?how={{ p.id }}">{{ p.title }}</a>
+        </h3>
         <p class="small text-muted mb-2">{{ p.problem }}</p>
         <ol class="small mb-2">
           {% for step in p.steps %}<li>{{ step }}</li>{% endfor %}
         </ol>
+        <div class="mb-2">
+          {% for t in p.tags[:6] %}
+          <a class="nl-help-tag-mini" href="{{ url_for('admin:help-center') }}?tag={{ t | urlencode }}">#{{ t }}</a>
+          {% endfor %}
+        </div>
         <div class="d-flex flex-wrap gap-2">
           <a class="btn btn-sm btn-primary" href="{{ p.wizard_path }}">Open tool</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin:help-center') }}?how={{ p.id }}">Full how-to</a>
           {% if p.doc_slug %}
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin:help-center') }}?doc={{ p.doc_slug }}{% if query %}&q={{ query | urlencode }}{% endif %}">Read doc</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin:help-center') }}?doc={{ p.doc_slug }}{% if query %}&amp;q={{ query | urlencode }}{% endif %}">Read doc</a>
           {% endif %}
         </div>
       </article>
       {% else %}
-      {% if query %}
-      <p class="text-muted">No playbooks matched. Check documentation matches above or try <em>dashboard</em>, <em>api</em>, <em>finance</em>.</p>
-      {% endif %}
+      <p class="text-muted">No how-tos matched. Try another area, tag, or search for <em>refund</em>, <em>promo</em>, or <em>creator</em>.</p>
       {% endfor %}
     </div>
 
     <div class="col-lg-4">
       <h2 class="h6 text-muted text-uppercase mb-3">Full documentation</h2>
-      <p class="small text-muted">Complete read-only guides — searchable via the box above.</p>
+      <p class="small text-muted">Longer guides — searchable above.</p>
 
       {% for doc in pinned_docs %}
       <div class="nl-doc-sidebar-card{% if doc.audience == 'dev' %} nl-doc-sidebar-card--dev{% endif %}">
@@ -110,7 +181,7 @@
       </div>
       {% endfor %}
 
-      <h2 class="h6 text-muted text-uppercase mb-3 mt-4">Technical runbooks</h2>
+      <h2 class="h6 text-muted text-uppercase mb-3 mt-4">More runbooks</h2>
       <ul class="list-unstyled">
         {% for doc in docs %}
         {% if not doc.pinned %}

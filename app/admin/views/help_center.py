@@ -7,13 +7,15 @@ from sqladmin import BaseView, expose
 from app.admin.nav_catalog import HELP_CATEGORY
 from app.admin.roles import ALL_ROLES, ROLE_ADMIN, ROLE_OWNER, session_role
 from app.services.admin_help_playbooks import (
-    PLAYBOOKS,
+    filter_playbooks,
     get_doc_meta,
+    get_playbook,
     list_doc_summaries,
+    list_help_areas,
     load_doc_markdown,
     markdown_to_safe_html,
+    popular_tags,
     search_docs,
-    search_playbooks,
 )
 
 
@@ -32,6 +34,9 @@ class HelpCenterView(BaseView):
     async def center(self, request: Request):
         role = session_role(request)
         query = request.query_params.get("q", "").strip()
+        area = request.query_params.get("area", "").strip().lower()
+        tag = request.query_params.get("tag", "").strip().lower()
+        how_id = request.query_params.get("how", "").strip()
         doc_slug = request.query_params.get("doc", "").strip()
 
         doc_raw = None
@@ -49,15 +54,41 @@ class HelpCenterView(BaseView):
                 request.session["flash_error"] = "Developer documentation is admin-only."
                 return RedirectResponse(request.url_for("admin:help-center"), status_code=302)
 
-        playbooks = search_playbooks(query, role=role) if query else search_playbooks("", role=role)
+        how_to = get_playbook(how_id, role=role) if how_id else None
+        playbooks = filter_playbooks(role=role, query=query, area=area, tag=tag)
+        if not query and not area and not tag and not how_to:
+            # Home: show a curated short list — prefer getting-started + common problems
+            featured_ids = {
+                "notifications-daily",
+                "monday-routine",
+                "no-esim-after-payment",
+                "support-ticket",
+                "create-promo",
+                "social-media-post",
+                "creator-outreach-email",
+                "order-lookup-howto",
+            }
+            featured = [p for p in playbooks if p.id in featured_ids]
+            if featured:
+                playbooks = featured + [p for p in playbooks if p.id not in featured_ids][:8]
+
         doc_hits = search_docs(query, role=role) if query else []
         pinned_docs = [d for d in list_doc_summaries(role=role) if d.get("pinned")]
+        areas = list_help_areas()
+        area_label = next((a["label"] for a in areas if a["key"] == area), "")
+        tags = popular_tags(role=role)
 
         return await self.templates.TemplateResponse(
             request,
             "help_center.html",
             {
                 "query": query,
+                "area": area,
+                "area_label": area_label,
+                "tag": tag,
+                "areas": areas,
+                "tags": tags,
+                "how_to": how_to,
                 "playbooks": playbooks,
                 "doc_hits": doc_hits,
                 "pinned_docs": pinned_docs,

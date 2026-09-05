@@ -2,28 +2,23 @@
 
 Staff tool for partner photos/videos, posting captions, and Meta quick links.
 
-**URL:** https://api.noorlink.co/admin/social-media  
-**Roles:** `admin`, `marketing` (and `catalog` for promo-related marketing tools)
+**Where:** Sidebar → Marketing → **Social media**  
+**Who:** Admin and marketing
 
-## Setup (one time)
+## How to use (staff)
 
-1. Apply migration `supabase/migrations/20260830200000_social_media_assets.sql` in Supabase SQL editor (or `supabase db push`).
-2. Confirm Storage bucket **`social-media-assets`** exists and is **private** (migration creates it; create manually if the insert fails).
-3. Railway already needs `DATABASE_URL` and `SUPABASE_SERVICE_KEY` for the admin dashboard.
+1. Open Social media toolkit.
+2. Upload partner images/videos (keep each file under ~100 MB).
+3. Set status: **New → Ready to post → Posted**.
+4. Copy the caption, then open Meta Business Suite / Instagram to publish.
+5. Mark Posted when done. Delete old posted files when the library gets full (~10 GB planning cap).
 
-## Usage
+Search Help → tag **social** for the short how-to.
 
-1. Sign in at https://api.noorlink.co/admin
-2. Sidebar → **Marketing** → **Social media** (or Quick start → Social media toolkit)
-3. Upload partner images/videos (max 100 MB each)
-4. Set status: **New** → **Ready to post** → **Posted**
-5. Download when posting in Meta Business Suite / Instagram app
-6. Delete posted files to stay under your ~10 GB storage budget
+## Setup (admin / engineering — one time)
 
-## Storage
-
-Files live in Supabase Storage bucket `social-media-assets`. Metadata in Postgres table `social_media_assets`. The hub shows library usage against a **10 GB planning cap** — delete old videos when full.
-
-## Customer website
+1. Apply migration `supabase/migrations/20260830200000_social_media_assets.sql`.
+2. Confirm Storage bucket **`social-media-assets`** exists and is **private**.
+3. Railway needs database access (same as the rest of admin).
 
 The old `/social` page on noorlink.co is deprecated; use this admin tool instead.

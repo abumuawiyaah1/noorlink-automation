@@ -5,8 +5,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.services.admin_help_playbooks import (
+    filter_playbooks,
+    list_help_areas,
     load_doc_markdown,
     markdown_to_safe_html,
+    popular_tags,
     search_docs,
     search_playbooks,
     PLAYBOOKS,
@@ -24,6 +27,20 @@ def test_search_playbooks_webhook():
 
 def test_search_playbooks_empty_returns_all():
     assert len(search_playbooks("", role="admin")) == len(PLAYBOOKS)
+
+
+def test_filter_playbooks_by_area_and_tag():
+    marketing = filter_playbooks(role="admin", area="marketing")
+    assert marketing
+    assert all(p.area == "marketing" for p in marketing)
+    assert any(p.id == "creator-outreach-email" for p in marketing)
+
+    tagged = filter_playbooks(role="admin", tag="outreach")
+    assert any(p.id == "creator-outreach-email" for p in tagged)
+
+    areas = list_help_areas()
+    assert {a["key"] for a in areas} >= {"support", "marketing", "getting-started"}
+    assert "promo" in popular_tags(role="admin")
 
 
 def test_load_telna_doc():
