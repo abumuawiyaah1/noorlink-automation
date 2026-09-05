@@ -237,6 +237,7 @@
   var MAX_SHOW = 6;
   var LABELS = {
     "/admin/": "Home",
+    "/admin/home": "Do next",
     "/admin/wizards": "Quick start",
     "/admin/notifications": "Notifications",
     "/admin/help": "Help",
@@ -353,7 +354,7 @@
   <aside class="navbar navbar-expand-lg navbar-vertical navbar-expand-md navbar-dark">
     <div class="container-fluid">
       <h1 class="navbar-brand navbar-brand-autodark">
-        <a href="{{ url_for('admin:index') }}">
+        <a href="{{ url_for('admin:home-hub') }}">
           {% if admin.logo_url %}
           <img src="{{ admin.logo_url }}" width="64" height="64" alt="Admin" class="navbar-brand-image" />
           {% else %}

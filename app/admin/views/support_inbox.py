@@ -5,7 +5,7 @@ from starlette.responses import RedirectResponse
 from sqladmin import BaseView, expose
 
 from app.admin.roles import ROLE_ADMIN, ROLE_SUPPORT, has_role, session_username
-from app.services.support_categories import category_label, list_reply_templates
+from app.services.support_categories import category_label, list_all_reply_templates
 from app.services.support_messaging import (
     SupportMessagingError,
     assign_support_ticket,
@@ -90,12 +90,14 @@ class SupportInboxView(BaseView):
 
         try:
             admins = list_assignable_admins()
-            reply_templates = list_reply_templates(ticket.category)
+            reply_templates = list_all_reply_templates(ticket.category)
         except SupportMessagingError:
             admins = []
             reply_templates = []
 
         messages = list_messages_for_ticket(str(ticket.id))
+        category_templates = [t for t in reply_templates if not t["key"].startswith("common_")]
+        common_templates = [t for t in reply_templates if t["key"].startswith("common_")]
         return await self.templates.TemplateResponse(
             request,
             "support_ticket_thread.html",
@@ -104,6 +106,8 @@ class SupportInboxView(BaseView):
                 "messages": messages,
                 "admins": admins,
                 "reply_templates": reply_templates,
+                "category_templates": category_templates,
+                "common_templates": common_templates,
                 "category_label": category_label(ticket.category),
                 "flash_success": request.session.pop("flash_success", None),
                 "flash_error": request.session.pop("flash_error", None),

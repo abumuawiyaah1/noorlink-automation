@@ -29,9 +29,9 @@ Search this document from **Help** using keywords like *fulfillment*, *refund*, 
 
 Hidden tools (linked from Operations or Finance): Event log, Refund wizard, Breakage list, GDPR tools, Diagnostics.
 
-### Help & how-to wiki
+### Do next (daily queue)
 
-Sidebar → **Help**. Browse by **area** (Support, Marketing, Catalog…) or **tag** (refund, promo, creator…). Each how-to has steps + **Open tool**.
+Sidebar → **Quick start → Do next** (or click the logo). Shows your top actions: stuck orders, tickets assigned to you, soft reminders (creator follow-ups, Insider soon, payouts). Clear red items first.
 
 ### Your layout (per browser)
 

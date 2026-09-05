@@ -1,0 +1,72 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<style>
+  .nl-do-card {
+    border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.15rem;
+    background: #fff; margin-bottom: 0.75rem; display: flex; gap: 1rem;
+    align-items: flex-start; justify-content: space-between; flex-wrap: wrap;
+  }
+  .nl-do-card--urgent { border-left: 4px solid #dc2626; }
+  .nl-do-card--warning { border-left: 4px solid #FF9500; }
+  .nl-do-card--info, .nl-do-card--soft { border-left: 4px solid #0F3D3E; }
+  .nl-do-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 2rem; height: 2rem; border-radius: 999px; background: #F3F7F7;
+    color: #0F3D3E; font-weight: 700; font-size: 0.9rem;
+  }
+  .nl-do-empty {
+    background: #F3F7F7; border-radius: 12px; padding: 1.25rem 1.5rem; color: #334155;
+  }
+  .nl-wizard-mini {
+    border: 1px solid #e5e7eb; border-radius: 10px; padding: 0.85rem 1rem;
+    background: #fff; height: 100%;
+  }
+</style>
+<div class="container-fluid">
+  <h1 class="h3 mb-1">Hi {{ display_name }} — what to do next</h1>
+  <p class="text-muted mb-4">Your top actions for today. Clear the red ones first, then the soft reminders.</p>
+
+  {% if do_next %}
+  <h2 class="h6 text-muted text-uppercase mb-3" style="letter-spacing:.04em;">Do next</h2>
+  {% for item in do_next %}
+  <article class="nl-do-card nl-do-card--{{ item.severity }}">
+    <div class="d-flex gap-3 align-items-start">
+      <span class="nl-do-count" title="Count">{{ item.count }}</span>
+      <div>
+        <h3 class="h6 mb-1">{{ item.title }}</h3>
+        <p class="small text-muted mb-0">{{ item.detail }}</p>
+      </div>
+    </div>
+    <a class="btn btn-sm {% if item.severity == 'urgent' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{{ item.link_path }}">{{ item.cta }}</a>
+  </article>
+  {% endfor %}
+  {% else %}
+  <div class="nl-do-empty mb-4">
+    <strong style="color:#0F3D3E;">You’re clear for now.</strong>
+    <p class="mb-0 mt-1 small">No urgent items. Check Notifications later, or open Help if you’re learning a new tool.</p>
+  </div>
+  {% endif %}
+
+  <div class="d-flex flex-wrap gap-2 mb-4 mt-3">
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin:notifications-hub') }}">All notifications</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin:help-center') }}">Help &amp; how-tos</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin:staff-wizards') }}">Quick start</a>
+  </div>
+
+  {% if wizards %}
+  <h2 class="h6 text-muted text-uppercase mb-3" style="letter-spacing:.04em;">Quick tools for your role</h2>
+  <div class="row g-3">
+    {% for w in wizards %}
+    <div class="col-md-6 col-lg-3">
+      <div class="nl-wizard-mini">
+        <strong class="small d-block mb-1">{{ w.title }}</strong>
+        <p class="small text-muted mb-2">{{ w.summary }}</p>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for(w.endpoint) }}">Open</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

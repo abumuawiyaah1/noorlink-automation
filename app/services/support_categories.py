@@ -95,6 +95,15 @@ _CATEGORY_BY_SLUG: Dict[str, CategoryConfig] = {
                     "Open it on the phone that will use the eSIM — forwarding QR codes often breaks install."
                 ),
             },
+            {
+                "key": "device_not_compatible",
+                "label": "Device compatibility",
+                "body": (
+                    "Some phones are carrier-locked or do not support eSIM. If install fails, tell us "
+                    "your exact phone model and carrier. You can also check noorlink.co for device tips. "
+                    "We will help you find the next best step."
+                ),
+            },
         ],
     },
     "checkout_payment": {
@@ -165,6 +174,15 @@ _CATEGORY_BY_SLUG: Dict[str, CategoryConfig] = {
                     "Most banks show it within 5–10 business days on the original card."
                 ),
             },
+            {
+                "key": "refund_denied_usage",
+                "label": "Refund not eligible (usage)",
+                "body": (
+                    "I reviewed your order and usage. Because a large share of the data was already "
+                    "used, we cannot approve a full refund under our policy. I am happy to help with "
+                    "install or remaining data questions — just reply here."
+                ),
+            },
         ],
     },
     "other": {
@@ -228,11 +246,81 @@ def list_reply_templates(category: Optional[str]) -> List[ReplyTemplate]:
     return list(get_category_config(category)["templates"])
 
 
+# Always-available saved replies (shown on every ticket + merged into lookup)
+COMMON_REPLY_TEMPLATES: List[ReplyTemplate] = [
+    {
+        "key": "common_thanks_waiting",
+        "label": "Thanks — checking now",
+        "body": (
+            "Thank you for writing in. I am looking into this now and will reply shortly "
+            "with a clear update."
+        ),
+    },
+    {
+        "key": "common_qr_missing",
+        "label": "QR missing / resend",
+        "body": (
+            "Sorry you have not received your QR code yet. I am checking your order and will "
+            "resend the activation email to the address on the order. Please check inbox, spam, "
+            "and promotions — open the email on the phone that will use the eSIM."
+        ),
+    },
+    {
+        "key": "common_install_before_fly",
+        "label": "Install before you fly",
+        "body": (
+            "Best practice: install on Wi‑Fi before you fly.\n"
+            "1. Open Settings → Cellular → Add eSIM (or scan the QR).\n"
+            "2. Keep your home line for calls/SMS if you want.\n"
+            "3. After landing, turn on Data Roaming for the travel eSIM and select it for mobile data.\n\n"
+            "If a step fails, reply with your phone model and we will guide you."
+        ),
+    },
+    {
+        "key": "common_refund_policy",
+        "label": "Refund policy overview",
+        "body": (
+            "We review refunds against our policy and how much data was used. Unused or lightly "
+            "used plans are often eligible; heavy usage may not be. I will check your order and "
+            "reply with a clear yes/no and timeline. Our policy is at noorlink.co/refund."
+        ),
+    },
+    {
+        "key": "common_still_need_help",
+        "label": "Anything else?",
+        "body": (
+            "Hopefully that helps. If anything is still unclear, just reply to this email — "
+            "we are here to help."
+        ),
+    },
+    {
+        "key": "common_order_lookup_ask",
+        "label": "Need order ID",
+        "body": (
+            "Could you reply with your order ID (it looks like nl-…) and the email used at "
+            "checkout? That lets me pull up your eSIM right away."
+        ),
+    },
+]
+
+
+def list_all_reply_templates(category: Optional[str]) -> List[ReplyTemplate]:
+    """Category templates first, then common saved replies (deduped by key)."""
+    seen = set()
+    out: List[ReplyTemplate] = []
+    for tpl in list(get_category_config(category)["templates"]) + list(COMMON_REPLY_TEMPLATES):
+        if tpl["key"] in seen:
+            continue
+        seen.add(tpl["key"])
+        out.append(tpl)
+    return out
+
+
 def get_reply_template(category: Optional[str], template_key: Optional[str]) -> Optional[str]:
     if not template_key:
         return None
     key = template_key.strip().lower()
-    for item in list_reply_templates(category):
+    for item in list_all_reply_templates(category):
         if item["key"] == key:
             return item["body"]
     return None

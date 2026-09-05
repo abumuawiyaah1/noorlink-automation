@@ -155,6 +155,21 @@ DOC_SLUG_ALIASES = {
 
 PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
     HelpPlaybook(
+        id="support-saved-replies",
+        title="Use saved replies in Support Inbox",
+        problem="Want faster, calmer customer replies without typing from scratch.",
+        steps=(
+            "Open a ticket in Support Inbox",
+            "Under For this topic — pick a category template",
+            "Under Saved replies — use shared snippets (QR missing, install before you fly, refund policy)",
+            "Edit the text if needed, then Send reply",
+        ),
+        tags=("support", "inbox", "templates", "saved", "replies", "snippets"),
+        wizard_path="/admin/support-inbox",
+        roles=(ROLE_ADMIN, ROLE_SUPPORT),
+        area="support",
+    ),
+    HelpPlaybook(
         id="no-esim-after-payment",
         title="Customer paid but didn't get eSIM",
         problem="Stripe charge succeeded but no QR / activation email arrived.",
@@ -509,6 +524,20 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         ),
         tags=("notifications", "daily", "sla", "fulfill", "routine"),
         wizard_path="/admin/notifications",
+        area="getting-started",
+    ),
+    HelpPlaybook(
+        id="do-next-home",
+        title="Use Do next (your daily queue)",
+        problem="Want a short list of what to clear today instead of hunting the sidebar.",
+        steps=(
+            "Open Do next in Quick start (or the logo /admin/home)",
+            "Clear red urgent items first (stuck orders, SLA tickets)",
+            "Then soft reminders (creator follow-ups, Insider soon, payouts)",
+            "Tickets assigned to you appear at the top when you have any",
+        ),
+        tags=("do-next", "home", "queue", "proactive", "daily", "notifications"),
+        wizard_path="/admin/home",
         area="getting-started",
     ),
     HelpPlaybook(

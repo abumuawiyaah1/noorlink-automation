@@ -5,7 +5,8 @@ from sqladmin import BaseView, expose
 
 from app.admin.nav_catalog import NOTIFICATIONS_CATEGORY
 from app.admin.roles import ALL_ROLES, session_role
-from app.services.admin_notifications import notification_badge_count, notifications_for_role
+from app.services.admin_do_next import notifications_with_soft_reminders
+from app.services.admin_notifications import notification_badge_count
 
 
 class NotificationsHubView(BaseView):
@@ -22,7 +23,7 @@ class NotificationsHubView(BaseView):
     @expose("/notifications", identity="notifications-hub", methods=["GET"])
     async def hub(self, request: Request):
         role = session_role(request)
-        items = notifications_for_role(role)
+        items = notifications_with_soft_reminders(role)
         return await self.templates.TemplateResponse(
             request,
             "notifications_hub.html",

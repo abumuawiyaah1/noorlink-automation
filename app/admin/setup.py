@@ -30,6 +30,7 @@ from app.admin.views.finance_hub import FinanceHubView
 from app.admin.views.fulfill_order_wizard import FulfillOrderWizardView
 from app.admin.views.help_center import HelpCenterView
 from app.admin.views.help_customer_wizard import HelpCustomerWizardView
+from app.admin.views.home_hub import HomeHubView
 from app.admin.views.insider_wizard import InsiderWizardView
 from app.admin.views.insights_hub import GdprToolsView, InsightsHubView
 from app.admin.views.newsletter_admin import NewsletterAdminView
@@ -92,6 +93,7 @@ def mount_admin(app: FastAPI) -> Admin | None:
     )
     admin.templates.env.globals["admin_session_max_age"] = settings.admin_session_max_age
 
+    admin.add_base_view(HomeHubView)
     admin.add_base_view(StaffWizardsHubView)
     admin.add_base_view(NotificationsHubView)
     admin.add_base_view(HelpCenterView)

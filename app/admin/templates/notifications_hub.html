@@ -12,12 +12,12 @@
 </style>
 <div class="container-fluid">
   <h1 class="h3 mb-2">Notifications</h1>
-  <p class="text-muted mb-4">What needs your attention right now. Each item links to the fix.</p>
+  <p class="text-muted mb-4">Urgent items first, then soft reminders so you stay ahead. Prefer <a href="{{ url_for('admin:home-hub') }}">Do next</a> for a personal queue.</p>
 
   {% if total_count == 0 %}
   <div class="nl-wizard-panel">
     <p class="mb-0 text-success"><i class="fa-solid fa-check-circle"></i> All clear — nothing needs action.</p>
-    <p class="small text-muted mt-2 mb-0">Check <a href="{{ url_for('admin:help-center') }}">Help</a> if you're troubleshooting something specific.</p>
+    <p class="small text-muted mt-2 mb-0">Check <a href="{{ url_for('admin:home-hub') }}">Do next</a> or <a href="{{ url_for('admin:help-center') }}">Help</a>.</p>
   </div>
   {% else %}
   {% for n in notifications %}
@@ -27,6 +27,7 @@
         <div>
           <span class="badge {% if n.severity == 'urgent' %}bg-danger{% elif n.severity == 'warning' %}bg-warning text-dark{% else %}bg-secondary{% endif %} me-2">{{ n.count }}</span>
           <strong>{{ n.title }}</strong>
+          {% if n.severity == 'info' %}<span class="badge bg-light text-dark border ms-1">Reminder</span>{% endif %}
           <p class="small text-muted mb-0 mt-1">{{ n.detail }}</p>
         </div>
         <span class="text-muted small">&rarr;</span>

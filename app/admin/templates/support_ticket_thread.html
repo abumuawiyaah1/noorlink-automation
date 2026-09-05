@@ -73,13 +73,28 @@
         <strong>support@noorlink.co</strong>. Subject includes
         <code>[{{ ticket.ticket_number }}]</code>.
       </p>
-      {% if reply_templates %}
-      <div class="mb-3 d-flex flex-wrap gap-2" id="reply-template-buttons">
-        {% for tpl in reply_templates %}
-        <button type="button" class="btn btn-sm btn-outline-secondary support-template-btn" data-template-key="{{ tpl.key }}">
-          {{ tpl.label }}
-        </button>
-        {% endfor %}
+      {% if category_templates or common_templates %}
+      <div class="mb-3">
+        {% if category_templates %}
+        <p class="small text-muted text-uppercase mb-2" style="letter-spacing:.04em;">For this topic</p>
+        <div class="mb-3 d-flex flex-wrap gap-2" id="reply-template-buttons">
+          {% for tpl in category_templates %}
+          <button type="button" class="btn btn-sm btn-outline-secondary support-template-btn" data-template-key="{{ tpl.key }}">
+            {{ tpl.label }}
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if common_templates %}
+        <p class="small text-muted text-uppercase mb-2" style="letter-spacing:.04em;">Saved replies (any ticket)</p>
+        <div class="mb-2 d-flex flex-wrap gap-2">
+          {% for tpl in common_templates %}
+          <button type="button" class="btn btn-sm btn-outline-primary support-template-btn" data-template-key="{{ tpl.key }}">
+            {{ tpl.label }}
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
       {% endif %}
       <form method="post" action="{{ url_for('admin:support-inbox-ticket', ticket_number=ticket.ticket_number) }}">

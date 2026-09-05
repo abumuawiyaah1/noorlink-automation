@@ -60,6 +60,7 @@ class HelpCenterView(BaseView):
         if not query and not area and not tag and not how_to and not doc_slug:
             # Home: curated short list — getting-started + common marketing/support tasks
             featured_order = (
+                "do-next-home",
                 "notifications-daily",
                 "monday-routine",
                 "layout-shortcuts",
