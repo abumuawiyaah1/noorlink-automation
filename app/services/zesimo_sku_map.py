@@ -1,5 +1,5 @@
 """
-Locked Zesimo fulfillment map (24 SKUs).
+Locked Zesimo fulfillment map (30 SKUs).
 
 provider = "zesimo"
 provider_sku = package_id (portal /packages/{id}/order)
@@ -9,6 +9,7 @@ Everything NOT listed here keeps existing rules:
   - Saudi fixed 3/5/10/20/50 → esimaccess
   - Saudi unlimited 14d → esimaccess (no Zesimo twin in this cut)
   - Caribbean regional → telna
+  - Africa regional → telna
   - PAYG → citrus
 """
 
@@ -90,9 +91,9 @@ ZESIMO_SKU_MAP: List[Dict[str, Any]] = [
         "country_slug": "regional-europe",
         "data_gb": 10.0,
         "validity_days": 30,
-        "package_id": "583",
+        "package_id": "11709",
         "provider_slug": "zesimo-eu-10gb-30d",
-        "wholesale_cents": 798,
+        "wholesale_cents": 966,
         "retail_cents": 2299,
         "product_name": "Europe 10GB 30 Days",
     },
@@ -180,7 +181,7 @@ ZESIMO_SKU_MAP: List[Dict[str, Any]] = [
         "validity_days": 30,
         "package_id": "587",
         "provider_slug": "zesimo-na-10gb-30d",
-        "wholesale_cents": 1398,
+        "wholesale_cents": 1403,
         "retail_cents": 2799,
         "product_name": "North America 10GB 30 Days",
     },
@@ -215,9 +216,9 @@ ZESIMO_SKU_MAP: List[Dict[str, Any]] = [
         "country_slug": "regional-europe",
         "data_gb": 20.0,
         "validity_days": 30,
-        "package_id": "586",
+        "package_id": "11711",
         "provider_slug": "zesimo-eu-20gb-30d",
-        "wholesale_cents": 1409,
+        "wholesale_cents": 1526,
         "retail_cents": 3999,
         "product_name": "Europe 20GB 30 Days",
     },
@@ -319,6 +320,79 @@ ZESIMO_SKU_MAP: List[Dict[str, Any]] = [
         "retail_cents": 1699,
         "product_name": "Latin America 3GB 30 Days",
     },
+    # Phase 4 — Global 193 + NA mid rungs (full catalogue 2026-09-09)
+    {
+        "phase": 4,
+        "catalog_key": "gl-1gb-5",
+        "country_slug": "regional-global",
+        "data_gb": 1.0,
+        "validity_days": 5,
+        "package_id": "11818",
+        "provider_slug": "zesimo-global-1gb-5d",
+        "wholesale_cents": 350,
+        "retail_cents": 999,
+        "product_name": "Global 1GB 5 Days",
+    },
+    {
+        "phase": 4,
+        "catalog_key": "gl-3gb-30",
+        "country_slug": "regional-global",
+        "data_gb": 3.0,
+        "validity_days": 30,
+        "package_id": "11804",
+        "provider_slug": "zesimo-global-3gb-30d",
+        "wholesale_cents": 938,
+        "retail_cents": 2499,
+        "product_name": "Global 3GB 30 Days",
+    },
+    {
+        "phase": 4,
+        "catalog_key": "gl-5gb-30",
+        "country_slug": "regional-global",
+        "data_gb": 5.0,
+        "validity_days": 30,
+        "package_id": "11806",
+        "provider_slug": "zesimo-global-5gb-30d",
+        "wholesale_cents": 1470,
+        "retail_cents": 3499,
+        "product_name": "Global 5GB 30 Days",
+    },
+    {
+        "phase": 4,
+        "catalog_key": "gl-10gb-30",
+        "country_slug": "regional-global",
+        "data_gb": 10.0,
+        "validity_days": 30,
+        "package_id": "11808",
+        "provider_slug": "zesimo-global-10gb-30d",
+        "wholesale_cents": 2520,
+        "retail_cents": 4999,
+        "product_name": "Global 10GB 30 Days",
+    },
+    {
+        "phase": 4,
+        "catalog_key": "na-3gb-30",
+        "country_slug": "regional-north-america",
+        "data_gb": 3.0,
+        "validity_days": 30,
+        "package_id": "2290",
+        "provider_slug": "zesimo-na-3gb-30d",
+        "wholesale_cents": 785,
+        "retail_cents": 1799,
+        "product_name": "North America 3GB 30 Days",
+    },
+    {
+        "phase": 4,
+        "catalog_key": "na-5gb-30",
+        "country_slug": "regional-north-america",
+        "data_gb": 5.0,
+        "validity_days": 30,
+        "package_id": "7063",
+        "provider_slug": "zesimo-na-5gb-30d",
+        "wholesale_cents": 1175,
+        "retail_cents": 2299,
+        "product_name": "North America 5GB 30 Days",
+    },
 ]
 
 
@@ -360,8 +434,9 @@ def fulfillment_rows() -> List[Dict[str, Any]]:
     return rows
 
 
-assert len(ZESIMO_SKU_MAP) == 24
+assert len(ZESIMO_SKU_MAP) == 30
 assert len(by_phase(1)) == 4
 assert len(by_phase(2)) == 11
 assert len(by_phase(3)) == 9
+assert len(by_phase(4)) == 6
 assert all(row.get("package_id") for row in ZESIMO_SKU_MAP)
