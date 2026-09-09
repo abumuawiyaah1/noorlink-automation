@@ -147,7 +147,7 @@ def send_daily_summary_email(*, force: bool = False, now_utc: Optional[Any] = No
     ny_date: date = ny_now(moment).date()
 
     if not force and not is_report_send_hour(moment):
-        return {"sent": 0, "skipped": "Outside 6:00 New York send window."}
+        return {"sent": 0, "skipped": "Before 6:00 New York send window."}
 
     record_id = ny_date.isoformat()
     if not force and report_already_sent(AUDIT_ACTION, record_id):

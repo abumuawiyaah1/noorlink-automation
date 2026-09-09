@@ -36,7 +36,10 @@ AUDIT_ACTION = "monthly_admin_report_sent"
 
 def should_send_monthly_report(now_utc: Optional[datetime] = None) -> bool:
     local = ny_now(now_utc)
-    return local.day == 1 and is_report_send_hour(now_utc)
+    if local.day == 1:
+        return is_report_send_hour(now_utc)
+    # Late GitHub cron: still send once if the 1st was missed.
+    return local.day == 2
 
 
 def build_monthly_summary_html(*, now_utc: Optional[datetime] = None) -> str:
@@ -186,7 +189,7 @@ def _monthly_focus(
 def send_monthly_summary_email(*, force: bool = False, now_utc: Optional[datetime] = None) -> Dict[str, Any]:
     local = ny_now(now_utc)
     if not force and not should_send_monthly_report(now_utc):
-        return {"sent": 0, "skipped": "Monthly report only sends on the 1st at 6:00 New York."}
+        return {"sent": 0, "skipped": "Monthly report sends on the 1st after 6:00 New York (2nd catch-up)."}
 
     record_id = f"{local.year}-{local.month:02d}"
     if not force and report_already_sent(AUDIT_ACTION, record_id):

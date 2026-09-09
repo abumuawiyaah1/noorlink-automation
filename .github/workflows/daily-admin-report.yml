@@ -2,8 +2,8 @@ name: Daily admin report
 
 on:
   schedule:
-    # 10:00 and 11:00 UTC covers 6:00 America/New_York in EDT and EST.
-    - cron: "0 10,11 * * *"
+    # 10:00/11:00 UTC = 6:00 New York (EDT/EST). 14:00/15:00 catch GitHub delay.
+    - cron: "0 10,11,14,15 * * *"
   workflow_dispatch:
 
 jobs:

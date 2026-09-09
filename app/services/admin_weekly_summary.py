@@ -36,7 +36,10 @@ AUDIT_ACTION = "weekly_admin_report_sent"
 
 def should_send_weekly_report(now_utc: Optional[datetime] = None) -> bool:
     local = ny_now(now_utc)
-    return local.weekday() == 0 and is_report_send_hour(now_utc)
+    if local.weekday() == 0:
+        return is_report_send_hour(now_utc)
+    # GitHub often fires hours late — catch Monday's scorecard on Tuesday.
+    return local.weekday() == 1
 
 
 def build_weekly_summary_html(*, now_utc: Optional[datetime] = None) -> str:
@@ -182,7 +185,7 @@ def _weekly_focus(
 def send_weekly_summary_email(*, force: bool = False, now_utc: Optional[datetime] = None) -> Dict[str, Any]:
     local = ny_now(now_utc)
     if not force and not should_send_weekly_report(now_utc):
-        return {"sent": 0, "skipped": "Weekly report only sends Monday at 6:00 New York."}
+        return {"sent": 0, "skipped": "Weekly report sends Monday after 6:00 New York (Tuesday catch-up)."}
 
     record_id = f"{local.isocalendar().year}-W{local.isocalendar().week:02d}"
     if not force and report_already_sent(AUDIT_ACTION, record_id):

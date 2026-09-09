@@ -35,15 +35,23 @@ def test_monthly_html_has_strategy_sections(*_mocks):
     assert "Acquisition channels" in html
 
 
-def test_weekly_schedule_is_monday_six_am_new_york():
-    monday = datetime(2026, 9, 7, 10, 0, tzinfo=timezone.utc)
+def test_weekly_schedule_is_monday_after_six_or_tuesday_catchup():
+    monday_five = datetime(2026, 9, 7, 9, 0, tzinfo=timezone.utc)
+    monday_late = datetime(2026, 9, 7, 15, 0, tzinfo=timezone.utc)
     tuesday = datetime(2026, 9, 8, 10, 0, tzinfo=timezone.utc)
-    assert should_send_weekly_report(monday) is True
-    assert should_send_weekly_report(tuesday) is False
+    wednesday = datetime(2026, 9, 9, 10, 0, tzinfo=timezone.utc)
+    assert should_send_weekly_report(monday_five) is False
+    assert should_send_weekly_report(monday_late) is True
+    assert should_send_weekly_report(tuesday) is True
+    assert should_send_weekly_report(wednesday) is False
 
 
-def test_monthly_schedule_is_first_six_am_new_york():
-    first = datetime(2026, 9, 1, 10, 0, tzinfo=timezone.utc)
+def test_monthly_schedule_is_first_after_six_or_second_catchup():
+    first_five = datetime(2026, 9, 1, 9, 0, tzinfo=timezone.utc)
+    first_late = datetime(2026, 9, 1, 15, 0, tzinfo=timezone.utc)
     second = datetime(2026, 9, 2, 10, 0, tzinfo=timezone.utc)
-    assert should_send_monthly_report(first) is True
-    assert should_send_monthly_report(second) is False
+    third = datetime(2026, 9, 3, 10, 0, tzinfo=timezone.utc)
+    assert should_send_monthly_report(first_five) is False
+    assert should_send_monthly_report(first_late) is True
+    assert should_send_monthly_report(second) is True
+    assert should_send_monthly_report(third) is False

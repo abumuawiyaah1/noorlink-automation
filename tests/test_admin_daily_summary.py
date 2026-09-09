@@ -30,11 +30,13 @@ def _order(
     )
 
 
-def test_should_send_daily_report_only_at_six_am_new_york():
+def test_should_send_daily_report_from_six_am_new_york():
+    edt_five = datetime(2026, 9, 1, 9, 15, tzinfo=timezone.utc)
     edt_six = datetime(2026, 9, 1, 10, 15, tzinfo=timezone.utc)
-    edt_seven = datetime(2026, 9, 1, 11, 15, tzinfo=timezone.utc)
+    edt_late = datetime(2026, 9, 1, 14, 15, tzinfo=timezone.utc)
+    assert should_send_daily_report(edt_five) is False
     assert should_send_daily_report(edt_six) is True
-    assert should_send_daily_report(edt_seven) is False
+    assert should_send_daily_report(edt_late) is True
 
 
 def test_analyze_orders_groups_packages_destinations_and_sources():
@@ -94,11 +96,11 @@ def test_send_daily_summary_email_sends_once_in_window(
 
 
 @patch("app.services.admin_daily_summary.admin_report_recipient_emails", return_value=["ops@noorlink.co"])
-def test_send_daily_summary_email_skips_outside_window(_recipients):
-    ny_ten = datetime(2026, 9, 2, 14, 0, tzinfo=timezone.utc)
-    result = send_daily_summary_email(now_utc=ny_ten)
+def test_send_daily_summary_email_skips_before_six(_recipients):
+    ny_five = datetime(2026, 9, 2, 9, 0, tzinfo=timezone.utc)
+    result = send_daily_summary_email(now_utc=ny_five)
     assert result["sent"] == 0
-    assert "Outside 6:00 New York" in result["skipped"]
+    assert "Before 6:00 New York" in result["skipped"]
 
 
 def test_yesterday_window_uses_new_york_calendar_day():

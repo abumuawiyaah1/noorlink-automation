@@ -39,7 +39,8 @@ def ny_now(now_utc: Optional[datetime] = None) -> datetime:
 
 
 def is_report_send_hour(now_utc: Optional[datetime] = None) -> bool:
-    return ny_now(now_utc).hour == SEND_HOUR_NY
+    """True at or after 6:00 New York so late GitHub cron still delivers once."""
+    return ny_now(now_utc).hour >= SEND_HOUR_NY
 
 
 def period_window_days(*, days: int, end_ny: Optional[datetime] = None) -> PeriodWindow:
