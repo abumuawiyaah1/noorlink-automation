@@ -195,7 +195,8 @@ class Settings(BaseSettings):
 
     @property
     def stripe_cancel_url(self) -> str:
-        return f"{self.app_url.rstrip('/')}{self.stripe_cancel_path}"
+        # Flag cancel returns so the checkout UI can stop auto-retry messaging.
+        return f"{self.app_url.rstrip('/')}{self.stripe_cancel_path}?canceled=1"
 
 
 @lru_cache

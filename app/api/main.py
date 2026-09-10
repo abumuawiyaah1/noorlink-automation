@@ -6,10 +6,13 @@ import secrets
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import get_settings
+from app.core.logging_setup import configure_app_logging
 from app.services.email_service import (
     EmailDeliveryError,
     send_checkout_acknowledgment,
@@ -88,6 +91,7 @@ from .schemas import (
 )
 
 logger = logging.getLogger(__name__)
+configure_app_logging()
 settings = get_settings()
 _is_production = settings.environment.lower() == "production"
 
@@ -118,14 +122,70 @@ from app.admin.setup import mount_admin  # noqa: E402
 mount_admin(app)
 
 
-def _db_error(exc: Exception) -> HTTPException:
-    logger.error("Database error: %s", exc)
-    if _is_production:
-        return HTTPException(
-            status_code=503,
-            detail="Database temporarily unavailable. Please try again.",
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Log full traceback for unexpected 5xx before Cloudflare sees a generic error."""
+    if isinstance(exc, RequestValidationError):
+        return JSONResponse(status_code=422, content={"detail": exc.errors()})
+    if isinstance(exc, (HTTPException, StarletteHTTPException)):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+            headers=dict(getattr(exc, "headers", None) or {}),
         )
-    detail = str(exc).strip() or "Database temporarily unavailable. Please try again."
+    logger.exception(
+        "Unhandled exception on %s %s",
+        request.method,
+        request.url.path,
+    )
+    detail = (
+        "Something went wrong. Please try again in a moment."
+        if _is_production
+        else str(exc)[:500]
+    )
+    return JSONResponse(status_code=500, content={"detail": detail})
+
+
+def _is_retryable_db_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    tokens = (
+        "timeout",
+        "timed out",
+        "temporar",
+        "connection",
+        "connect",
+        "unavailable",
+        "overloaded",
+        "502",
+        "503",
+        "504",
+        "upstream",
+        "pool",
+        "too many",
+        "server disconnected",
+        "network",
+        "reset by peer",
+        "cloudflare",
+    )
+    return any(token in text for token in tokens)
+
+
+def _db_error(exc: Exception) -> HTTPException:
+    """Map repository failures to HTTP errors with full local stack traces."""
+    logger.error(
+        "Database/repository error: %s",
+        exc,
+        exc_info=(type(exc), exc, exc.__traceback__),
+    )
+    customer = "Database temporarily unavailable. Please try again."
+    if _is_production:
+        if _is_retryable_db_error(exc):
+            return HTTPException(status_code=503, detail=customer)
+        # Permanent/schema/RLS-style failures still 503 for customers (no leak),
+        # but ops logs now have the full traceback above.
+        return HTTPException(status_code=503, detail=customer)
+
+    detail = str(exc).strip() or customer
     if any(
         token in detail
         for token in (
@@ -141,10 +201,7 @@ def _db_error(exc: Exception) -> HTTPException:
         )
     ):
         return HTTPException(status_code=503, detail=detail[:500])
-    return HTTPException(
-        status_code=503,
-        detail="Database temporarily unavailable. Please try again.",
-    )
+    return HTTPException(status_code=503, detail=customer)
 
 
 def _prepare_checkout_pricing(body: CheckoutSessionRequest):
@@ -1408,7 +1465,7 @@ async def paypal_create_order(body: CheckoutSessionRequest):
     order = created.order
     settings = get_settings()
     return_url = f"{settings.app_url.rstrip('/')}/success"
-    cancel_url = f"{settings.app_url.rstrip('/')}/checkout"
+    cancel_url = f"{settings.app_url.rstrip('/')}/checkout?canceled=1"
 
     try:
         paypal_order_id = create_paypal_order(

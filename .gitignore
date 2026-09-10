@@ -49,3 +49,6 @@ Thumbs.db
 # Accidental nested clone — never commit (next wave #6)
 noorlink-automation/
 
+# Local app logs (enable with LOG_TO_FILE=1)
+logs/
+
