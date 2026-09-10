@@ -516,6 +516,27 @@ def resolve_fulfillment_target(
         return mapped
 
 
+def enforce_provider_credentials(
+    target: Optional[FulfillmentTarget],
+) -> None:
+    """Fail fast at checkout when mapped provider credentials are missing."""
+    if target is None:
+        return
+    settings = get_settings()
+    provider = (target.provider or "").strip().lower()
+    if provider == "zesimo" and not settings.zesimo_api_key.strip():
+        raise FulfillmentMapError(
+            f"Zesimo fulfillment for {target.catalog_key or target.provider_slug} "
+            "requires ZESIMO_API_KEY"
+        )
+    if provider == "esimaccess" and not settings.esim_access_access_code.strip():
+        # Saudi path has a dedicated message; keep a generic guard for other Access SKUs.
+        raise FulfillmentMapError(
+            f"eSIM Access fulfillment for {target.catalog_key or target.provider_slug} "
+            "requires ESIM_ACCESS_ACCESS_CODE"
+        )
+
+
 def enforce_saudi_access_policy(
     order_row: Dict[str, Any],
     target: Optional[FulfillmentTarget],

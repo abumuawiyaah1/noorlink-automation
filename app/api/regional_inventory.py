@@ -761,6 +761,7 @@ TEMPLATE_KEY_TO_DB_REGION: Dict[str, str] = {
     "africa": "Africa",
     "caribbean": "Americas",
     "north-america": "Americas",
+    "usa": "Americas",
     "mexico": "Americas",
     "south-america": "Americas",
     "global": "Global",
@@ -1072,7 +1073,9 @@ def build_dynamic_package_payload(
     validity_days = int(plan["days"])
     country_slug = normalize_country_key(display_name)
     slug = build_package_slug(country_slug, plan_key, data_label, validity_days)
-    db_region = TEMPLATE_KEY_TO_DB_REGION[template_key]
+    db_region = TEMPLATE_KEY_TO_DB_REGION.get(template_key)
+    if not db_region:
+        return None
 
     title = f"{display_name} {data_label} · {validity_days} Days"
     if plan_key == "family":
@@ -1710,7 +1713,9 @@ def build_regional_package_payload(
         data_label,
         validity_days,
     )
-    db_region = TEMPLATE_KEY_TO_DB_REGION[template_key]
+    db_region = TEMPLATE_KEY_TO_DB_REGION.get(template_key)
+    if not db_region:
+        return None
 
     title = f"{display_name} {data_label} · {validity_days} Days"
     if plan_key == "family":

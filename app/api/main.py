@@ -170,6 +170,22 @@ def _is_retryable_db_error(exc: Exception) -> bool:
     return any(token in text for token in tokens)
 
 
+def _is_fulfillment_config_error(exc: Exception) -> bool:
+    """True when checkout failed on provider/map config, not Postgres/connectivity."""
+    text = str(exc).strip().lower()
+    tokens = (
+        "fulfillment",
+        "zesimo_api_key",
+        "esim_access_access_code",
+        "requires zesimo",
+        "requires esim_access",
+        "plan_fulfillment_map",
+        "must use esimaccess",
+        "provider=",
+    )
+    return any(token in text for token in tokens)
+
+
 def _db_error(exc: Exception) -> HTTPException:
     """Map repository failures to HTTP errors with full local stack traces."""
     logger.error(
@@ -178,6 +194,12 @@ def _db_error(exc: Exception) -> HTTPException:
         exc_info=(type(exc), exc, exc.__traceback__),
     )
     customer = "Database temporarily unavailable. Please try again."
+    fulfillment_customer = (
+        "This plan is temporarily unavailable for checkout. "
+        "Please choose another plan or try again shortly."
+    )
+    if _is_fulfillment_config_error(exc):
+        return HTTPException(status_code=503, detail=fulfillment_customer)
     if _is_production:
         if _is_retryable_db_error(exc):
             return HTTPException(status_code=503, detail=customer)

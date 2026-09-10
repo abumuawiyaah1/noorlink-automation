@@ -13,6 +13,7 @@ from httpx import Response
 from app.services.fulfillment_map import (
     FulfillmentMapError,
     FulfillmentTarget,
+    enforce_provider_credentials,
     enforce_saudi_access_policy,
 )
 from app.services.zesimo import (
@@ -157,3 +158,38 @@ def test_enforce_saudi_rejects_zesimo_fixed_gb(monkeypatch):
     )
     with pytest.raises(FulfillmentMapError, match="esimaccess"):
         enforce_saudi_access_policy({"country": "Saudi Arabia"}, target)
+
+
+def test_enforce_provider_credentials_requires_zesimo_key(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.fulfillment_map.get_settings",
+        lambda: MagicMock(zesimo_api_key="", esim_access_access_code="x"),
+    )
+    target = FulfillmentTarget(
+        catalog_key="us-10gb-30",
+        provider="zesimo",
+        provider_sku="7673",
+        provider_slug="zesimo-us-10gb-30d",
+        wholesale_cents=809,
+        period_num=None,
+        source="test",
+    )
+    with pytest.raises(FulfillmentMapError, match="ZESIMO_API_KEY"):
+        enforce_provider_credentials(target)
+
+
+def test_enforce_provider_credentials_ok_with_key(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.fulfillment_map.get_settings",
+        lambda: MagicMock(zesimo_api_key="zk_live", esim_access_access_code="x"),
+    )
+    target = FulfillmentTarget(
+        catalog_key="us-10gb-30",
+        provider="zesimo",
+        provider_sku="7673",
+        provider_slug="zesimo-us-10gb-30d",
+        wholesale_cents=809,
+        period_num=None,
+        source="test",
+    )
+    enforce_provider_credentials(target)

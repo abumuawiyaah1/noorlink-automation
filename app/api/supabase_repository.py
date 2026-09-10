@@ -728,6 +728,7 @@ def create_order(
     # Saudi still enforced when ESIM_ACCESS_ENFORCE_SAUDI is on.
     from app.services.fulfillment_map import (
         FulfillmentMapError,
+        enforce_provider_credentials,
         enforce_saudi_access_policy,
         resolve_fulfillment_target,
     )
@@ -749,6 +750,7 @@ def create_order(
     fulfillment_target = resolve_fulfillment_target(probe_order, package=package)
     try:
         enforce_saudi_access_policy(probe_order, fulfillment_target)
+        enforce_provider_credentials(fulfillment_target)
     except FulfillmentMapError as exc:
         raise SupabaseRepositoryError(str(exc)) from exc
 
