@@ -193,15 +193,34 @@ class OrderLookupResponse(BaseModel):
     message: Optional[str] = None
 
 
+class TopUpPackageOffer(BaseModel):
+    offer_id: str = Field(..., serialization_alias="offerId")
+    slug: Optional[str] = None
+    package_code: Optional[str] = Field(None, serialization_alias="packageCode")
+    name: str
+    data_label: Optional[str] = Field(None, serialization_alias="dataLabel")
+    days: Optional[int] = None
+    period_num: Optional[int] = Field(None, serialization_alias="periodNum")
+    daypass: bool = False
+    wholesale_usd: Optional[float] = Field(None, serialization_alias="wholesaleUsd")
+    retail_usd: float = Field(..., serialization_alias="retailUsd")
+    retail_cents: Optional[int] = Field(None, serialization_alias="retailCents")
+
+    model_config = {"populate_by_name": True}
+
+
 class TopUpOptionsResponse(BaseModel):
     success: bool
     supported: bool = False
     provider: Optional[str] = None
+    mode: Optional[str] = None
     amounts_usd: list[float] = Field(default_factory=list, serialization_alias="amountsUsd")
+    packages: list[TopUpPackageOffer] = Field(default_factory=list)
     min_usd: Optional[float] = Field(None, serialization_alias="minUsd")
     max_usd: Optional[float] = Field(None, serialization_alias="maxUsd")
     reason: Optional[str] = None
     order_number: Optional[str] = Field(None, serialization_alias="orderNumber")
+    paypal_available: bool = Field(False, serialization_alias="paypalAvailable")
 
     model_config = {"populate_by_name": True}
 
@@ -209,7 +228,11 @@ class TopUpOptionsResponse(BaseModel):
 class TopUpSessionRequest(BaseModel):
     order_id: str = Field(..., alias="orderId", min_length=4)
     email: EmailStr
-    fund_usd: float = Field(..., alias="fundUsd", gt=0)
+    fund_usd: Optional[float] = Field(None, alias="fundUsd", gt=0)
+    offer_id: Optional[str] = Field(None, alias="offerId")
+    package_slug: Optional[str] = Field(None, alias="packageSlug")
+    package_code: Optional[str] = Field(None, alias="packageCode")
+    period_num: Optional[int] = Field(None, alias="periodNum")
 
     model_config = {"populate_by_name": True}
 
@@ -220,6 +243,34 @@ class TopUpSessionResponse(BaseModel):
     session_id: Optional[str] = Field(None, serialization_alias="sessionId")
     retail_usd: Optional[float] = Field(None, serialization_alias="retailUsd")
     fund_usd: Optional[float] = Field(None, serialization_alias="fundUsd")
+    offer_id: Optional[str] = Field(None, serialization_alias="offerId")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class TopUpPayPalCreateResponse(BaseModel):
+    success: bool
+    paypal_order_id: Optional[str] = Field(None, serialization_alias="paypalOrderId")
+    retail_usd: Optional[float] = Field(None, serialization_alias="retailUsd")
+    fund_usd: Optional[float] = Field(None, serialization_alias="fundUsd")
+    offer_id: Optional[str] = Field(None, serialization_alias="offerId")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class TopUpPayPalCaptureRequest(BaseModel):
+    order_id: str = Field(..., alias="orderId", min_length=4)
+    email: EmailStr
+    paypal_order_id: str = Field(..., alias="paypalOrderId", min_length=5)
+
+    model_config = {"populate_by_name": True}
+
+
+class TopUpPayPalCaptureResponse(BaseModel):
+    success: bool
+    order_number: Optional[str] = Field(None, serialization_alias="orderNumber")
     message: Optional[str] = None
 
     model_config = {"populate_by_name": True}

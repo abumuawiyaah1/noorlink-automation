@@ -120,16 +120,36 @@ def create_topup_checkout_session(
     parent_order_number: str,
     parent_order_id: str,
     email: str,
-    fund_usd: float,
     iccid: str,
+    fund_usd: Optional[float] = None,
+    retail_cents: Optional[int] = None,
+    display_name: Optional[str] = None,
+    topup_provider: str = "citrus",
+    offer_id: Optional[str] = None,
+    package_slug: Optional[str] = None,
+    package_code: Optional[str] = None,
+    period_num: Optional[int] = None,
+    wholesale_usd: Optional[float] = None,
 ) -> stripe.checkout.Session:
-    """Stripe Checkout for adding data to an existing Citrus eSIM."""
+    """Stripe Checkout for topping up an existing eSIM (Citrus wallet or Access pack)."""
     from app.services.esim_topup import topup_retail_cents
 
     settings = get_settings()
     stripe.api_key = settings.stripe_secret_key
-    amount_cents = topup_retail_cents(fund_usd)
-    display_name = f"Data top-up · {parent_order_number} · ${fund_usd:.0f} data"
+
+    if retail_cents is not None:
+        amount_cents = int(retail_cents)
+    elif fund_usd is not None:
+        amount_cents = topup_retail_cents(fund_usd)
+    else:
+        raise StripeCheckoutError("Top-up checkout requires fund_usd or retail_cents.")
+
+    if not display_name:
+        if topup_provider == "esimaccess":
+            label = package_slug or offer_id or "package"
+            display_name = f"eSIM top-up · {parent_order_number} · {label}"
+        else:
+            display_name = f"Data top-up · {parent_order_number} · ${float(fund_usd or 0):.0f} data"
 
     success_url = (
         f"{settings.app_url.rstrip('/')}/dashboard"
@@ -137,6 +157,27 @@ def create_topup_checkout_session(
         f"&email={quote(email.strip().lower(), safe='')}"
         "&topup=1"
     )
+
+    metadata: Dict[str, str] = {
+        "checkout_type": "topup",
+        "order_number": parent_order_number,
+        "order_id": parent_order_id,
+        "iccid": iccid,
+        "topup_provider": topup_provider,
+        "retail_cents": str(amount_cents),
+    }
+    if fund_usd is not None:
+        metadata["fund_usd"] = str(fund_usd)
+    if wholesale_usd is not None:
+        metadata["wholesale_usd"] = str(wholesale_usd)
+    if offer_id:
+        metadata["offer_id"] = offer_id
+    if package_slug:
+        metadata["package_slug"] = package_slug
+    if package_code:
+        metadata["package_code"] = package_code
+    if period_num is not None:
+        metadata["period_num"] = str(period_num)
 
     create_kwargs: Dict[str, Any] = {
         "mode": "payment",
@@ -153,13 +194,7 @@ def create_topup_checkout_session(
         ],
         "success_url": success_url,
         "cancel_url": f"{settings.app_url.rstrip('/')}/dashboard",
-        "metadata": {
-            "checkout_type": "topup",
-            "order_number": parent_order_number,
-            "order_id": parent_order_id,
-            "fund_usd": str(fund_usd),
-            "iccid": iccid,
-        },
+        "metadata": metadata,
     }
 
     pmc = (settings.stripe_payment_method_configuration or "").strip()

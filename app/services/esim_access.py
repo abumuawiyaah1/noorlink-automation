@@ -224,6 +224,43 @@ class EsimAccessClient:
         packages = obj.get("packageList") or []
         return packages if isinstance(packages, list) else []
 
+    async def topup_esim(
+        self,
+        *,
+        transaction_id: str,
+        iccid: str = "",
+        esim_tran_no: str = "",
+        package_code: str = "",
+        slug: str = "",
+        period_num: Optional[int] = None,
+        amount_api: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """Add a package onto an existing eSIM (same ICCID)."""
+        if not iccid and not esim_tran_no:
+            raise EsimAccessError("topup requires iccid or esimTranNo")
+        if not package_code and not slug:
+            raise EsimAccessError("topup requires packageCode or slug")
+
+        body: Dict[str, Any] = {"transactionId": transaction_id}
+        if iccid:
+            body["iccid"] = iccid
+        if esim_tran_no:
+            body["esimTranNo"] = esim_tran_no
+        if package_code:
+            body["packageCode"] = package_code
+        if slug:
+            body["slug"] = slug
+        if period_num is not None:
+            body["periodNum"] = int(period_num)
+        if amount_api is not None:
+            body["amount"] = int(amount_api)
+
+        data = await self._request("/esim/topup", body)
+        obj = data.get("obj") if isinstance(data, dict) else None
+        if isinstance(obj, dict):
+            return obj
+        return data if isinstance(data, dict) else {"raw": data}
+
     async def order_esim(
         self,
         *,

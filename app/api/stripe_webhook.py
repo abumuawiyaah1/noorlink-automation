@@ -51,6 +51,13 @@ def extract_checkout_session_completed(
     order_id = metadata.get("order_id") if isinstance(metadata, dict) else None
     checkout_type = metadata.get("checkout_type") if isinstance(metadata, dict) else None
     fund_usd = metadata.get("fund_usd") if isinstance(metadata, dict) else None
+    topup_provider = metadata.get("topup_provider") if isinstance(metadata, dict) else None
+    offer_id = metadata.get("offer_id") if isinstance(metadata, dict) else None
+    package_slug = metadata.get("package_slug") if isinstance(metadata, dict) else None
+    package_code = metadata.get("package_code") if isinstance(metadata, dict) else None
+    period_num = metadata.get("period_num") if isinstance(metadata, dict) else None
+    retail_cents = metadata.get("retail_cents") if isinstance(metadata, dict) else None
+    wholesale_usd = metadata.get("wholesale_usd") if isinstance(metadata, dict) else None
 
     payment_intent = getattr(session, "payment_intent", None)
     if isinstance(payment_intent, dict):
@@ -75,6 +82,13 @@ def extract_checkout_session_completed(
         "order_id": order_id,
         "checkout_type": checkout_type,
         "fund_usd": fund_usd,
+        "topup_provider": topup_provider,
+        "offer_id": offer_id,
+        "package_slug": package_slug,
+        "package_code": package_code,
+        "period_num": period_num,
+        "retail_cents": retail_cents,
+        "wholesale_usd": wholesale_usd,
         "payment_intent_id": payment_intent_id,
         "customer_email": customer_email,
         "amount_cents": stripe_event_amount_cents(event),

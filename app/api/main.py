@@ -80,6 +80,9 @@ from .schemas import (
     TopUpOptionsResponse,
     TopUpSessionRequest,
     TopUpSessionResponse,
+    TopUpPayPalCreateResponse,
+    TopUpPayPalCaptureRequest,
+    TopUpPayPalCaptureResponse,
     OrderSupportMessagesResponse,
     RootResponse,
 )
@@ -840,21 +843,25 @@ async def orders_topup_options(
             supported=False,
             reason="Order not found for that email.",
         )
-    from app.services.esim_topup import topup_capabilities
+    from app.api.paypal_checkout import paypal_enabled
+    from app.services.esim_topup import topup_capabilities_async
 
     order_row = db.get_order_row_by_order_number(row.order_number)
     if not order_row:
         return TopUpOptionsResponse(success=False, supported=False, reason="Order not found.")
-    caps = topup_capabilities(order_row)
+    caps = await topup_capabilities_async(order_row)
     return TopUpOptionsResponse(
         success=True,
         supported=bool(caps.get("supported")),
         provider=caps.get("provider"),
+        mode=caps.get("mode"),
         amounts_usd=list(caps.get("amounts_usd") or []),
+        packages=list(caps.get("packages") or []),
         min_usd=caps.get("min_usd"),
         max_usd=caps.get("max_usd"),
         reason=caps.get("reason"),
         order_number=row.order_number,
+        paypal_available=paypal_enabled(),
     )
 
 
@@ -874,36 +881,19 @@ async def orders_topup_session(body: TopUpSessionRequest):
     if not row:
         return TopUpSessionResponse(success=False, message="Order not found.")
 
-    from app.services.esim_topup import (
-        topup_capabilities,
-        topup_retail_cents,
-    )
+    from app.services.esim_topup import TopUpError, resolve_topup_checkout_quote
 
-    caps = topup_capabilities(row)
-    if not caps.get("supported"):
-        return TopUpSessionResponse(
-            success=False,
-            message=str(caps.get("reason") or "Top-up not available for this eSIM."),
+    try:
+        quote = await resolve_topup_checkout_quote(
+            row,
+            fund_usd=body.fund_usd,
+            offer_id=body.offer_id,
+            package_slug=body.package_slug,
+            package_code=body.package_code,
+            period_num=body.period_num,
         )
-
-    fund_usd = float(body.fund_usd)
-    allowed = [float(a) for a in (caps.get("amounts_usd") or [])]
-    min_usd = float(caps.get("min_usd") or 5)
-    max_usd = float(caps.get("max_usd") or 100)
-    if fund_usd < min_usd or fund_usd > max_usd:
-        return TopUpSessionResponse(
-            success=False,
-            message=f"Choose a top-up between ${min_usd:.0f} and ${max_usd:.0f}.",
-        )
-    if allowed and not any(abs(fund_usd - a) < 0.01 for a in allowed):
-        return TopUpSessionResponse(
-            success=False,
-            message=f"Choose one of: {', '.join(f'${a:.0f}' for a in allowed)}.",
-        )
-
-    iccid = str(row.get("iccid") or "").strip()
-    if not iccid:
-        return TopUpSessionResponse(success=False, message="This order has no ICCID yet.")
+    except TopUpError as exc:
+        return TopUpSessionResponse(success=False, message=str(exc))
 
     from .stripe_checkout import StripeCheckoutError, create_topup_checkout_session
 
@@ -912,8 +902,16 @@ async def orders_topup_session(body: TopUpSessionRequest):
             parent_order_number=looked_up.order_number,
             parent_order_id=str(row["id"]),
             email=str(body.email),
-            fund_usd=fund_usd,
-            iccid=iccid,
+            iccid=str(quote["iccid"]),
+            fund_usd=quote.get("fund_usd"),
+            retail_cents=int(quote["retail_cents"]),
+            display_name=str(quote["display_name"]),
+            topup_provider=str(quote["topup_provider"]),
+            offer_id=quote.get("offer_id"),
+            package_slug=quote.get("package_slug"),
+            package_code=quote.get("package_code"),
+            period_num=quote.get("period_num"),
+            wholesale_usd=quote.get("wholesale_usd"),
         )
     except StripeCheckoutError as exc:
         logger.error("Top-up checkout failed: %s", exc)
@@ -922,14 +920,230 @@ async def orders_topup_session(body: TopUpSessionRequest):
             message="Could not start payment. Try again in a minute.",
         )
 
-    retail_usd = topup_retail_cents(fund_usd) / 100.0
     return TopUpSessionResponse(
         success=True,
         checkout_url=session.url,
         session_id=session.id,
-        retail_usd=retail_usd,
-        fund_usd=fund_usd,
+        retail_usd=float(quote["retail_usd"]),
+        fund_usd=quote.get("fund_usd"),
+        offer_id=quote.get("offer_id"),
         message="Redirect to Stripe to add data to your eSIM.",
+    )
+
+
+@app.post("/api/orders/topup/paypal/create", response_model=TopUpPayPalCreateResponse)
+async def orders_topup_paypal_create(body: TopUpSessionRequest):
+    from app.api.paypal_checkout import PayPalCheckoutError, create_paypal_order, paypal_enabled
+
+    if not paypal_enabled():
+        return TopUpPayPalCreateResponse(
+            success=False,
+            message="PayPal checkout is not configured yet.",
+        )
+
+    try:
+        looked_up = db.lookup_order(body.order_id, str(body.email))
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not looked_up:
+        return TopUpPayPalCreateResponse(
+            success=False,
+            message="Order not found for that email.",
+        )
+
+    row = db.get_order_row_by_order_number(looked_up.order_number)
+    if not row:
+        return TopUpPayPalCreateResponse(success=False, message="Order not found.")
+
+    from app.services.esim_topup import TopUpError, resolve_topup_checkout_quote
+
+    try:
+        quote = await resolve_topup_checkout_quote(
+            row,
+            fund_usd=body.fund_usd,
+            offer_id=body.offer_id,
+            package_slug=body.package_slug,
+            package_code=body.package_code,
+            period_num=body.period_num,
+        )
+    except TopUpError as exc:
+        return TopUpPayPalCreateResponse(success=False, message=str(exc))
+
+    order_number = looked_up.order_number
+    retail_usd = float(quote["retail_usd"])
+    success_url = (
+        f"{settings.app_url.rstrip('/')}/dashboard"
+        f"?orderId={order_number}&email={str(body.email).strip().lower()}&topup=1&paypal=1"
+    )
+    cancel_url = f"{settings.app_url.rstrip('/')}/dashboard"
+
+    try:
+        paypal_order_id = create_paypal_order(
+            order_number=f"TOPUP:{order_number}",
+            amount_usd=retail_usd,
+            description=str(quote["display_name"]),
+            return_url=success_url,
+            cancel_url=cancel_url,
+        )
+    except PayPalCheckoutError as exc:
+        logger.error("PayPal top-up create failed for %s: %s", order_number, exc)
+        return TopUpPayPalCreateResponse(
+            success=False,
+            message="Could not start PayPal. Try again in a minute.",
+        )
+
+    pending = {
+        paypal_order_id: {
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "email": str(body.email).strip().lower(),
+            "topup_provider": quote["topup_provider"],
+            "retail_cents": int(quote["retail_cents"]),
+            "retail_usd": retail_usd,
+            "fund_usd": quote.get("fund_usd"),
+            "offer_id": quote.get("offer_id"),
+            "package_slug": quote.get("package_slug"),
+            "package_code": quote.get("package_code"),
+            "period_num": quote.get("period_num"),
+            "wholesale_usd": quote.get("wholesale_usd"),
+            "iccid": quote.get("iccid"),
+        }
+    }
+    try:
+        db.merge_order_metadata(order_number, {"pending_paypal_topups": pending})
+    except db.SupabaseRepositoryError as exc:
+        logger.error("Could not store PayPal top-up pending for %s: %s", order_number, exc)
+        return TopUpPayPalCreateResponse(
+            success=False,
+            message="Could not start PayPal. Try again in a minute.",
+        )
+
+    return TopUpPayPalCreateResponse(
+        success=True,
+        paypal_order_id=paypal_order_id,
+        retail_usd=retail_usd,
+        fund_usd=quote.get("fund_usd"),
+        offer_id=quote.get("offer_id"),
+        message="PayPal top-up order created.",
+    )
+
+
+@app.post("/api/orders/topup/paypal/capture", response_model=TopUpPayPalCaptureResponse)
+async def orders_topup_paypal_capture(body: TopUpPayPalCaptureRequest):
+    from app.api.paypal_checkout import PayPalCheckoutError, capture_paypal_order, paypal_enabled
+
+    if not paypal_enabled():
+        return TopUpPayPalCaptureResponse(
+            success=False,
+            message="PayPal checkout is not configured yet.",
+        )
+
+    try:
+        looked_up = db.lookup_order(body.order_id, str(body.email))
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not looked_up:
+        return TopUpPayPalCaptureResponse(
+            success=False,
+            message="Order not found for that email.",
+        )
+
+    row = db.get_order_row_by_order_number(looked_up.order_number)
+    if not row:
+        return TopUpPayPalCaptureResponse(success=False, message="Order not found.")
+
+    meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    pending_map = meta.get("pending_paypal_topups") if isinstance(meta, dict) else None
+    pending = None
+    if isinstance(pending_map, dict):
+        pending = pending_map.get(body.paypal_order_id)
+    if not isinstance(pending, dict):
+        return TopUpPayPalCaptureResponse(
+            success=False,
+            message="PayPal top-up session expired. Please choose an amount again.",
+        )
+
+    try:
+        payload, custom_id, payer_email = capture_paypal_order(body.paypal_order_id)
+    except PayPalCheckoutError as exc:
+        logger.error("PayPal top-up capture failed for %s: %s", looked_up.order_number, exc)
+        return TopUpPayPalCaptureResponse(success=False, message=str(exc))
+
+    expected_order = f"TOPUP:{looked_up.order_number}"
+    if custom_id and custom_id != expected_order and custom_id != looked_up.order_number:
+        logger.error(
+            "PayPal top-up custom_id mismatch for %s: %s",
+            looked_up.order_number,
+            custom_id,
+        )
+        return TopUpPayPalCaptureResponse(
+            success=False,
+            message="PayPal payment does not match this order.",
+        )
+
+    nl = payload.get("_noorlink") if isinstance(payload.get("_noorlink"), dict) else {}
+    amount_raw = nl.get("amount_value")
+    try:
+        paid_cents = int(round(float(amount_raw) * 100)) if amount_raw is not None else 0
+    except (TypeError, ValueError):
+        paid_cents = 0
+    expected_cents = int(pending.get("retail_cents") or 0)
+    if expected_cents and paid_cents and expected_cents != paid_cents:
+        logger.error(
+            "PayPal top-up amount mismatch for %s: expected %s got %s",
+            looked_up.order_number,
+            expected_cents,
+            paid_cents,
+        )
+        return TopUpPayPalCaptureResponse(
+            success=False,
+            message="PayPal amount does not match this top-up.",
+        )
+
+    from app.services.esim_topup import TopUpError, process_topup_checkout
+
+    period_num = pending.get("period_num")
+    try:
+        period_num = int(period_num) if period_num is not None else None
+    except (TypeError, ValueError):
+        period_num = None
+
+    try:
+        await process_topup_checkout(
+            order_number=looked_up.order_number,
+            fund_usd=float(pending["fund_usd"]) if pending.get("fund_usd") is not None else None,
+            offer_id=pending.get("offer_id"),
+            package_slug=pending.get("package_slug"),
+            package_code=pending.get("package_code"),
+            period_num=period_num,
+            topup_provider=pending.get("topup_provider"),
+            retail_cents=expected_cents or None,
+            stripe_session_id=f"paypal:{body.paypal_order_id}",
+            buyer_email=payer_email or str(body.email).strip().lower(),
+        )
+    except TopUpError as exc:
+        logger.error("PayPal top-up fulfillment failed for %s: %s", looked_up.order_number, exc)
+        return TopUpPayPalCaptureResponse(success=False, message=str(exc)[:200])
+
+    # Clear this pending entry
+    if isinstance(pending_map, dict):
+        remaining = {k: v for k, v in pending_map.items() if k != body.paypal_order_id}
+        try:
+            client = db.get_supabase_client()
+            fresh = db.get_order_row_by_order_number(looked_up.order_number) or row
+            fresh_meta = fresh.get("metadata") if isinstance(fresh.get("metadata"), dict) else {}
+            fresh_meta = {**fresh_meta, "pending_paypal_topups": remaining}
+            client.table("orders").update({"metadata": fresh_meta}).eq(
+                "order_number", looked_up.order_number
+            ).execute()
+        except Exception:
+            logger.warning(
+                "Could not clear pending PayPal top-up for %s", looked_up.order_number
+            )
+
+    return TopUpPayPalCaptureResponse(
+        success=True,
+        order_number=looked_up.order_number,
+        message="PayPal top-up completed.",
     )
 
 
@@ -1720,16 +1934,41 @@ async def stripe_webhook(
 
     if session_data.get("checkout_type") == "topup":
         order_number = session_data.get("order_number")
+        topup_provider = str(session_data.get("topup_provider") or "").strip().lower()
         fund_raw = session_data.get("fund_usd")
-        try:
-            fund_usd = float(fund_raw)
-        except (TypeError, ValueError):
-            logger.error("Top-up webhook missing fund_usd for %s", order_number)
-            return JSONResponse({"received": True, "handled": False})
+        fund_usd = None
+        if fund_raw not in (None, ""):
+            try:
+                fund_usd = float(fund_raw)
+            except (TypeError, ValueError):
+                fund_usd = None
+
+        period_raw = session_data.get("period_num")
+        period_num = None
+        if period_raw not in (None, ""):
+            try:
+                period_num = int(period_raw)
+            except (TypeError, ValueError):
+                period_num = None
+
+        retail_raw = session_data.get("retail_cents")
+        retail_cents = None
+        if retail_raw not in (None, ""):
+            try:
+                retail_cents = int(retail_raw)
+            except (TypeError, ValueError):
+                retail_cents = None
 
         from app.services.esim_topup import TopUpError, process_topup_checkout, topup_retail_cents
 
-        expected_cents = topup_retail_cents(fund_usd)
+        if topup_provider == "esimaccess":
+            expected_cents = retail_cents
+        elif fund_usd is not None:
+            expected_cents = topup_retail_cents(fund_usd)
+        else:
+            logger.error("Top-up webhook missing amount metadata for %s", order_number)
+            return JSONResponse({"received": True, "handled": False})
+
         received_cents = session_data.get("amount_cents") or 0
         if expected_cents and received_cents and expected_cents != received_cents:
             logger.error(
@@ -1754,6 +1993,12 @@ async def stripe_webhook(
                 process_topup_checkout(
                     order_number=str(order_number or ""),
                     fund_usd=fund_usd,
+                    offer_id=session_data.get("offer_id"),
+                    package_slug=session_data.get("package_slug"),
+                    package_code=session_data.get("package_code"),
+                    period_num=period_num,
+                    topup_provider=topup_provider or None,
+                    retail_cents=retail_cents or expected_cents,
                     stripe_session_id=session_data.get("session_id"),
                     buyer_email=session_data.get("customer_email"),
                 )
@@ -1777,6 +2022,8 @@ async def stripe_webhook(
                 "topup": "completed",
                 "order_number": order_number,
                 "fund_usd": fund_usd,
+                "topup_provider": topup_provider or "citrus",
+                "offer_id": session_data.get("offer_id"),
             }
         )
 

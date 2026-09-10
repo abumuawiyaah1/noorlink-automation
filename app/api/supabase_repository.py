@@ -914,6 +914,14 @@ def merge_order_metadata(order_number: str, patch: Dict[str, Any]) -> Dict[str, 
                 merged_topups["history"] = patch["topups"]["history"]
         merged["topups"] = merged_topups
 
+    if isinstance(patch.get("pending_paypal_topups"), dict):
+        existing = (
+            metadata.get("pending_paypal_topups")
+            if isinstance(metadata.get("pending_paypal_topups"), dict)
+            else {}
+        )
+        merged["pending_paypal_topups"] = {**existing, **patch["pending_paypal_topups"]}
+
     if isinstance(patch.get("usage_snapshot"), dict):
         merged["usage_snapshot"] = patch["usage_snapshot"]
 

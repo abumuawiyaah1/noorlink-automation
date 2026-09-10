@@ -1,8 +1,10 @@
 """Tests for eSIM usage sync and top-up helpers."""
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+import respx
+from httpx import Response
 
 from app.services.esim_topup import topup_capabilities, topup_retail_cents
 from app.services.esim_usage_sync import (
@@ -92,19 +94,83 @@ def test_topup_capabilities_citrus():
     }
     caps = topup_capabilities(row)
     assert caps["supported"] is True
+    assert caps["mode"] == "wallet"
     assert 10.0 in caps["amounts_usd"]
 
 
-def test_topup_capabilities_esimaccess_fixed_pack():
+def test_topup_capabilities_esimaccess_enabled():
     row = {
         "order_number": "NL-4",
         "status": "active",
         "iccid": "8945",
-        "metadata": {"fulfillment": {"provider": "esimaccess"}},
+        "metadata": {"fulfillment": {"provider": "esimaccess", "provider_slug": "SA_5_30"}},
+    }
+    caps = topup_capabilities(row)
+    assert caps["supported"] is True
+    assert caps["mode"] == "access_package"
+    assert caps["amounts_usd"] == []
+
+
+def test_topup_capabilities_esimaccess_max_topups():
+    history = [{"at": f"2026-01-0{i}"} for i in range(1, 10)]
+    row = {
+        "order_number": "NL-4b",
+        "status": "active",
+        "iccid": "8945",
+        "metadata": {
+            "fulfillment": {"provider": "esimaccess"},
+            "topups": {"history": history},
+        },
     }
     caps = topup_capabilities(row)
     assert caps["supported"] is False
-    assert "repurchased" in (caps.get("reason") or "").lower()
+    assert "maximum" in (caps.get("reason") or "").lower()
+
+
+def test_normalize_access_fixed_package():
+    from app.services.esim_topup import normalize_access_topup_package
+
+    offer = normalize_access_topup_package(
+        {
+            "slug": "SA_5_30",
+            "packageCode": "CKH279",
+            "name": "Saudi 5GB 30Days",
+            "price": 72200,
+            "volume": 5 * 1073741824,
+            "duration": 30,
+            "durationUnit": "DAY",
+            "dataType": 1,
+            "supportTopUpType": 2,
+        }
+    )
+    assert offer is not None
+    assert offer["slug"] == "SA_5_30"
+    assert offer["period_num"] is None
+    assert offer["wholesale_usd"] == 7.22
+    assert offer["retail_cents"] == int(round(7.22 * 1.35 * 100))
+
+
+def test_normalize_access_daypass_package():
+    from app.services.esim_topup import normalize_access_topup_package
+
+    offer = normalize_access_topup_package(
+        {
+            "slug": "SA_3_Daily_1Mbps",
+            "packageCode": "PVEXXS543",
+            "name": "Saudi Daily",
+            "price": 68040,
+            "volume": 0,
+            "duration": 14,
+            "durationUnit": "DAY",
+            "dataType": 2,
+            "supportTopUpType": 3,
+        },
+        period_num=14,
+    )
+    assert offer is not None
+    assert offer["daypass"] is True
+    assert offer["period_num"] == 14
+    assert offer["wholesale_usd"] == 6.804
 
 
 def test_topup_retail_markup():
@@ -133,3 +199,90 @@ async def test_fund_citrus_topup_mock():
                     result = await fund_citrus_topup(row, 10.0, source="test")
                     assert result["ok"] is True
                     client.fund_esim.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_apply_access_topup_mock():
+    row = {
+        "order_number": "NL-6",
+        "status": "active",
+        "iccid": "8944002",
+        "metadata": {
+            "fulfillment": {
+                "provider": "esimaccess",
+                "provider_slug": "SA_5_30",
+                "esim_tran_no": "T-ACCESS-1",
+            }
+        },
+    }
+    offer = {
+        "offer_id": "SA_5_30-abc",
+        "slug": "SA_5_30",
+        "package_code": "CKH279",
+        "name": "5 GB / 30 days",
+        "daypass": False,
+        "wholesale_usd": 7.22,
+        "retail_usd": 9.75,
+        "period_num": None,
+    }
+
+    with patch("app.services.esim_access.EsimAccessClient") as mock_client_cls:
+        client = AsyncMock()
+        mock_client_cls.return_value.__aenter__.return_value = client
+        client.topup_esim.return_value = {"ok": True, "transactionId": "x"}
+
+        with patch("app.services.esim_topup.sync_order_usage_blocking"):
+            with patch("app.services.esim_topup.db.get_order_row_by_order_number", return_value=row):
+                with patch("app.services.esim_topup.db.merge_order_metadata") as merge:
+                    from app.services.esim_topup import apply_access_topup
+
+                    result = await apply_access_topup(row, offer, source="test")
+                    assert result["ok"] is True
+                    client.topup_esim.assert_called_once()
+                    kwargs = client.topup_esim.await_args.kwargs
+                    assert kwargs["iccid"] == "8944002"
+                    assert kwargs["slug"] == "SA_5_30"
+                    merge.assert_called_once()
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_list_access_topup_offers_from_iccid():
+    from app.services.esim_topup import list_access_topup_offers
+
+    respx.post("https://api.esimaccess.com/api/v1/open/package/list").mock(
+        return_value=Response(
+            200,
+            json={
+                "success": True,
+                "obj": {
+                    "packageList": [
+                        {
+                            "slug": "SA_5_30",
+                            "packageCode": "CKH279",
+                            "name": "Saudi 5GB",
+                            "price": 72200,
+                            "volume": 5368709120,
+                            "duration": 30,
+                            "durationUnit": "DAY",
+                            "dataType": 1,
+                            "supportTopUpType": 2,
+                        }
+                    ]
+                },
+            },
+        )
+    )
+    row = {
+        "order_number": "NL-7",
+        "iccid": "8944999",
+        "metadata": {"fulfillment": {"provider": "esimaccess", "provider_slug": "SA_5_30"}},
+    }
+    with patch("app.services.esim_access.get_settings") as settings:
+        settings.return_value = MagicMock(
+            esim_access_access_code="test_code",
+            esim_access_api_base_url="https://api.esimaccess.com/api/v1/open",
+        )
+        offers = await list_access_topup_offers(row)
+    assert len(offers) == 1
+    assert offers[0]["slug"] == "SA_5_30"
