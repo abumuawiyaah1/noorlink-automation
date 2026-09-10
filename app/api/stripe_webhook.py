@@ -58,6 +58,17 @@ def extract_checkout_session_completed(
     else:
         payment_intent_id = payment_intent
 
+    customer_email = getattr(session, "customer_email", None)
+    if not customer_email:
+        details = getattr(session, "customer_details", None)
+        if details is not None:
+            if hasattr(details, "to_dict"):
+                details = details.to_dict()
+            if isinstance(details, dict):
+                customer_email = details.get("email")
+            else:
+                customer_email = getattr(details, "email", None)
+
     return {
         "session_id": getattr(session, "id", None),
         "order_number": order_number,
@@ -65,7 +76,7 @@ def extract_checkout_session_completed(
         "checkout_type": checkout_type,
         "fund_usd": fund_usd,
         "payment_intent_id": payment_intent_id,
-        "customer_email": getattr(session, "customer_email", None),
+        "customer_email": customer_email,
         "amount_cents": stripe_event_amount_cents(event),
         "customer_patch": _stripe_session_customer_patch(session),
     }

@@ -12,6 +12,8 @@ from app.api.schemas import CheckoutSessionRequest
 def validate_gift_checkout(body: CheckoutSessionRequest) -> None:
     if not body.is_gift:
         return
+    if not body.email:
+        raise HTTPException(status_code=400, detail="Your email is required for gift orders.")
     if not body.gift:
         raise HTTPException(status_code=400, detail="Gift recipient details are required.")
     buyer = str(body.email).strip().lower()

@@ -54,7 +54,7 @@ def create_stripe_checkout_session(
     *,
     order_number: str,
     order_id: str,
-    email: str,
+    email: Optional[str],
     package: Optional[Dict[str, Any]],
     package_name: str,
     amount_cents: int,
@@ -68,8 +68,10 @@ def create_stripe_checkout_session(
     success_url = (
         f"{settings.stripe_success_url.rstrip('/')}"
         "?session_id={CHECKOUT_SESSION_ID}"
-        f"&email={quote(email.strip().lower(), safe='')}"
     )
+    normalized_email = (email or "").strip().lower()
+    if normalized_email:
+        success_url += f"&email={quote(normalized_email, safe='')}"
     if is_gift:
         success_url += "&gift=1"
 
@@ -79,7 +81,6 @@ def create_stripe_checkout_session(
     # and turns off Dashboard dynamic methods (Apple Pay / Google Pay / Link).
     create_kwargs: Dict[str, Any] = {
         "mode": "payment",
-        "customer_email": email.strip().lower(),
         "line_items": _line_items(
             package=package,
             package_name=display_name,
@@ -99,6 +100,9 @@ def create_stripe_checkout_session(
             "order_id": order_id,
         },
     }
+    # Prefill when we have it; otherwise Stripe Checkout asks for email.
+    if normalized_email:
+        create_kwargs["customer_email"] = normalized_email
 
     pmc = (settings.stripe_payment_method_configuration or "").strip()
     if pmc:
@@ -173,7 +177,7 @@ def create_stripe_payment_intent(
     *,
     order_number: str,
     order_id: str,
-    email: str,
+    email: Optional[str],
     amount_cents: int,
     currency: str,
     package_name: str,
@@ -185,7 +189,6 @@ def create_stripe_payment_intent(
     create_kwargs: Dict[str, Any] = {
         "amount": amount_cents,
         "currency": (currency or "USD").lower(),
-        "receipt_email": email.strip().lower(),
         "description": package_name,
         "automatic_payment_methods": {"enabled": True},
         "metadata": {
@@ -193,6 +196,9 @@ def create_stripe_payment_intent(
             "order_id": order_id,
         },
     }
+    normalized_email = (email or "").strip().lower()
+    if normalized_email:
+        create_kwargs["receipt_email"] = normalized_email
     pmc = (settings.stripe_payment_method_configuration or "").strip()
     if pmc:
         create_kwargs["payment_method_configuration"] = pmc

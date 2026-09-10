@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     # Optional Dashboard payment method configuration id (pmc_...) for wallets/Link
     stripe_payment_method_configuration: str = ""
 
+    # —— PayPal Business (standalone; US Stripe cannot enable PayPal) ——
+    # Developer Dashboard → Apps & Credentials (sandbox or live)
+    paypal_client_id: str = ""
+    paypal_client_secret: str = ""
+    # sandbox | live
+    paypal_mode: str = "sandbox"
+
     # —— Simbase (eSIM provisioning + usage guard) ——
     simbase_api_key: str = ""
     simbase_api_base_url: str = "https://api.simbase.com/v2"

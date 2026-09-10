@@ -172,7 +172,8 @@ class CheckoutSessionRequest(BaseModel):
     country: str
     price: float
     flag: Optional[str] = None
-    email: EmailStr
+    # Optional so travelers can start Stripe first; Stripe/wallets collect email.
+    email: Optional[EmailStr] = None
     phone: Optional[str] = None
     travel_date: Optional[str] = Field(None, alias="travelDate")
     package_id: Optional[str] = Field(None, alias="packageId")
@@ -378,6 +379,39 @@ class CheckoutSessionResponse(BaseModel):
 
 class CheckoutConfigResponse(BaseModel):
     publishable_key: str = Field(..., serialization_alias="publishableKey")
+
+    model_config = {"populate_by_name": True}
+
+
+class PayPalConfigResponse(BaseModel):
+    enabled: bool
+    client_id: Optional[str] = Field(None, serialization_alias="clientId")
+    mode: str = "sandbox"
+
+    model_config = {"populate_by_name": True}
+
+
+class PayPalCreateOrderResponse(BaseModel):
+    success: bool
+    paypal_order_id: Optional[str] = Field(None, serialization_alias="paypalOrderId")
+    order_id: Optional[str] = Field(None, serialization_alias="orderId")
+    final_price: Optional[float] = Field(None, serialization_alias="finalPrice")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class PayPalCaptureRequest(BaseModel):
+    paypal_order_id: str = Field(..., alias="paypalOrderId", min_length=5)
+
+    model_config = {"populate_by_name": True}
+
+
+class PayPalCaptureResponse(BaseModel):
+    success: bool
+    order_id: Optional[str] = Field(None, serialization_alias="orderId")
+    email: Optional[str] = None
+    message: Optional[str] = None
 
     model_config = {"populate_by_name": True}
 

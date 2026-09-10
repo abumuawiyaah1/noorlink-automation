@@ -2,6 +2,7 @@ from urllib.parse import quote
 
 from datetime import datetime, timezone
 import logging
+import secrets
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
@@ -50,6 +51,10 @@ from .schemas import (
     CheckoutSessionRequest,
     CheckoutSessionResponse,
     ExpressPaymentIntentResponse,
+    PayPalCaptureRequest,
+    PayPalCaptureResponse,
+    PayPalConfigResponse,
+    PayPalCreateOrderResponse,
     ContactFormRequest,
     ContactFormResponse,
     CronRunResponse,
@@ -189,6 +194,18 @@ def _validate_gift_checkout(body: CheckoutSessionRequest) -> None:
     from app.services.gift_orders import validate_gift_checkout
 
     validate_gift_checkout(body)
+
+
+def _checkout_buyer_email(body: CheckoutSessionRequest) -> str:
+    """Real email when provided; temporary pending address until Stripe supplies one."""
+    if body.email:
+        return str(body.email).strip().lower()
+    return f"pending+{secrets.token_hex(8)}@checkout.noorlink.pending"
+
+
+def _is_pending_checkout_email(email: Optional[str]) -> bool:
+    value = (email or "").strip().lower()
+    return value.endswith("@checkout.noorlink.pending") or value.startswith("pending+")
 
 
 def _build_gift_metadata(body: CheckoutSessionRequest) -> Optional[dict]:
@@ -1100,6 +1117,215 @@ async def checkout_config():
     return CheckoutConfigResponse(publishable_key=key)
 
 
+@app.get("/api/checkout/paypal/config", response_model=PayPalConfigResponse)
+async def paypal_config():
+    """Public PayPal client id when Business checkout is configured."""
+    from app.api.paypal_checkout import paypal_enabled
+
+    settings = get_settings()
+    enabled = paypal_enabled()
+    return PayPalConfigResponse(
+        enabled=enabled,
+        client_id=(settings.paypal_client_id or "").strip() or None if enabled else None,
+        mode=(settings.paypal_mode or "sandbox").strip().lower() or "sandbox",
+    )
+
+
+@app.post("/api/checkout/paypal/create-order", response_model=PayPalCreateOrderResponse)
+async def paypal_create_order(body: CheckoutSessionRequest):
+    """Create pending NoorLink order + PayPal order for Smart Buttons."""
+    from app.api.paypal_checkout import (
+        PayPalCheckoutError,
+        create_paypal_order,
+        paypal_enabled,
+    )
+
+    if not paypal_enabled():
+        raise HTTPException(status_code=503, detail="PayPal checkout is not configured yet.")
+    if body.is_gift:
+        raise HTTPException(
+            status_code=400,
+            detail="Gift orders use card checkout. Please use the gift form.",
+        )
+
+    catalog_price, pricing = _prepare_checkout_pricing(body)
+    from app.services.affiliates import affiliate_metadata_patch
+
+    promo = pricing.promo
+    affiliate_meta = (
+        affiliate_metadata_patch(pricing.affiliate).get("affiliate")
+        if pricing.affiliate
+        else None
+    )
+    attribution_meta = _checkout_attribution_metadata(body)
+    buyer_email = _checkout_buyer_email(body)
+
+    try:
+        created = db.create_order(
+            email=buyer_email,
+            country=body.country,
+            price=catalog_price,
+            flag=body.flag,
+            travel_date=body.travel_date,
+            package_id=body.package_id,
+            phone=body.phone,
+            promo_code=promo.code if promo else None,
+            promo_discount_cents=promo.discount_cents if promo else None,
+            promo_subtotal_cents=pricing.subtotal_cents if promo else None,
+            total_discount_cents=pricing.discount_cents,
+            affiliate_metadata=affiliate_meta,
+            attribution_metadata=attribution_meta,
+            wants_topup=bool(body.wants_topup),
+        )
+    except db.ManagedPackagePriceMismatchError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Package price does not match our catalog. Refresh and try again.",
+        ) from exc
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    except Exception as exc:
+        logger.exception("Unexpected PayPal checkout order failure")
+        raise HTTPException(
+            status_code=503,
+            detail="Checkout is temporarily unavailable. Please try again.",
+        ) from exc
+
+    order = created.order
+    settings = get_settings()
+    return_url = f"{settings.app_url.rstrip('/')}/success"
+    cancel_url = f"{settings.app_url.rstrip('/')}/checkout"
+
+    try:
+        paypal_order_id = create_paypal_order(
+            order_number=order.order_number,
+            amount_usd=float(order.price),
+            description=order.package_name or f"{order.country} eSIM",
+            return_url=return_url,
+            cancel_url=cancel_url,
+        )
+        db.merge_order_metadata(
+            order.order_number,
+            {
+                "paypal": {
+                    "order_id": paypal_order_id,
+                    "mode": (settings.paypal_mode or "sandbox").strip().lower(),
+                }
+            },
+        )
+    except PayPalCheckoutError as exc:
+        logger.error("PayPal create-order failed for %s: %s", order.order_number, exc)
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    return PayPalCreateOrderResponse(
+        success=True,
+        paypal_order_id=paypal_order_id,
+        order_id=order.order_number,
+        final_price=float(order.price),
+        message="PayPal order created.",
+    )
+
+
+@app.post("/api/checkout/paypal/capture", response_model=PayPalCaptureResponse)
+async def paypal_capture(body: PayPalCaptureRequest):
+    """Capture an approved PayPal order and fulfill the eSIM."""
+    from app.api.paypal_checkout import PayPalCheckoutError, capture_paypal_order, paypal_enabled
+
+    if not paypal_enabled():
+        raise HTTPException(status_code=503, detail="PayPal checkout is not configured yet.")
+
+    try:
+        payload, order_number, payer_email = capture_paypal_order(body.paypal_order_id)
+    except PayPalCheckoutError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    if not order_number:
+        logger.error("PayPal capture missing order_number for %s", body.paypal_order_id)
+        raise HTTPException(status_code=502, detail="PayPal payment missing order reference.")
+
+    meta = payload.get("_noorlink") if isinstance(payload, dict) else {}
+    capture_id = None
+    amount_value = None
+    if isinstance(meta, dict):
+        capture_id = meta.get("capture_id")
+        amount_value = meta.get("amount_value")
+
+    try:
+        row = db.get_order_row_by_order_number(order_number)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not row:
+        raise HTTPException(status_code=404, detail="Order not found for this PayPal payment.")
+
+    expected_cents = int(row.get("amount_cents") or round(float(row.get("price") or 0) * 100))
+    if amount_value is not None:
+        try:
+            received_cents = int(round(float(amount_value) * 100))
+        except (TypeError, ValueError):
+            received_cents = 0
+        if expected_cents and received_cents and expected_cents != received_cents:
+            logger.error(
+                "PayPal amount mismatch for %s: expected %s got %s",
+                order_number,
+                expected_cents,
+                received_cents,
+            )
+            raise HTTPException(status_code=400, detail="PayPal amount does not match this order.")
+
+    if payer_email and "@" in payer_email:
+        try:
+            db.update_order_customer_email(order_number, payer_email)
+        except db.SupabaseRepositoryError as exc:
+            logger.warning("PayPal email patch failed for %s: %s", order_number, exc)
+
+    try:
+        db.merge_order_metadata(
+            order_number,
+            {
+                "paypal": {
+                    "order_id": body.paypal_order_id,
+                    "capture_id": capture_id,
+                    "status": "COMPLETED",
+                }
+            },
+        )
+    except db.SupabaseRepositoryError as exc:
+        logger.warning("PayPal metadata merge failed for %s: %s", order_number, exc)
+
+    try:
+        process_paid_order(order_number=order_number)
+    except FulfillmentError as exc:
+        logger.error("Fulfillment failed after PayPal for %s: %s", order_number, exc)
+        # Payment captured — still send buyer to success; ops alert like Stripe path
+        try:
+            notify_fulfillment_failure(
+                order_number=order_number,
+                email=str(payer_email or row.get("email") or ""),
+                country=str(row.get("country") or ""),
+                package_name=str(row.get("package_name") or "Travel eSIM"),
+                error=str(exc),
+                context="paypal_capture",
+                order_status="paid",
+            )
+        except Exception:
+            logger.exception("Ops alert failed after PayPal for %s", order_number)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    final_email = payer_email or str(row.get("email") or "")
+    if final_email.endswith("@checkout.noorlink.pending"):
+        final_email = payer_email or ""
+
+    return PayPalCaptureResponse(
+        success=True,
+        order_id=order_number,
+        email=final_email or None,
+        message="PayPal payment captured.",
+    )
+
+
 @app.post("/api/checkout/payment-intent", response_model=ExpressPaymentIntentResponse)
 async def checkout_payment_intent(body: CheckoutSessionRequest):
     """Create order + PaymentIntent for Apple Pay / Google Pay / Link on-page."""
@@ -1119,9 +1345,11 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
     )
     attribution_meta = _checkout_attribution_metadata(body)
 
+    buyer_email = _checkout_buyer_email(body)
+
     try:
         created = db.create_order(
-            email=str(body.email),
+            email=buyer_email,
             country=body.country,
             price=catalog_price,
             flag=body.flag,
@@ -1157,7 +1385,7 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
         intent = create_stripe_payment_intent(
             order_number=order.order_number,
             order_id=created.order_id,
-            email=str(body.email),
+            email=None if _is_pending_checkout_email(buyer_email) else buyer_email,
             amount_cents=amount_cents,
             currency=order.currency,
             package_name=order.package_name,
@@ -1203,10 +1431,11 @@ async def checkout_session(body: CheckoutSessionRequest):
     )
     gift_meta = _build_gift_metadata(body)
     attribution_meta = None if body.is_gift else _checkout_attribution_metadata(body)
+    buyer_email = _checkout_buyer_email(body)
 
     try:
         created = db.create_order(
-            email=str(body.email),
+            email=buyer_email,
             country=body.country,
             price=catalog_price,
             flag=body.flag,
@@ -1247,7 +1476,7 @@ async def checkout_session(body: CheckoutSessionRequest):
         session = create_stripe_checkout_session(
             order_number=order.order_number,
             order_id=created.order_id,
-            email=str(body.email),
+            email=None if _is_pending_checkout_email(buyer_email) else buyer_email,
             package=created.package,
             package_name=order.package_name,
             amount_cents=amount_cents,
@@ -1268,12 +1497,15 @@ async def checkout_session(body: CheckoutSessionRequest):
     # Acknowledgment email should not block redirect to Stripe.
     email_sent = False
     email_error: str | None = None
+    skip_ack = _is_pending_checkout_email(buyer_email)
     try:
-        if body.is_gift and gift_meta:
+        if skip_ack:
+            pass
+        elif body.is_gift and gift_meta:
             from app.services.email_service import send_gift_checkout_acknowledgment
 
             send_gift_checkout_acknowledgment(
-                to_email=str(body.email),
+                to_email=buyer_email,
                 order_number=order.order_number,
                 country=order.country,
                 package_name=order.package_name,
@@ -1284,9 +1516,10 @@ async def checkout_session(body: CheckoutSessionRequest):
                 recipient_name=str(gift_meta["recipient_name"]),
                 recipient_email=str(gift_meta["recipient_email"]),
             )
+            email_sent = True
         else:
             send_checkout_acknowledgment(
-                to_email=str(body.email),
+                to_email=buyer_email,
                 order_number=order.order_number,
                 country=order.country,
                 package_name=order.package_name,
@@ -1295,7 +1528,7 @@ async def checkout_session(body: CheckoutSessionRequest):
                 flag_emoji=order.flag,
                 checkout_url=session.url,
             )
-        email_sent = True
+            email_sent = True
     except EmailDeliveryError as exc:
         email_error = str(exc)[:400]
         logger.error(
@@ -1324,8 +1557,12 @@ async def checkout_session(body: CheckoutSessionRequest):
             "Confirmation email sent. Redirect to Stripe to complete payment."
             if email_sent
             else (
-                "Payment session created, but confirmation email failed. "
-                "You can still complete payment on Stripe."
+                "Payment session created. Enter your email on Stripe if you skipped it here."
+                if skip_ack
+                else (
+                    "Payment session created, but confirmation email failed. "
+                    "You can still complete payment on Stripe."
+                )
             )
         ),
         email_sent=email_sent,
@@ -1405,6 +1642,17 @@ async def stripe_webhook(
                     "order_number": order_number,
                 }
             )
+
+        paid_email = str(intent_data.get("customer_email") or "").strip().lower()
+        if order_number and paid_email and "@" in paid_email:
+            try:
+                db.update_order_customer_email(str(order_number), paid_email)
+            except db.SupabaseRepositoryError as exc:
+                logger.warning(
+                    "Could not patch buyer email from PaymentIntent for %s: %s",
+                    order_number,
+                    exc,
+                )
 
         try:
             process_paid_order(
@@ -1579,6 +1827,17 @@ async def stripe_webhook(
             db.merge_order_metadata(resolved_order_number, customer_patch)
         except db.SupabaseRepositoryError as exc:
             logger.warning("Stripe customer metadata merge failed for %s: %s", resolved_order_number, exc)
+
+    paid_email = str(session_data.get("customer_email") or "").strip().lower()
+    if resolved_order_number and paid_email and "@" in paid_email:
+        try:
+            db.update_order_customer_email(resolved_order_number, paid_email)
+        except db.SupabaseRepositoryError as exc:
+            logger.warning(
+                "Could not patch buyer email from Stripe for %s: %s",
+                resolved_order_number,
+                exc,
+            )
 
     try:
         process_paid_order(

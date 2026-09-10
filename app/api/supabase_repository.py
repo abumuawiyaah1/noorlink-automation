@@ -1058,6 +1058,22 @@ def update_order_stripe_session(
         raise SupabaseRepositoryError(str(exc)) from exc
 
 
+def update_order_customer_email(order_number: str, email: str) -> None:
+    """Set/replace buyer email after Stripe collects it (optional-email checkout)."""
+    normalized = (email or "").strip().lower()
+    if not normalized or "@" not in normalized:
+        return
+    client = get_supabase_client()
+    try:
+        client.table("orders").update({"email": normalized}).eq(
+            "order_number", order_number
+        ).execute()
+        _upsert_user_by_email(client, normalized)
+    except Exception as exc:
+        logger.exception("orders email update failed for %s", order_number)
+        raise SupabaseRepositoryError(str(exc)) from exc
+
+
 def update_order_stripe_payment_intent(
     order_number: str,
     stripe_payment_intent_id: str,
