@@ -148,19 +148,19 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "australia": {
         "name": "Australia",
         "currency": "USD",
-        # Telna single-country Australia (gap-fill — not in Asia Bundle 2).
+        # Zesimo Australia ladder (Phase 5). Basic aligned to 1GB/7d (no 1/5 twin).
         "plans": {
             "basic": {
                 "name": "Basic",
                 "data": "1GB",
-                "days": 5,
+                "days": 7,
                 "price": 9.99,
                 "fulfillment": {
-                    "catalog_key": "au-1gb-5",
-                    "provider": "telna",
-                    "provider_sku": "66b5db0b899f794eccc7fe26",
-                    "provider_slug": "telna-australia-1gb-5d",
-                    "wholesale_cents": 150,
+                    "catalog_key": "australia-1gb-7",
+                    "provider": "zesimo",
+                    "provider_sku": "1620",
+                    "provider_slug": "zesimo-australia-1gb-7",
+                    "wholesale_cents": 98,
                 },
             },
             "standard": {
@@ -170,11 +170,11 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "price": 14.99,
                 "popular": True,
                 "fulfillment": {
-                    "catalog_key": "au-3gb-7",
-                    "provider": "telna",
-                    "provider_sku": "66b5db0b899f794eccc7fe3d",
-                    "provider_slug": "telna-australia-3gb-7d",
-                    "wholesale_cents": 400,
+                    "catalog_key": "australia-3gb-7",
+                    "provider": "zesimo",
+                    "provider_sku": "33",
+                    "provider_slug": "zesimo-australia-3gb-7",
+                    "wholesale_cents": 347,
                 },
             },
             "plus": {
@@ -183,11 +183,11 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "days": 15,
                 "price": 19.99,
                 "fulfillment": {
-                    "catalog_key": "au-5gb-15",
-                    "provider": "telna",
-                    "provider_sku": "66b5db0b899f794eccc7fe54",
-                    "provider_slug": "telna-australia-5gb-15d",
-                    "wholesale_cents": 600,
+                    "catalog_key": "australia-5gb-15",
+                    "provider": "zesimo",
+                    "provider_sku": "34",
+                    "provider_slug": "zesimo-australia-5gb-15",
+                    "wholesale_cents": 550,
                 },
             },
             "premium": {
@@ -196,11 +196,11 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "days": 30,
                 "price": 29.99,
                 "fulfillment": {
-                    "catalog_key": "au-10gb-30",
-                    "provider": "telna",
-                    "provider_sku": "66b5db0b899f794eccc7fe25",
-                    "provider_slug": "telna-australia-10gb-30d",
-                    "wholesale_cents": 1100,
+                    "catalog_key": "australia-10gb-30",
+                    "provider": "zesimo",
+                    "provider_sku": "2006",
+                    "provider_slug": "zesimo-australia-10gb-30",
+                    "wholesale_cents": 658,
                 },
             },
             "family": {
@@ -217,19 +217,20 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "middle-east": {
         "name": "Middle East",
         "currency": "USD",
-        # Zesimo ME 5/15 + 10/30; entry rungs stay Telna until mapped.
+        # Regional ME: Zesimo 5/15 + 10/30. Basic aligned to 1GB/7d (Zesimo ME).
+        # Single-country ME pages fulfill on country-specific Zesimo Phase 5 maps.
         "plans": {
             "basic": {
                 "name": "Basic",
                 "data": "1GB",
-                "days": 5,
+                "days": 7,
                 "price": 12.99,
                 "fulfillment": {
-                    "catalog_key": "me-1gb-5",
-                    "provider": "telna",
-                    "provider_sku": "67f6c112d07af55d502bef7a",
-                    "provider_slug": "telna-me-1gb-5d",
-                    "wholesale_cents": 370,
+                    "catalog_key": "me-1gb-7",
+                    "provider": "zesimo",
+                    "provider_sku": "1083",
+                    "provider_slug": "zesimo-me-1gb-7d",
+                    "wholesale_cents": 233,
                 },
             },
             "standard": {

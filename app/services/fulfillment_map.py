@@ -90,11 +90,11 @@ STATIC_SA_MAP: List[Dict[str, Any]] = [
         "country_slug": "saudi-arabia",
         "data_gb": 3.0,
         "validity_days": 3,
-        "provider": "esimaccess",
-        "provider_sku": "PVEXXS543",
-        "provider_slug": "SA_3_Daily_1Mbps",
-        "wholesale_cents": 1458,
-        "period_num": 3,
+        "provider": "zesimo",
+        "provider_sku": "10899",
+        "provider_slug": "zesimo-sa-unlimited-3d",
+        "wholesale_cents": 1162,
+        "period_num": None,
         "is_active": True,
     },
     {
@@ -103,11 +103,11 @@ STATIC_SA_MAP: List[Dict[str, Any]] = [
         "country_slug": "saudi-arabia",
         "data_gb": 3.0,
         "validity_days": 5,
-        "provider": "esimaccess",
-        "provider_sku": "PVEXXS543",
-        "provider_slug": "SA_3_Daily_1Mbps",
-        "wholesale_cents": 2430,
-        "period_num": 5,
+        "provider": "zesimo",
+        "provider_sku": "10901",
+        "provider_slug": "zesimo-sa-unlimited-5d",
+        "wholesale_cents": 1680,
+        "period_num": None,
         "is_active": True,
     },
     {
@@ -133,6 +133,32 @@ STATIC_SA_MAP: List[Dict[str, Any]] = [
         "provider_sku": "10905",
         "provider_slug": "zesimo-sa-unlimited-10d",
         "wholesale_cents": 2786,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "sa-unlimited-3gb-15d",
+        "country_code": "SA",
+        "country_slug": "saudi-arabia",
+        "data_gb": 3.0,
+        "validity_days": 15,
+        "provider": "zesimo",
+        "provider_sku": "10907",
+        "provider_slug": "zesimo-sa-unlimited-15d",
+        "wholesale_cents": 5152,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "sa-unlimited-3gb-30d",
+        "country_code": "SA",
+        "country_slug": "saudi-arabia",
+        "data_gb": 3.0,
+        "validity_days": 30,
+        "provider": "zesimo",
+        "provider_sku": "10909",
+        "provider_slug": "zesimo-sa-unlimited-30d",
+        "wholesale_cents": 7266,
         "period_num": None,
         "is_active": True,
     },
@@ -273,6 +299,22 @@ def normalize_country_slug(value: Optional[str]) -> str:
         "us": "united-states",
         "united states": "united-states",
         "u-s-a": "united-states",
+        "uk": "uk",
+        "united kingdom": "uk",
+        "united-kingdom": "uk",
+        "great britain": "uk",
+        "gb": "uk",
+        "korea": "south-korea",
+        "south korea": "south-korea",
+        "gulf": "regional-gulf",
+        "gulf region": "regional-gulf",
+        "gcc": "regional-gulf",
+        "eu uk": "regional-eu-uk",
+        "eu-uk": "regional-eu-uk",
+        "europe uk": "regional-eu-uk",
+        "european union and united kingdom": "regional-eu-uk",
+        "global lite": "regional-global-lite",
+        "global-lite": "regional-global-lite",
     }
     if raw in aliases:
         return aliases[raw]
@@ -288,7 +330,17 @@ def is_saudi_destination(country: Optional[str], country_code: Optional[str] = N
 # Country storefront pages that silently fulfill on Telna Middle East Bundle.
 # Customers still see "UAE 10GB" / "Turkey 10GB" — not a regional promo.
 # Saudi / Umrah stays on Access (never listed here).
+# Telna remains only for these ME storefronts (no Zesimo Phase 5 cutover yet).
 ME_SILENT_TELNA_COUNTRY_SLUGS = frozenset(
+    {
+        "israel",
+        "tunisia",
+        "cyprus",
+    }
+)
+
+# Hand-wired single-country maps (Zesimo Phase 5 + prior US/MX). Prefer map over cascade.
+COUNTRY_MAP_LOCK_SLUGS = frozenset(
     {
         "uae",
         "united-arab-emirates",
@@ -299,10 +351,24 @@ ME_SILENT_TELNA_COUNTRY_SLUGS = frozenset(
         "bahrain",
         "oman",
         "jordan",
-        "israel",
         "morocco",
-        "tunisia",
-        "cyprus",
+        "uk",
+        "united-kingdom",
+        "spain",
+        "italy",
+        "germany",
+        "france",
+        "japan",
+        "thailand",
+        "indonesia",
+        "singapore",
+        "south-korea",
+        "korea",
+        "malaysia",
+        "australia",
+        "united-states",
+        "usa",
+        "mexico",
     }
 )
 

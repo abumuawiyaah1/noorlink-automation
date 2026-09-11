@@ -28,11 +28,12 @@ BASE = "https://zesimo.com/api/v1"
 
 
 def test_sku_map_complete():
-    assert len(ZESIMO_SKU_MAP) == 30
+    assert len(ZESIMO_SKU_MAP) == 142
     assert len(by_phase(1)) == 4
     assert len(by_phase(2)) == 11
     assert len(by_phase(3)) == 9
     assert len(by_phase(4)) == 6
+    assert len(by_phase(5)) == 112
     assert all(row.get("package_id") for row in ZESIMO_SKU_MAP)
 
 

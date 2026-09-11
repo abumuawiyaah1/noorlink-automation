@@ -190,13 +190,24 @@ def choose_fulfillment_target(
     if is_saudi_destination(country):
         return mapped
 
-    # Silent ME country storefronts (UAE/Turkey/Egypt/…): keep hand-wired
-    # Telna Middle East Bundle map. Do not undercut with cheaper single-country
-    # catalog SKUs — customers bought a country plan; we fulfill regionally.
-    from app.services.fulfillment_map import ME_SILENT_TELNA_COUNTRY_SLUGS
+    # Hand-wired country maps (Zesimo Phase 5 singles + remaining Telna ME):
+    # keep map authoritative; do not undercut with cheaper cascade SKUs.
+    from app.services.fulfillment_map import (
+        COUNTRY_MAP_LOCK_SLUGS,
+        ME_SILENT_TELNA_COUNTRY_SLUGS,
+    )
 
     silent_slug = "uae" if slug == "united-arab-emirates" else slug
-    if mapped and silent_slug in ME_SILENT_TELNA_COUNTRY_SLUGS:
+    if silent_slug == "united-kingdom":
+        silent_slug = "uk"
+    if silent_slug == "korea":
+        silent_slug = "south-korea"
+    if mapped and (
+        silent_slug in COUNTRY_MAP_LOCK_SLUGS
+        or silent_slug in ME_SILENT_TELNA_COUNTRY_SLUGS
+        or slug in COUNTRY_MAP_LOCK_SLUGS
+        or slug in ME_SILENT_TELNA_COUNTRY_SLUGS
+    ):
         return mapped
 
     if data_gb is None or validity_days is None:
