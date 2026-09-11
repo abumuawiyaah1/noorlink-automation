@@ -365,6 +365,7 @@ COUNTRY_MAP_LOCK_SLUGS = frozenset(
         "south-korea",
         "korea",
         "malaysia",
+        "china",
         "australia",
         "united-states",
         "usa",

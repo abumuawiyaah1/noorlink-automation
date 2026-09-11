@@ -1865,6 +1865,58 @@ ZESIMO_SKU_MAP: List[Dict[str, Any]] = [
         "retail_cents": 3799,
         "product_name": "Global Lite 10GB 30 Days",
     },
+    {
+        "phase": 5,
+        "catalog_key": "china-5gb-30",
+        "country_code": "CN",
+        "country_slug": "china",
+        "data_gb": 5.0,
+        "validity_days": 30,
+        "package_id": "1768",
+        "provider_slug": "zesimo-china-5gb-30",
+        "wholesale_cents": 414,
+        "retail_cents": 999,
+        "product_name": "China 5GB 30 Days",
+    },
+    {
+        "phase": 5,
+        "catalog_key": "china-10gb-30",
+        "country_code": "CN",
+        "country_slug": "china",
+        "data_gb": 10.0,
+        "validity_days": 30,
+        "package_id": "1769",
+        "provider_slug": "zesimo-china-10gb-30",
+        "wholesale_cents": 819,
+        "retail_cents": 1999,
+        "product_name": "China 10GB 30 Days",
+    },
+    {
+        "phase": 5,
+        "catalog_key": "china-20gb-30",
+        "country_code": "CN",
+        "country_slug": "china",
+        "data_gb": 20.0,
+        "validity_days": 30,
+        "package_id": "1998",
+        "provider_slug": "zesimo-china-20gb-30",
+        "wholesale_cents": 1435,
+        "retail_cents": 3499,
+        "product_name": "China 20GB 30 Days",
+    },
+    {
+        "phase": 5,
+        "catalog_key": "china-1gb-7",
+        "country_code": "CN",
+        "country_slug": "china",
+        "data_gb": 1.0,
+        "validity_days": 7,
+        "package_id": "1766",
+        "provider_slug": "zesimo-china-1gb-7",
+        "wholesale_cents": 98,
+        "retail_cents": 299,
+        "product_name": "China 1GB 7 Days",
+    },
 ]
 
 
@@ -1906,11 +1958,11 @@ def fulfillment_rows() -> List[Dict[str, Any]]:
     return rows
 
 
-assert len(ZESIMO_SKU_MAP) == 142
+assert len(ZESIMO_SKU_MAP) == 146
 assert len(by_phase(1)) == 4
 assert len(by_phase(2)) == 11
 assert len(by_phase(3)) == 9
 assert len(by_phase(4)) == 6
-assert len(by_phase(5)) == 112
+assert len(by_phase(5)) == 116
 assert all(row.get("package_id") for row in ZESIMO_SKU_MAP)
 assert len({row["catalog_key"] for row in ZESIMO_SKU_MAP}) == len(ZESIMO_SKU_MAP)
