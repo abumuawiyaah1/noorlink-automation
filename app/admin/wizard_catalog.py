@@ -45,8 +45,8 @@ STAFF_WIZARDS: Tuple[StaffWizard, ...] = (
     StaffWizard(
         key="new-promo",
         title="Create a promo code",
-        summary="Set up a discount code for a campaign. Codes above 20% need admin approval.",
-        steps=("Code & discount", "Dates & limits", "Save"),
+        summary="Create a discount, then copy ready links or send them by email / WhatsApp. Codes above 20% need admin approval.",
+        steps=("Code & discount", "Dates & limits", "Share links"),
         icon="fa-solid fa-tag",
         endpoint="admin:promo-wizard",
         roles=PROMO_MANAGER_ROLES,

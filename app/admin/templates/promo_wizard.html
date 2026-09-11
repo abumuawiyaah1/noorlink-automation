@@ -3,15 +3,96 @@
 <style>
   .nl-wizard-panel { border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; padding: 1.25rem 1.5rem; }
   .nl-wizard-help { background: #F3F7F7; border-radius: 10px; padding: .85rem 1rem; font-size: 14px; color: #334155; }
+  .nl-share-panel { border: 1px solid #cce8dc; border-radius: 14px; background: #f3fbf7; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+  .nl-share-code { font-size: 1.5rem; font-weight: 800; letter-spacing: 0.04em; color: #0F3D3E; }
+  .nl-share-link { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .75rem; }
+  .nl-share-link code { flex: 1; min-width: 220px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: .45rem .65rem; font-size: 12px; word-break: break-all; }
+  .nl-share-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; margin-top: 1rem; }
 </style>
 
 <div class="container-fluid" style="max-width:720px;">
   {% include "includes/wizard_chrome.html" %}
 
   <h1 class="h3 mb-2">Create a promo code</h1>
-  <p class="text-muted mb-4">Simple discounts for campaigns. Customers enter the code at checkout.</p>
+  <p class="text-muted mb-4">Create a discount, then share a ready link by email or WhatsApp from this page.</p>
+
+  {% if share %}
+  <section class="nl-share-panel" aria-label="Share promo links">
+    <p class="text-uppercase small fw-bold text-muted mb-1">Ready to share</p>
+    <p class="nl-share-code mb-1">{{ share.code }}</p>
+    <p class="mb-3 text-muted">
+      {{ share.discount_phrase }}
+      {% if not share.admin_approved %}
+        <span class="badge text-bg-warning">Needs admin approval before checkout</span>
+      {% else %}
+        <span class="badge text-bg-success">Live</span>
+      {% endif %}
+    </p>
+
+    <h2 class="h6 mb-2">Useful links (code already included)</h2>
+    {% for link in share.links %}
+    <div class="nl-share-link">
+      <div style="min-width:9rem;">
+        <strong>{{ link.label }}</strong>
+        <div class="small text-muted">{{ link.hint }}</div>
+      </div>
+      <code id="promo-link-{{ link.key }}">{{ link.url }}</code>
+      <button type="button" class="btn btn-sm btn-outline-secondary"
+        onclick="navigator.clipboard.writeText(document.getElementById('promo-link-{{ link.key }}').textContent)">
+        Copy
+      </button>
+    </div>
+    {% endfor %}
+
+    <hr class="my-3" />
+
+    <h2 class="h6 mb-2">Send from dashboard</h2>
+    <div class="nl-share-actions">
+      <a class="btn btn-success" href="{{ share.whatsapp_url }}" target="_blank" rel="noopener noreferrer">
+        Open WhatsApp with message
+      </a>
+    </div>
+    <p class="small text-muted mt-2 mb-3">
+      Opens WhatsApp with the destinations link and code prefilled. You choose the contact there.
+    </p>
+
+    <form method="post" action="{{ url_for('admin:promo-wizard') }}" class="row g-2 align-items-end">
+      <input type="hidden" name="action" value="share_email" />
+      <input type="hidden" name="code" value="{{ share.code }}" />
+      <div class="col-md-5">
+        <label class="form-label" for="to_email">Send offer email to</label>
+        <input class="form-control" id="to_email" name="to_email" type="email" required
+          placeholder="traveler@email.com" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="link_key">Which link</label>
+        <select class="form-select" id="link_key" name="link_key">
+          {% for link in share.links %}
+          <option value="{{ link.key }}" {% if link.key == 'destinations' %}selected{% endif %}>
+            {{ link.label }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary w-100">Send email</button>
+      </div>
+    </form>
+  </section>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('admin:promo-wizard') }}" class="nl-wizard-panel mb-4">
+    <input type="hidden" name="action" value="load_share" />
+    <label class="form-label" for="share_code">Or open share tools for an existing code</label>
+    <div class="input-group">
+      <input class="form-control text-uppercase" id="share_code" name="share_code"
+        placeholder="FRIEND10" />
+      <button type="submit" class="btn btn-outline-primary">Load links</button>
+    </div>
+  </form>
 
   <form method="post" action="{{ url_for('admin:promo-wizard') }}" class="nl-wizard-panel">
+    <input type="hidden" name="action" value="create" />
     <div class="mb-3">
       <label class="form-label" for="code">Code *</label>
       <input class="form-control text-uppercase" id="code" name="code" required
@@ -80,6 +161,7 @@
     <div class="nl-wizard-help mb-3">
       Discounts above <strong>{{ approval_threshold }}%</strong> need an admin to approve before checkout
       {% if not editor_is_admin %} — you'll see a confirmation after saving{% endif %}.
+      After create, this page shows ready links plus Email / WhatsApp send.
     </div>
 
     <button type="submit" class="btn btn-primary">Create promo code</button>

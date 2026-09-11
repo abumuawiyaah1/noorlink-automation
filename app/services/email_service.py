@@ -1240,3 +1240,52 @@ def send_referral_reward_email(
         subject="10% off your next NoorLink trip — friend referral reward",
         html_body=html_body,
     )
+
+
+def send_promo_share_email(
+    *,
+    to_email: str,
+    code: str,
+    share_url: str,
+    percent_off: Optional[int] = None,
+    amount_off_cents: Optional[int] = None,
+) -> str:
+    """Staff-sent offer email with a ready checkout link that includes the promo."""
+    from app.services.promo_share import discount_phrase
+
+    settings = get_settings()
+    app_url = settings.app_url.rstrip("/")
+    phrase = discount_phrase(percent_off=percent_off, amount_off_cents=amount_off_cents)
+    safe_code = html.escape((code or "").strip().upper())
+    safe_url = html.escape(share_url)
+    body = f"""
+      <p style="margin:0 0 16px;color:{TEXT};font-size:16px;line-height:1.6;">
+        We’ve set aside <strong style="color:{PRIMARY};">{html.escape(phrase)}</strong>
+        on NoorLink travel eSIM for you.
+      </p>
+      <p style="margin:0 0 8px;color:{MUTED};font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+        Your code
+      </p>
+      <p style="margin:0 0 20px;font-size:22px;font-weight:800;letter-spacing:0.04em;color:{PRIMARY};">
+        {safe_code}
+      </p>
+      <p style="text-align:center;margin:0 0 12px;">
+        {cta_button(href=share_url, label="Choose a plan with this offer")}
+      </p>
+      <p style="margin:0;font-size:13px;line-height:1.5;color:{MUTED};text-align:center;">
+        Or open <a href="{safe_url}" style="color:{PRIMARY};font-weight:700;">{safe_url}</a>
+        and enter the code at checkout if needed.
+      </p>
+    """
+    html_body = wrap_branded_email(
+        eyebrow="Special offer",
+        title=f"{phrase} on NoorLink",
+        body_html=body,
+        app_url=app_url,
+        tip="Install on Wi‑Fi before you fly. Data typically starts when you connect at your destination.",
+    )
+    return send_email(
+        to_email=to_email,
+        subject=f"Your NoorLink offer — {phrase} ({safe_code})",
+        html_body=html_body,
+    )
