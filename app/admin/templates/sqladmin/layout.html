@@ -88,19 +88,24 @@
     color: #fff;
     border-color: #0F3D3E;
   }
-  /* Sidebar on the right — work area on the left */
-  html[data-nl-sidebar="right"] .wrapper {
-    flex-direction: row-reverse !important;
+  /* Sidebar on the right — Tabler uses .navbar-right; keep content readable on the left */
+  html[data-nl-sidebar="right"] .navbar-vertical.navbar-right ~ .page-wrapper {
+    margin-left: 0 !important;
+    margin-right: 15rem !important;
   }
   @media (max-width: 768px) {
     .wrapper { flex-direction: column !important; }
-    html[data-nl-sidebar="right"] .wrapper { flex-direction: column !important; }
     .navbar-vertical {
       width: 100% !important;
       min-height: auto !important;
       position: relative !important;
     }
-    .page-wrapper { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; }
+    .page-wrapper,
+    html[data-nl-sidebar="right"] .navbar-vertical.navbar-right ~ .page-wrapper {
+      width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
     .nl-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     .nl-wizard-panel { padding: 1rem !important; }
     .table-responsive { font-size: 12px; }
@@ -110,10 +115,15 @@
   }
 </style>
 <script>
-/* Apply sidebar side + text size before paint to avoid layout jump */
+/* Default menu to the right so Quick start / main content stay visible on the left */
 (function () {
   try {
-    if (localStorage.getItem("nl-admin-sidebar") === "right") {
+    var side = localStorage.getItem("nl-admin-sidebar");
+    if (side !== "left" && side !== "right") {
+      side = "right";
+      localStorage.setItem("nl-admin-sidebar", "right");
+    }
+    if (side === "right") {
       document.documentElement.setAttribute("data-nl-sidebar", "right");
     }
     var textSize = localStorage.getItem("nl-admin-text") || "md";
@@ -169,23 +179,23 @@
       }
     });
   }
-  function syncSideLabel() {
-    if (!sideToggle) return;
-    var right = root.getAttribute("data-nl-sidebar") === "right";
-    sideToggle.textContent = right ? "Menu on left" : "Menu on right";
+  function applySidebarSide(right) {
+    var nav = document.querySelector("aside.navbar-vertical");
+    if (right) {
+      root.setAttribute("data-nl-sidebar", "right");
+      if (nav) nav.classList.add("navbar-right");
+      localStorage.setItem("nl-admin-sidebar", "right");
+    } else {
+      root.removeAttribute("data-nl-sidebar");
+      if (nav) nav.classList.remove("navbar-right");
+      localStorage.setItem("nl-admin-sidebar", "left");
+    }
+    if (sideToggle) sideToggle.textContent = right ? "Menu on left" : "Menu on right";
   }
-  syncSideLabel();
+  applySidebarSide(root.getAttribute("data-nl-sidebar") === "right");
   if (sideToggle) {
     sideToggle.addEventListener("click", function () {
-      var right = root.getAttribute("data-nl-sidebar") === "right";
-      if (right) {
-        root.removeAttribute("data-nl-sidebar");
-        localStorage.setItem("nl-admin-sidebar", "left");
-      } else {
-        root.setAttribute("data-nl-sidebar", "right");
-        localStorage.setItem("nl-admin-sidebar", "right");
-      }
-      syncSideLabel();
+      applySidebarSide(root.getAttribute("data-nl-sidebar") !== "right");
     });
   }
 
@@ -351,7 +361,7 @@
 </script>
 {% endif %}
 <div class="wrapper">
-  <aside class="navbar navbar-expand-lg navbar-vertical navbar-expand-md navbar-dark">
+  <aside id="nl-admin-nav" class="navbar navbar-expand-lg navbar-vertical navbar-expand-md navbar-dark">
     <div class="container-fluid">
       <h1 class="navbar-brand navbar-brand-autodark">
         <a href="{{ url_for('admin:home-hub') }}">
@@ -379,6 +389,16 @@
       {% endif %}
     </div>
   </aside>
+  <script>
+  (function () {
+    try {
+      if (localStorage.getItem("nl-admin-sidebar") !== "left") {
+        var nav = document.getElementById("nl-admin-nav");
+        if (nav) nav.classList.add("navbar-right");
+      }
+    } catch (e) {}
+  })();
+  </script>
   <div class="page-wrapper">
     <div class="container-fluid">
       <div class="page-header d-print-none">
