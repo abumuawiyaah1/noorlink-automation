@@ -36,10 +36,12 @@ class EsimAccessError(Exception):
         *,
         status_code: Optional[int] = None,
         code: Optional[str] = None,
+        payload: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(message)
         self.status_code = status_code
         self.code = code
+        self.payload = payload
 
 
 class EsimAccessAuthError(EsimAccessError):
@@ -172,17 +174,20 @@ class EsimAccessClient:
                     f"Insufficient eSIM Access balance: {msg}",
                     status_code=response.status_code,
                     code=code,
+                    payload=data,
                 )
             if code in {"401001", "000101", "000102", "101003"}:
                 raise EsimAccessAuthError(
                     f"eSIM Access auth error ({code}): {msg}",
                     status_code=response.status_code,
                     code=code,
+                    payload=data,
                 )
             raise EsimAccessError(
                 f"eSIM Access error ({code}): {msg}",
                 status_code=response.status_code,
                 code=code,
+                payload=data,
             )
 
         return data

@@ -195,9 +195,21 @@ def _lpa_from_access_profile(profile: Dict[str, Any]) -> str:
 
 
 # Access 200010: order accepted but profile allocation failed (transient inventory lag).
+# Keep the same transactionId on retry — Access often already created the batch order
+# (today's NL-D60D78FB recovered as B26091119230007 from the first attempt).
 _ESIMACCESS_TRANSIENT_ORDER_CODES = frozenset({"200010"})
-_ESIMACCESS_ORDER_ATTEMPTS = 4
-_ESIMACCESS_ORDER_BACKOFF_SECONDS = (2.0, 5.0, 10.0)
+_ESIMACCESS_ORDER_ATTEMPTS = 5
+_ESIMACCESS_ORDER_BACKOFF_SECONDS = (5.0, 15.0, 30.0, 45.0)
+
+
+def _order_no_from_access_error(exc: BaseException) -> str:
+    payload = getattr(exc, "payload", None)
+    if not isinstance(payload, dict):
+        return ""
+    obj = payload.get("obj")
+    if isinstance(obj, dict):
+        return str(obj.get("orderNo") or "").strip()
+    return str(payload.get("orderNo") or "").strip()
 
 
 async def _esimaccess_order_with_retries(
@@ -214,14 +226,9 @@ async def _esimaccess_order_with_retries(
 
     last_exc: Optional[BaseException] = None
     for attempt in range(_ESIMACCESS_ORDER_ATTEMPTS):
-        transaction_id = (
-            base_transaction_id
-            if attempt == 0
-            else f"{base_transaction_id}-r{attempt}"
-        )
         try:
             return await client.order_esim(
-                transaction_id=transaction_id,
+                transaction_id=base_transaction_id,
                 package_code=package_code,
                 count=1,
                 period_num=period_num,
@@ -236,13 +243,47 @@ async def _esimaccess_order_with_retries(
                 or attempt + 1 >= _ESIMACCESS_ORDER_ATTEMPTS
             ):
                 raise
+
             delay = _ESIMACCESS_ORDER_BACKOFF_SECONDS[
                 min(attempt, len(_ESIMACCESS_ORDER_BACKOFF_SECONDS) - 1)
             ]
+            existing_order_no = _order_no_from_access_error(exc)
+            if existing_order_no:
+                logger.warning(
+                    "eSIM Access transient %s for %s orderNo=%s "
+                    "(attempt %s/%s); waiting %.0fs for profile",
+                    code,
+                    base_transaction_id,
+                    existing_order_no,
+                    attempt + 1,
+                    _ESIMACCESS_ORDER_ATTEMPTS,
+                    delay,
+                )
+                await asyncio.sleep(delay)
+                try:
+                    profile = await client.wait_for_profile(
+                        order_no=existing_order_no,
+                        attempts=4,
+                        delay_seconds=2.0,
+                    )
+                except EsimAccessError:
+                    profile = {}
+                if isinstance(profile, dict) and (
+                    profile.get("iccid")
+                    or profile.get("ac")
+                    or profile.get("qrCodeUrl")
+                ):
+                    return {
+                        "orderNo": existing_order_no,
+                        "transactionId": base_transaction_id,
+                    }
+                continue
+
             logger.warning(
-                "eSIM Access transient %s for %s (attempt %s/%s); retrying in %.1fs",
+                "eSIM Access transient %s for %s (attempt %s/%s); "
+                "retrying same transactionId in %.0fs",
                 code,
-                transaction_id,
+                base_transaction_id,
                 attempt + 1,
                 _ESIMACCESS_ORDER_ATTEMPTS,
                 delay,

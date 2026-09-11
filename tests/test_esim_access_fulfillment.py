@@ -288,7 +288,45 @@ async def test_esimaccess_retries_transient_200010(monkeypatch):
         amount_api=None,
     )
     assert order["orderNo"] == "BRETRY001"
-    assert calls == ["NL-RETRY", "NL-RETRY-r1", "NL-RETRY-r2"]
+    # Same transactionId every attempt — recovers Access batch without double-ordering.
+    assert calls == ["NL-RETRY", "NL-RETRY", "NL-RETRY"]
+
+
+@pytest.mark.asyncio
+async def test_esimaccess_waits_for_profile_when_200010_has_order_no(monkeypatch):
+    from app.services.esim_access import EsimAccessError
+    from app.services import esim_provision
+
+    class FakeClient:
+        async def order_esim(self, **kwargs):
+            raise EsimAccessError(
+                "eSIM Access error (200010): getting resource",
+                code="200010",
+                payload={"obj": {"orderNo": "BEXIST001"}},
+            )
+
+        async def wait_for_profile(self, **kwargs):
+            assert kwargs["order_no"] == "BEXIST001"
+            return {
+                "iccid": "8932000000000000001",
+                "ac": "LPA:1$rsp.example$ABC",
+                "qrCodeUrl": "https://p.qrsim.net/x.png",
+            }
+
+    async def instant_sleep(_seconds: float) -> None:
+        return None
+
+    monkeypatch.setattr(esim_provision.asyncio, "sleep", instant_sleep)
+
+    order = await esim_provision._esimaccess_order_with_retries(
+        FakeClient(),
+        base_transaction_id="NL-EXIST",
+        package_code="PVEXXS543",
+        period_num=None,
+        price_api=None,
+        amount_api=None,
+    )
+    assert order["orderNo"] == "BEXIST001"
 
 
 @pytest.mark.asyncio
