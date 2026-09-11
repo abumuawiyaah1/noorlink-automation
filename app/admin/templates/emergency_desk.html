@@ -33,7 +33,15 @@
   <div class="nl-em-hero">
     <p class="small text-uppercase mb-1" style="letter-spacing:.06em;opacity:.75;">Emergency desk</p>
     <h1 class="h3 mb-2" style="color:#fff;">Hi {{ display_name }} — I’m here when you’re away from your desk</h1>
-    <p>Ask what’s broken. I’ll give step-by-step NoorLink playbooks you can run from your phone. Critical failures also alert email/Slack.</p>
+    <p>
+      Ask what’s broken in plain language.
+      {% if llm_enabled %}
+      <strong style="color:#FF9500;">AI answers are on</strong> — free-form help with your critical logs as context.
+      {% else %}
+      Running in <strong style="color:#FF9500;">playbook mode</strong> (set <code style="color:#fff;">EMERGENCY_LLM_API_KEY</code> on Railway for freer AI answers).
+      {% endif %}
+      Critical failures also alert email/Slack.
+    </p>
   </div>
 
   <div class="nl-em-chat mb-4">
@@ -46,6 +54,7 @@
     </div>
     <button type="button" class="btn btn-dark" id="nl-em-ask">Get emergency steps</button>
     <div class="mt-3" id="nl-em-answer" hidden>
+      <p class="small text-muted mb-1" id="nl-em-source"></p>
       <div class="nl-em-bubble" id="nl-em-answer-body"></div>
       <div class="mt-2" id="nl-em-tools"></div>
     </div>
@@ -92,6 +101,7 @@
   var box = document.getElementById("nl-em-answer");
   var body = document.getElementById("nl-em-answer-body");
   var tools = document.getElementById("nl-em-tools");
+  var sourceEl = document.getElementById("nl-em-source");
   if (!q || !ask) return;
 
   document.querySelectorAll("[data-prompt]").forEach(function (btn) {
@@ -118,9 +128,15 @@
         ask.textContent = "Get emergency steps";
         if (!data.ok) {
           body.textContent = data.error || "Could not help right now.";
+          if (sourceEl) sourceEl.textContent = "";
           tools.innerHTML = "";
           box.hidden = false;
           return;
+        }
+        if (sourceEl) {
+          sourceEl.textContent = data.source === "llm"
+            ? "AI answer (with your critical logs + playbooks as context)"
+            : (data.llm_enabled ? "Playbook fallback (AI unavailable just now)" : "Playbook answer");
         }
         body.textContent = data.answer || "";
         var html = "";
@@ -135,6 +151,7 @@
       .catch(function () {
         ask.disabled = false;
         ask.textContent = "Get emergency steps";
+        if (sourceEl) sourceEl.textContent = "";
         body.textContent = "Network error — open Critical logs or Fulfill stuck order directly.";
         tools.innerHTML = '<a class="btn btn-sm btn-dark" href="/admin/fulfill-order">Fulfill stuck order</a>';
         box.hidden = false;

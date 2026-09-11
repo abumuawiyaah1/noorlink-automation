@@ -128,6 +128,13 @@ class Settings(BaseSettings):
     ops_alert_email: str = ""
     slack_webhook_url: str = ""
 
+    # Optional LLM for Emergency help free-form answers (OpenAI-compatible API)
+    # Leave blank to keep playbook-only mode. Works with OpenAI, OpenRouter, etc.
+    emergency_llm_api_key: str = ""
+    emergency_llm_base_url: str = "https://api.openai.com/v1"
+    emergency_llm_model: str = "gpt-4o-mini"
+    emergency_llm_timeout_seconds: float = 25.0
+
     # Optional public review links (shown in post-delivery emails)
     # Trustpilot preferred; Google optional secondary.
     trustpilot_review_url: str = ""
@@ -177,6 +184,10 @@ class Settings(BaseSettings):
             # Mis-pasted secret / garbage must not crash boot — default on
             return True
         return value
+
+    @property
+    def emergency_llm_enabled(self) -> bool:
+        return bool((self.emergency_llm_api_key or "").strip())
 
     @property
     def supabase_admin_key(self) -> str:
