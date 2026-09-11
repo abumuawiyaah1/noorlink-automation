@@ -23,7 +23,7 @@ from app.services.fulfillment import FulfillmentError, process_paid_order
 from app.services.ops_alerts import notify_fulfillment_failure
 from app.services.critical_ops import report_critical_event
 from app.services.insider_release import expire_finished_promos, release_due_insider_issues
-from app.services.promo_codes import normalize_code
+from app.services.promo_codes import PromoCodeError, normalize_code, validate_promo_row
 from app.services.checkout_pricing import (
     CheckoutPricingError,
     authoritative_checkout_price,

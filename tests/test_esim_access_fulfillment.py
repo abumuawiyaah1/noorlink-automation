@@ -254,3 +254,61 @@ async def test_provision_routes_sa_to_access(monkeypatch):
     assert result["provider"] == "esimaccess"
     assert result["catalog_key"] == "sa-20gb-30"
     assert result["provider_sku"] == "CKH800"
+
+
+@pytest.mark.asyncio
+async def test_esimaccess_retries_transient_200010(monkeypatch):
+    from app.services.esim_access import EsimAccessError
+    from app.services import esim_provision
+
+    calls: list[str] = []
+
+    class FakeClient:
+        async def order_esim(self, **kwargs):
+            tid = str(kwargs["transaction_id"])
+            calls.append(tid)
+            if len(calls) < 3:
+                raise EsimAccessError(
+                    "eSIM Access error (200010): the batchOrder has been getting resource",
+                    code="200010",
+                )
+            return {"orderNo": "BRETRY001", "transactionId": tid}
+
+    async def instant_sleep(_seconds: float) -> None:
+        return None
+
+    monkeypatch.setattr(esim_provision.asyncio, "sleep", instant_sleep)
+
+    order = await esim_provision._esimaccess_order_with_retries(
+        FakeClient(),
+        base_transaction_id="NL-RETRY",
+        package_code="PVEXXS543",
+        period_num=None,
+        price_api=None,
+        amount_api=None,
+    )
+    assert order["orderNo"] == "BRETRY001"
+    assert calls == ["NL-RETRY", "NL-RETRY-r1", "NL-RETRY-r2"]
+
+
+@pytest.mark.asyncio
+async def test_esimaccess_does_not_retry_balance_error():
+    from app.services.esim_access import EsimAccessInsufficientBalanceError
+    from app.services import esim_provision
+
+    class FakeClient:
+        async def order_esim(self, **kwargs):
+            raise EsimAccessInsufficientBalanceError(
+                "Insufficient eSIM Access balance",
+                code="200007",
+            )
+
+    with pytest.raises(EsimAccessInsufficientBalanceError):
+        await esim_provision._esimaccess_order_with_retries(
+            FakeClient(),
+            base_transaction_id="NL-BAL",
+            package_code="CKH279",
+            period_num=None,
+            price_api=None,
+            amount_api=None,
+        )

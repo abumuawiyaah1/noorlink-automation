@@ -194,12 +194,71 @@ def _lpa_from_access_profile(profile: Dict[str, Any]) -> str:
     return ac
 
 
+# Access 200010: order accepted but profile allocation failed (transient inventory lag).
+_ESIMACCESS_TRANSIENT_ORDER_CODES = frozenset({"200010"})
+_ESIMACCESS_ORDER_ATTEMPTS = 4
+_ESIMACCESS_ORDER_BACKOFF_SECONDS = (2.0, 5.0, 10.0)
+
+
+async def _esimaccess_order_with_retries(
+    client: Any,
+    *,
+    base_transaction_id: str,
+    package_code: str,
+    period_num: Optional[int],
+    price_api: Optional[int],
+    amount_api: Optional[int],
+) -> Dict[str, Any]:
+    """Place an Access order; retry transient resource-allocation failures."""
+    from app.services.esim_access import EsimAccessError
+
+    last_exc: Optional[BaseException] = None
+    for attempt in range(_ESIMACCESS_ORDER_ATTEMPTS):
+        transaction_id = (
+            base_transaction_id
+            if attempt == 0
+            else f"{base_transaction_id}-r{attempt}"
+        )
+        try:
+            return await client.order_esim(
+                transaction_id=transaction_id,
+                package_code=package_code,
+                count=1,
+                period_num=period_num,
+                price_api=price_api,
+                amount_api=amount_api,
+            )
+        except EsimAccessError as exc:
+            last_exc = exc
+            code = str(getattr(exc, "code", "") or "")
+            if (
+                code not in _ESIMACCESS_TRANSIENT_ORDER_CODES
+                or attempt + 1 >= _ESIMACCESS_ORDER_ATTEMPTS
+            ):
+                raise
+            delay = _ESIMACCESS_ORDER_BACKOFF_SECONDS[
+                min(attempt, len(_ESIMACCESS_ORDER_BACKOFF_SECONDS) - 1)
+            ]
+            logger.warning(
+                "eSIM Access transient %s for %s (attempt %s/%s); retrying in %.1fs",
+                code,
+                transaction_id,
+                attempt + 1,
+                _ESIMACCESS_ORDER_ATTEMPTS,
+                delay,
+            )
+            await asyncio.sleep(delay)
+    assert last_exc is not None
+    raise last_exc
+
+
 async def _esimaccess_provision_async(
     order_row: Dict[str, Any],
     target: FulfillmentTarget,
 ) -> Dict[str, Any]:
     from app.services.esim_access import (
         EsimAccessClient,
+        EsimAccessError,
         EsimAccessInsufficientBalanceError,
         usd_to_api_price,
     )
@@ -230,15 +289,15 @@ async def _esimaccess_provision_async(
                 )
 
         try:
-            order_obj = await client.order_esim(
-                transaction_id=transaction_id,
+            order_obj = await _esimaccess_order_with_retries(
+                client,
+                base_transaction_id=transaction_id,
                 package_code=package_code,
-                count=1,
                 period_num=target.period_num,
                 price_api=price_api,
                 amount_api=amount_api,
             )
-        except Exception as first_exc:
+        except EsimAccessError as first_exc:
             # Duplicate transactionId → fetch existing order instead of double-charge
             code = getattr(first_exc, "code", None)
             if str(code) == "310402":
@@ -257,10 +316,10 @@ async def _esimaccess_provision_async(
                     first_exc,
                     target.provider_slug,
                 )
-                order_obj = await client.order_esim(
-                    transaction_id=f"{transaction_id}-slug",
+                order_obj = await _esimaccess_order_with_retries(
+                    client,
+                    base_transaction_id=f"{transaction_id}-slug",
                     package_code=target.provider_slug,
-                    count=1,
                     period_num=target.period_num,
                     price_api=price_api,
                     amount_api=amount_api,
