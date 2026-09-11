@@ -26,6 +26,7 @@ from app.admin.views.commerce import InsiderIssueAdmin, OrderAdmin, PromoCodeAdm
 from app.admin.views.complimentary_esim import ComplimentaryEsimView
 from app.admin.views.document_vault import DocumentVaultView
 from app.admin.views.event_log_view import EventLogView
+from app.admin.views.emergency_desk import EmergencyDeskView
 from app.admin.views.finance_hub import FinanceHubView
 from app.admin.views.fulfill_order_wizard import FulfillOrderWizardView
 from app.admin.views.help_center import HelpCenterView
@@ -97,6 +98,7 @@ def mount_admin(app: FastAPI) -> Admin | None:
     admin.add_base_view(StaffWizardsHubView)
     admin.add_base_view(NotificationsHubView)
     admin.add_base_view(HelpCenterView)
+    admin.add_base_view(EmergencyDeskView)
     admin.add_base_view(FinanceHubView)
     admin.add_base_view(DocumentVaultView)
     admin.add_base_view(InsightsHubView)

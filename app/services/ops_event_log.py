@@ -46,6 +46,7 @@ def list_ops_events(
     event_type: Optional[str] = None,
     event_type_prefix: Optional[str] = None,
     order_number: Optional[str] = None,
+    severity: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     try:
         client = db.get_supabase_client()
@@ -54,6 +55,8 @@ def list_ops_events(
             query = query.eq("event_type", event_type)
         if order_number:
             query = query.eq("order_number", order_number.strip().upper())
+        if severity:
+            query = query.eq("severity", severity)
         result = query.execute()
         rows = result.data or []
         if event_type_prefix:

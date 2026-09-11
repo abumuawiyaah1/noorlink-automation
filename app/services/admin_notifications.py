@@ -20,6 +20,7 @@ from app.services.promo_codes import HIGH_DISCOUNT_APPROVAL_THRESHOLD, requires_
 
 from app.services.admin_support_sla import sla_summary
 from app.services.security_threats import security_threats_summary
+from app.services.critical_ops import critical_event_count
 
 
 @dataclass(frozen=True)
@@ -196,6 +197,19 @@ def notifications_for_role(role: str) -> List[AdminNotification]:
                 roles=(ROLE_ADMIN,),
             )
         )
+
+    critical_count = critical_event_count(within_hours=24, limit_scan=40)
+    add(
+        AdminNotification(
+            key="critical-logs",
+            title="Critical site events need review",
+            detail="Checkout, fulfillment, or security failures — open Critical logs or Emergency help.",
+            count=critical_count,
+            severity="urgent",
+            link_path="/admin/event-log?severity=critical",
+            roles=(ROLE_ADMIN, ROLE_SUPPORT),
+        )
+    )
 
     add(
         AdminNotification(

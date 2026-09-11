@@ -21,6 +21,7 @@ from app.services.support_categories import normalize_support_category
 from app.services.support_notifications import dispatch_ticket_created_notifications
 from app.services.fulfillment import FulfillmentError, process_paid_order
 from app.services.ops_alerts import notify_fulfillment_failure
+from app.services.critical_ops import report_critical_event
 from app.services.insider_release import expire_finished_promos, release_due_insider_issues
 from app.services.promo_codes import normalize_code
 from app.services.checkout_pricing import (
@@ -1014,6 +1015,14 @@ async def orders_topup_session(body: TopUpSessionRequest):
         )
     except StripeCheckoutError as exc:
         logger.error("Top-up checkout failed: %s", exc)
+        report_critical_event(
+            event_type="topup_checkout_failed",
+            source="api.topup_checkout",
+            message=f"Top-up Stripe checkout failed: {exc}",
+            order_number=str(looked_up.order_number),
+            details={"path": "topup_checkout"},
+            title="Top-up checkout failed",
+        )
         return TopUpSessionResponse(
             success=False,
             message="Could not start payment. Try again in a minute.",
@@ -1499,6 +1508,13 @@ async def paypal_create_order(body: CheckoutSessionRequest):
         raise _db_error(exc) from exc
     except Exception as exc:
         logger.exception("Unexpected PayPal checkout order failure")
+        report_critical_event(
+            event_type="checkout_order_failed",
+            source="api.paypal_checkout",
+            message=f"Unexpected PayPal checkout order failure: {exc}",
+            details={"path": "paypal_create_order"},
+            title="PayPal checkout order failed",
+        )
         raise HTTPException(
             status_code=503,
             detail="Checkout is temporarily unavailable. Please try again.",
@@ -1686,6 +1702,13 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
         raise _db_error(exc) from exc
     except Exception as exc:
         logger.exception("Unexpected express checkout order failure")
+        report_critical_event(
+            event_type="checkout_order_failed",
+            source="api.express_checkout",
+            message=f"Unexpected express checkout order failure: {exc}",
+            details={"path": "express_payment_intent"},
+            title="Express checkout order failed",
+        )
         raise HTTPException(
             status_code=503,
             detail="Checkout is temporarily unavailable. Please try again.",
@@ -1706,6 +1729,14 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
         db.update_order_stripe_payment_intent(order.order_number, intent.id)
     except StripeCheckoutError as exc:
         logger.error("Stripe PaymentIntent failed: %s", exc)
+        report_critical_event(
+            event_type="payment_intent_failed",
+            source="api.express_checkout",
+            message=f"Stripe PaymentIntent failed: {exc}",
+            order_number=order.order_number,
+            details={"path": "express_payment_intent"},
+            title="Express payment failed to start",
+        )
         raise HTTPException(
             status_code=502,
             detail="Payment could not be started. Please try again.",
@@ -1773,6 +1804,13 @@ async def checkout_session(body: CheckoutSessionRequest):
         raise _db_error(exc) from exc
     except Exception as exc:
         logger.exception("Unexpected checkout order failure")
+        report_critical_event(
+            event_type="checkout_order_failed",
+            source="api.checkout_session",
+            message=f"Unexpected checkout order failure: {exc}",
+            details={"path": "checkout_session_create_order"},
+            title="Checkout order create failed",
+        )
         raise HTTPException(
             status_code=503,
             detail=(
@@ -1800,6 +1838,14 @@ async def checkout_session(body: CheckoutSessionRequest):
         db.update_order_stripe_session(order.order_number, session.id)
     except StripeCheckoutError as exc:
         logger.error("Stripe checkout failed: %s", exc)
+        report_critical_event(
+            event_type="checkout_failed",
+            source="api.checkout_session",
+            message=f"Stripe checkout session failed: {exc}",
+            order_number=order.order_number,
+            details={"path": "checkout_session"},
+            title="Checkout session failed",
+        )
         raise HTTPException(
             status_code=502,
             detail="Payment session could not be created. Please try again.",

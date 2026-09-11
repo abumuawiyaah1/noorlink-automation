@@ -1,35 +1,127 @@
 {% extends "sqladmin/layout.html" %}
 {% block content %}
 {% include "includes/admin_panel_styles.html" %}
+<style>
+  .nl-live-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #dc2626; margin-right: 0.35rem; animation: nl-pulse 1.4s ease infinite;
+  }
+  @keyframes nl-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .nl-sev-critical, .nl-sev-error { background: #dc2626 !important; }
+  .nl-sev-warning { background: #FF9500 !important; color: #05191A !important; }
+  .nl-stream-meta { font-size: 12px; color: #6B7280; }
+</style>
 <div class="container-fluid">
-  <div class="mb-3"><a href="{{ url_for('admin:operations-hub') }}" class="small">&larr; Operations</a></div>
-  <h1 class="h3 mb-2">Event log</h1>
-  <p class="text-muted mb-4">Stripe webhooks, fulfillment, refunds, and security signals.</p>
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div>
+      <div class="mb-2">
+        <a href="{{ url_for('admin:operations-hub') }}" class="small">&larr; Operations</a>
+        · <a href="{{ url_for('admin:emergency-desk') }}" class="small">Emergency help</a>
+      </div>
+      <h1 class="h3 mb-1"><span class="nl-live-dot" aria-hidden="true"></span>Critical logs</h1>
+      <p class="text-muted mb-0">Checkout, fulfillment, and security failures. Stream refreshes every 15s.</p>
+      <p class="nl-stream-meta mt-1" id="nl-stream-meta">Loading stream…</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-sm btn-outline-danger" href="{{ url_for('admin:event-log') }}?severity=critical">Critical only</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin:event-log') }}">All events</a>
+      <a class="btn btn-sm btn-dark" href="{{ url_for('admin:emergency-desk') }}">Emergency help</a>
+    </div>
+  </div>
 
   <form method="get" class="row g-2 mb-4">
-    <div class="col-md-3"><input class="form-control" name="type" value="{{ event_type }}" placeholder="Event type" /></div>
-    <div class="col-md-3"><input class="form-control text-uppercase" name="order" value="{{ order_number }}" placeholder="Order number" /></div>
+    <div class="col-md-3">
+      <input class="form-control" name="type" value="{{ event_type }}" placeholder="Event type (e.g. checkout_failed)" />
+    </div>
+    <div class="col-md-2">
+      <select class="form-select" name="severity">
+        <option value="" {% if not severity %}selected{% endif %}>Any severity</option>
+        <option value="critical" {% if severity == 'critical' %}selected{% endif %}>Critical</option>
+        <option value="error" {% if severity == 'error' %}selected{% endif %}>Error</option>
+        <option value="warning" {% if severity == 'warning' %}selected{% endif %}>Warning</option>
+        <option value="info" {% if severity == 'info' %}selected{% endif %}>Info</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <input class="form-control text-uppercase" name="order" value="{{ order_number }}" placeholder="Order number" />
+    </div>
     <div class="col-auto"><button class="btn btn-primary">Filter</button></div>
   </form>
 
   <div class="table-responsive nl-wizard-panel">
-    <table class="table table-sm">
-      <thead><tr><th>When</th><th>Severity</th><th>Type</th><th>Order</th><th>Message</th><th>Source</th></tr></thead>
-      <tbody>
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr><th>When</th><th>Severity</th><th>Type</th><th>Order</th><th>Message</th><th>Source</th></tr>
+      </thead>
+      <tbody id="nl-critical-tbody">
         {% for e in events %}
-        <tr>
-          <td class="small text-muted">{{ e.created_at[:16] if e.created_at else '' }}</td>
-          <td><span class="badge {% if e.severity == 'error' %}bg-danger{% elif e.severity == 'warning' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ e.severity }}</span></td>
+        <tr data-id="{{ e.id }}">
+          <td class="small text-muted">{{ e.created_at[:19] if e.created_at else '' }}</td>
+          <td><span class="badge nl-sev-{{ e.severity }} {% if e.severity == 'error' or e.severity == 'critical' %}bg-danger{% elif e.severity == 'warning' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ e.severity }}</span></td>
           <td class="small">{{ e.event_type }}</td>
           <td>{% if e.order_number %}<a href="{{ url_for('admin:order-insight') }}?order={{ e.order_number }}">{{ e.order_number }}</a>{% else %}—{% endif %}</td>
           <td>{{ e.message }}</td>
           <td class="small text-muted">{{ e.source }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="6" class="text-muted">No events yet — apply migration and trigger webhooks/fulfillment.</td></tr>
+        <tr id="nl-critical-empty"><td colspan="6" class="text-muted">No critical events yet. Checkout and fulfillment failures will appear here live.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+<script>
+(function () {
+  var tbody = document.getElementById("nl-critical-tbody");
+  var meta = document.getElementById("nl-stream-meta");
+  if (!tbody) return;
+  var live = {{ 'true' if live else 'false' }};
+  if (!live) return;
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function rowHtml(e) {
+    var when = (e.created_at || "").slice(0, 19);
+    var sev = esc(e.severity || "info");
+    var order = e.order_number
+      ? '<a href="/admin/order-insight?order=' + encodeURIComponent(e.order_number) + '">' + esc(e.order_number) + '</a>'
+      : "—";
+    var badgeClass = (sev === "error" || sev === "critical") ? "bg-danger" : (sev === "warning" ? "bg-warning text-dark" : "bg-secondary");
+    return '<tr data-id="' + esc(e.id) + '">' +
+      '<td class="small text-muted">' + esc(when) + '</td>' +
+      '<td><span class="badge ' + badgeClass + '">' + sev + '</span></td>' +
+      '<td class="small">' + esc(e.event_type) + '</td>' +
+      '<td>' + order + '</td>' +
+      '<td>' + esc(e.message) + '</td>' +
+      '<td class="small text-muted">' + esc(e.source) + '</td>' +
+      '</tr>';
+  }
+
+  function refresh() {
+    fetch("/admin/critical-logs.json", { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.json() : { events: [], count: 0 }; })
+      .then(function (data) {
+        var events = data.events || [];
+        if (meta) {
+          meta.textContent = "Live · " + events.length + " critical · updated " + new Date().toLocaleTimeString();
+        }
+        if (!events.length) {
+          tbody.innerHTML = '<tr id="nl-critical-empty"><td colspan="6" class="text-muted">No critical events yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = events.map(rowHtml).join("");
+      })
+      .catch(function () {
+        if (meta) meta.textContent = "Stream temporarily unavailable — retrying…";
+      });
+  }
+
+  refresh();
+  setInterval(refresh, 15000);
+})();
+</script>
 {% endblock %}

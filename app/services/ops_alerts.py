@@ -422,3 +422,90 @@ def notify_affiliate_payout_request(
                 response.raise_for_status()
         except Exception as exc:
             logger.error("Slack affiliate payout alert failed: %s", exc)
+
+
+def notify_critical_ops(
+    *,
+    title: str,
+    summary: str,
+    event_type: str = "critical",
+    order_number: Optional[str] = None,
+    details: Optional[Dict[str, Any]] = None,
+) -> None:
+    """
+    Best-effort Slack + email for site-critical failures (checkout, etc.).
+    Never raises — request paths must not fail because alerting failed.
+    """
+    settings = get_settings()
+    slack_url = (settings.slack_webhook_url or "").strip()
+    ops_email = (settings.ops_alert_email or "").strip()
+
+    if not slack_url and not ops_email:
+        logger.warning(
+            "Critical ops alert not sent (no OPS_ALERT_EMAIL or SLACK_WEBHOOK_URL): %s",
+            title,
+        )
+        return
+
+    subject = f"[NoorLink Critical] {title}"
+    detail_lines: list[str] = [f"Type: {event_type}"]
+    if order_number:
+        detail_lines.append(f"Order: {order_number}")
+    if details:
+        for key, value in details.items():
+            detail_lines.append(f"{key}: {_escape(value)}")
+    text_body = summary + "\n" + "\n".join(detail_lines)
+
+    html_items = "".join(
+        f"<li><strong>{_escape(key)}:</strong> {_escape(value)}</li>"
+        for key, value in (details or {}).items()
+    )
+    html_body = (
+        f"<h2>{_escape(title)}</h2>"
+        f"<p>{_escape(summary)}</p>"
+        "<ul>"
+        f"<li><strong>Type:</strong> {_escape(event_type)}</li>"
+        + (f"<li><strong>Order:</strong> {_escape(order_number)}</li>" if order_number else "")
+        + html_items
+        + "</ul>"
+        "<p>Open "
+        "<a href=\"https://api.noorlink.co/admin/event-log?severity=critical\">Critical logs</a> "
+        "or <a href=\"https://api.noorlink.co/admin/emergency\">Emergency help</a> on your phone.</p>"
+    )
+
+    if ops_email:
+        try:
+            send_email(
+                to_email=ops_email,
+                subject=subject,
+                html_body=html_body,
+                text_body=text_body,
+            )
+        except EmailDeliveryError as exc:
+            logger.error("Critical ops email failed: %s", exc)
+
+    if slack_url:
+        try:
+            mrkdwn = [f"*{title}*", summary, f"*Type:* `{event_type}`"]
+            if order_number:
+                mrkdwn.append(f"*Order:* `{order_number}`")
+            if details:
+                mrkdwn.extend(f"*{k}:* `{v}`" for k, v in details.items())
+            payload = {
+                "text": subject,
+                "blocks": [
+                    {
+                        "type": "header",
+                        "text": {"type": "plain_text", "text": "Critical site alert"},
+                    },
+                    {
+                        "type": "section",
+                        "text": {"type": "mrkdwn", "text": "\n".join(mrkdwn)},
+                    },
+                ],
+            }
+            with httpx.Client(timeout=10.0) as client:
+                response = client.post(slack_url, json=payload)
+                response.raise_for_status()
+        except Exception as exc:
+            logger.error("Slack critical ops alert failed: %s", exc)

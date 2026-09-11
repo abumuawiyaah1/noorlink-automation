@@ -126,6 +126,30 @@
     line-height: 1.3;
   }
   .nl-reminder-ack:hover { background: #0F3D3E; border-color: #0F3D3E; }
+  .nl-critical-bar {
+    display: none;
+    background: #dc2626;
+    color: #fff;
+    border-bottom: 1px solid #b91c1c;
+    padding: 0.65rem 1rem;
+    font-size: 14px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+  .nl-critical-bar.is-visible { display: flex; }
+  .nl-critical-bar a { color: #fff; font-weight: 700; text-decoration: underline; }
+  .nl-critical-ack {
+    border: 1px solid #fff;
+    background: #fff;
+    color: #dc2626;
+    border-radius: 6px;
+    padding: 0.3rem 0.75rem;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
   /* Sidebar on the right — Tabler uses .navbar-right; keep content readable on the left */
   html[data-nl-sidebar="right"] .navbar-vertical.navbar-right ~ .page-wrapper {
     margin-left: 0 !important;
@@ -193,6 +217,14 @@
   <span id="nl-shortcuts-list"></span>
   <button type="button" class="nl-shortcuts-clear" id="nl-shortcuts-clear" title="Reset learned shortcuts">Reset</button>
 </div>
+<div class="nl-critical-bar" id="nl-critical-bar" role="alert" aria-live="assertive">
+  <div id="nl-critical-bar-copy"></div>
+  <div class="nl-reminder-bar__actions">
+    <a href="/admin/emergency">Emergency help</a>
+    <a id="nl-critical-bar-link" href="/admin/event-log?severity=critical">Open logs</a>
+    <button type="button" class="nl-critical-ack" id="nl-critical-ack">Got it</button>
+  </div>
+</div>
 <div class="nl-reminder-bar" id="nl-reminder-bar" role="status" aria-live="polite">
   <div id="nl-reminder-bar-copy"></div>
   <div class="nl-reminder-bar__actions">
@@ -200,6 +232,60 @@
     <button type="button" class="nl-reminder-ack" id="nl-reminder-ack">Got it</button>
   </div>
 </div>
+<script>
+(function () {
+  var ACK_KEY = "nl-admin-acked-critical";
+  var bar = document.getElementById("nl-critical-bar");
+  var copy = document.getElementById("nl-critical-bar-copy");
+  var ackBtn = document.getElementById("nl-critical-ack");
+  if (!bar || !copy || !ackBtn) return;
+
+  function loadAcked() {
+    try { return JSON.parse(localStorage.getItem(ACK_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function saveAcked(map) {
+    try { localStorage.setItem(ACK_KEY, JSON.stringify(map)); } catch (e) {}
+  }
+
+  function render(events) {
+    var map = loadAcked();
+    var next = null;
+    for (var i = 0; i < (events || []).length; i++) {
+      var e = events[i];
+      var token = String(e.id || (e.event_type + ":" + e.created_at));
+      if (!map[token]) { next = e; break; }
+    }
+    if (!next) {
+      bar.classList.remove("is-visible");
+      return;
+    }
+    bar.dataset.token = String(next.id || (next.event_type + ":" + next.created_at));
+    copy.innerHTML = "<strong>Critical</strong> — " + (next.event_type || "site issue") +
+      ": " + (next.message || "Open Emergency help");
+    bar.classList.add("is-visible");
+  }
+
+  ackBtn.addEventListener("click", function () {
+    var token = bar.dataset.token;
+    if (!token) return;
+    var map = loadAcked();
+    map[token] = Date.now();
+    saveAcked(map);
+    loadCritical();
+  });
+
+  function loadCritical() {
+    fetch("/admin/critical-logs.json", { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.json() : { events: [] }; })
+      .then(function (data) { render(data.events || []); })
+      .catch(function () {});
+  }
+
+  loadCritical();
+  setInterval(loadCritical, 20000);
+})();
+</script>
 <script>
 (function () {
   var ACK_KEY = "nl-admin-acked-reminders";
@@ -372,6 +458,8 @@
     "/admin/wizards": "Quick start",
     "/admin/notifications": "Notifications",
     "/admin/help": "Help",
+    "/admin/emergency": "Emergency help",
+    "/admin/event-log": "Critical logs",
     "/admin/help-customer": "Help a customer",
     "/admin/support-inbox": "Support Inbox",
     "/admin/fulfill-order": "Fulfill order",

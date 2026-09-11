@@ -1,0 +1,147 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+{% include "includes/admin_panel_styles.html" %}
+<style>
+  .nl-em-hero {
+    background: linear-gradient(135deg, #0F3D3E 0%, #05191A 100%);
+    color: #fff; border-radius: 14px; padding: 1.25rem 1.35rem; margin-bottom: 1.25rem;
+  }
+  .nl-em-hero p { color: rgba(255,255,255,.82); margin: 0; }
+  .nl-em-action {
+    display: block; border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.9rem 1rem;
+    background: #fff; text-decoration: none; color: #111827; height: 100%;
+  }
+  .nl-em-action:hover { border-color: #FF9500; color: #05191A; text-decoration: none; }
+  .nl-em-action strong { color: #0F3D3E; display: block; margin-bottom: 0.2rem; }
+  .nl-em-chat {
+    border: 1px solid #ffd39a; background: #FFF8EF; border-radius: 14px; padding: 1rem 1.15rem;
+  }
+  .nl-em-bubble {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.85rem 1rem;
+    white-space: pre-wrap; font-size: 14px; line-height: 1.55; color: #334155;
+  }
+  .nl-em-crit {
+    border-left: 4px solid #dc2626; background: #fff; border: 1px solid #fecaca;
+    border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.55rem;
+  }
+  .nl-em-prompt {
+    border: 1px solid #e5e7eb; background: #F3F7F7; border-radius: 999px;
+    padding: 0.35rem 0.75rem; font-size: 12px; color: #0F3D3E; cursor: pointer;
+  }
+</style>
+<div class="container-fluid" style="max-width:920px;">
+  <div class="nl-em-hero">
+    <p class="small text-uppercase mb-1" style="letter-spacing:.06em;opacity:.75;">Emergency desk</p>
+    <h1 class="h3 mb-2" style="color:#fff;">Hi {{ display_name }} — I’m here when you’re away from your desk</h1>
+    <p>Ask what’s broken. I’ll give step-by-step NoorLink playbooks you can run from your phone. Critical failures also alert email/Slack.</p>
+  </div>
+
+  <div class="nl-em-chat mb-4">
+    <label class="form-label fw-bold" for="nl-em-q">What is going wrong?</label>
+    <textarea class="form-control mb-2" id="nl-em-q" rows="3" placeholder="Example: Checkout is failing / customer paid but no QR"></textarea>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      {% for p in starter_prompts %}
+      <button type="button" class="nl-em-prompt" data-prompt="{{ p }}">{{ p }}</button>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn btn-dark" id="nl-em-ask">Get emergency steps</button>
+    <div class="mt-3" id="nl-em-answer" hidden>
+      <div class="nl-em-bubble" id="nl-em-answer-body"></div>
+      <div class="mt-2" id="nl-em-tools"></div>
+    </div>
+  </div>
+
+  <h2 class="h6 text-muted text-uppercase mb-3" style="letter-spacing:.04em;">One-tap actions</h2>
+  <div class="row g-3 mb-4">
+    {% for a in quick_actions %}
+    <div class="col-md-6">
+      <a class="nl-em-action" href="{{ a.path }}">
+        <strong>{{ a.title }}</strong>
+        <span class="small text-muted">{{ a.detail }}</span>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2 class="h6 text-muted text-uppercase mb-3" style="letter-spacing:.04em;">Latest critical signals</h2>
+  {% if recent_critical %}
+    {% for e in recent_critical %}
+    <div class="nl-em-crit">
+      <div class="d-flex justify-content-between gap-2 flex-wrap">
+        <strong class="small">{{ e.event_type }}</strong>
+        <span class="small text-muted">{{ e.created_at[:16] if e.created_at else '' }}</span>
+      </div>
+      <p class="small mb-1 mt-1">{{ e.message }}</p>
+      {% if e.order_number %}
+      <a class="small" href="{{ url_for('admin:order-insight') }}?order={{ e.order_number }}">{{ e.order_number }}</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+  <p class="text-muted">No critical events right now. You’re clear.</p>
+  {% endif %}
+  <p class="small text-muted mt-3">
+    <a href="{{ url_for('admin:event-log') }}?severity=critical">Open full critical log stream</a>
+    · Works on phone — bookmark <code>/admin/emergency</code>
+  </p>
+</div>
+<script>
+(function () {
+  var q = document.getElementById("nl-em-q");
+  var ask = document.getElementById("nl-em-ask");
+  var box = document.getElementById("nl-em-answer");
+  var body = document.getElementById("nl-em-answer-body");
+  var tools = document.getElementById("nl-em-tools");
+  if (!q || !ask) return;
+
+  document.querySelectorAll("[data-prompt]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      q.value = btn.getAttribute("data-prompt") || "";
+      q.focus();
+    });
+  });
+
+  function runAsk() {
+    var question = (q.value || "").trim();
+    if (!question) { q.focus(); return; }
+    ask.disabled = true;
+    ask.textContent = "Working…";
+    fetch("/admin/emergency/ask", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: question })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        ask.disabled = false;
+        ask.textContent = "Get emergency steps";
+        if (!data.ok) {
+          body.textContent = data.error || "Could not help right now.";
+          tools.innerHTML = "";
+          box.hidden = false;
+          return;
+        }
+        body.textContent = data.answer || "";
+        var html = "";
+        (data.playbooks || []).forEach(function (p) {
+          if (p.wizard_path) {
+            html += '<a class="btn btn-sm btn-outline-dark me-2 mb-2" href="' + p.wizard_path + '">Open: ' + (p.title || "tool") + '</a>';
+          }
+        });
+        tools.innerHTML = html;
+        box.hidden = false;
+      })
+      .catch(function () {
+        ask.disabled = false;
+        ask.textContent = "Get emergency steps";
+        body.textContent = "Network error — open Critical logs or Fulfill stuck order directly.";
+        tools.innerHTML = '<a class="btn btn-sm btn-dark" href="/admin/fulfill-order">Fulfill stuck order</a>';
+        box.hidden = false;
+      });
+  }
+
+  ask.addEventListener("click", runAsk);
+})();
+</script>
+{% endblock %}
