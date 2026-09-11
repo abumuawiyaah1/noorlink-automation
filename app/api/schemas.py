@@ -339,6 +339,7 @@ class CronRunResponse(BaseModel):
     catalog_sync: Optional[dict] = Field(None, serialization_alias="catalogSync")
     expiry_reminders: Optional[dict] = Field(None, serialization_alias="expiryReminders")
     usage_sync: Optional[dict] = Field(None, serialization_alias="usageSync")
+    install_reminders: Optional[dict] = Field(None, serialization_alias="installReminders")
     monthly_summary: Optional[dict] = Field(None, serialization_alias="monthlySummary")
     log_retention: Optional[dict] = Field(None, serialization_alias="logRetention")
     auto_refunds: Optional[dict] = Field(None, serialization_alias="autoRefunds")

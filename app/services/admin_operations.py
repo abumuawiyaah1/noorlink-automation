@@ -241,6 +241,22 @@ def run_admin_cron_tasks() -> Dict[str, Any]:
         result["tasks"]["usage_sync"] = {"success": False, "error": str(exc)[:240]}
 
     try:
+        from app.services.install_reminders import (
+            process_install_congrats,
+            process_install_reminders,
+        )
+
+        help_result = process_install_reminders()
+        congrats_result = process_install_congrats()
+        result["tasks"]["install_reminders"] = {
+            "success": bool(help_result.get("success")) and bool(congrats_result.get("success")),
+            "help": help_result,
+            "congrats": congrats_result,
+        }
+    except Exception as exc:
+        result["tasks"]["install_reminders"] = {"success": False, "error": str(exc)[:240]}
+
+    try:
         from app.services.ops_log_retention import purge_old_ops_logs
 
         result["tasks"]["log_retention"] = purge_old_ops_logs(retention_days=90)

@@ -17,6 +17,7 @@ from app.services.email_brand import (
     PRIMARY,
     SURFACE,
     TEXT,
+    WHATSAPP_NUMBER,
     cta_button,
     is_pilgrimage_order,
     pilgrimage_gift_guides_block,
@@ -1035,6 +1036,168 @@ def send_esim_low_data_email(
         app_url=app_url,
     )
     subject = "Recharge now to keep using your eSIM"
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)
+
+
+def build_esim_install_help_email_html(
+    *,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    dashboard_url: str,
+    support_url: str,
+    whatsapp_url: str,
+    app_url: str,
+) -> str:
+    flag = flag_emoji or ""
+    body = f"""
+      <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:{TEXT};">
+        Good news — your <strong style="color:{PRIMARY};">{html.escape(package_name)}</strong>
+        for {flag} <strong>{html.escape(country)}</strong> is ready whenever you are.
+      </p>
+      <p style="margin:0 0 16px;color:{TEXT};font-size:15px;line-height:1.6;">
+        Order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong>.
+        If you haven’t installed yet, the calmest move is to do it on Wi‑Fi before you fly.
+        If you already installed — you’re all set.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F3F7F7;border:1px solid #E5E7EB;border-radius:12px;margin:0 0 24px;">
+        <tr><td style="padding:18px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:{TEXT};">
+          <strong style="color:{PRIMARY};">When does the plan start?</strong><br/>
+          Installing at home does not use up your trip days. Your data package typically
+          starts when the eSIM connects to a supported network at your destination —
+          not at checkout. After you land, turn the NoorLink line on and enable Data Roaming.
+        </td></tr>
+      </table>
+      <p style="text-align:center;margin:0 0 12px;">
+        {cta_button(href=dashboard_url, label="Open install steps")}
+      </p>
+      <p style="text-align:center;margin:0 0 20px;">
+        {cta_button(href=whatsapp_url, label="WhatsApp us for install help", secondary=True)}
+      </p>
+      <p style="margin:0;font-size:14px;line-height:1.55;color:{MUTED};text-align:center;">
+        Prefer email? Reply here or visit
+        <a href="{html.escape(support_url)}" style="color:{PRIMARY};font-weight:700;text-decoration:none;">support</a>
+        — we’re happy to walk you through it.
+      </p>
+    """
+    return wrap_branded_email(
+        eyebrow="Install help",
+        title="Your eSIM is ready — we’re here if you need a hand",
+        body_html=body,
+        app_url=app_url,
+        tip="Install on Wi‑Fi before departure. Keep your main number for calls/WhatsApp; use NoorLink for data abroad.",
+    )
+
+
+def send_esim_install_help_email(
+    *,
+    to_email: str,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    dashboard_url: str,
+    support_url: str,
+    app_url: str,
+) -> str:
+    whatsapp_url = f"https://wa.me/{WHATSAPP_NUMBER}"
+    html_body = build_esim_install_help_email_html(
+        order_number=order_number,
+        country=country,
+        package_name=package_name,
+        flag_emoji=flag_emoji,
+        dashboard_url=dashboard_url,
+        support_url=support_url,
+        whatsapp_url=whatsapp_url,
+        app_url=app_url,
+    )
+    subject = "Good news — your eSIM is ready (and we’re here to help)"
+    return send_email(to_email=to_email, subject=subject, html_body=html_body)
+
+
+def build_esim_install_congrats_email_html(
+    *,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    dashboard_url: str,
+    app_url: str,
+) -> str:
+    flag = flag_emoji or ""
+    body = f"""
+      <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:{TEXT};">
+        Congratulations — your NoorLink eSIM is installed.
+        Your <strong style="color:{PRIMARY};">{html.escape(package_name)}</strong>
+        for {flag} <strong>{html.escape(country)}</strong> is ready for the trip.
+      </p>
+      <p style="margin:0 0 16px;color:{TEXT};font-size:15px;line-height:1.6;">
+        Order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong>.
+        Set these once before you fly so when you land (and turn Airplane Mode off),
+        your phone can attach to a local network without hunting for a SIM shop.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F3F7F7;border:1px solid #E5E7EB;border-radius:12px;margin:0 0 24px;">
+        <tr><td style="padding:18px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:{TEXT};">
+          <strong style="color:{PRIMARY};">Before you fly — do this once</strong>
+          <ol style="margin:12px 0 0;padding-left:20px;">
+            <li style="margin-bottom:10px;">
+              Open <strong>Settings → Cellular / Mobile Data</strong> and turn
+              <strong>ON</strong> the NoorLink (travel) line.
+            </li>
+            <li style="margin-bottom:10px;">
+              Turn <strong>Data Roaming ON</strong> for that NoorLink line.
+            </li>
+            <li style="margin-bottom:10px;">
+              Set <strong>Mobile Data</strong> to the NoorLink line.
+              Keep your home line on for calls / WhatsApp / iMessage if you like.
+            </li>
+            <li style="margin-bottom:0;">
+              Leave it like that. After you land, turn Airplane Mode off —
+              your phone should connect to a supported network automatically.
+            </li>
+          </ol>
+        </td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF8F0;border:1px solid #FFE0B2;border-radius:12px;margin:0 0 24px;">
+        <tr><td style="padding:16px 18px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:{TEXT};">
+          <strong style="color:{PRIMARY};">Good to know:</strong>
+          Installing at home does not use up your trip days. Data typically starts
+          when the eSIM connects at your destination — not at checkout.
+        </td></tr>
+      </table>
+      <p style="text-align:center;margin:0;">
+        {cta_button(href=dashboard_url, label="Check My eSIMs")}
+      </p>
+    """
+    return wrap_branded_email(
+        eyebrow="You’re installed",
+        title="Nice work — here’s how to connect on landing",
+        body_html=body,
+        app_url=app_url,
+        tip="If the line doesn’t attach after landing, toggle Airplane Mode once, then confirm Data Roaming is on for NoorLink.",
+    )
+
+
+def send_esim_install_congrats_email(
+    *,
+    to_email: str,
+    order_number: str,
+    country: str,
+    package_name: str,
+    flag_emoji: Optional[str],
+    dashboard_url: str,
+    app_url: str,
+) -> str:
+    html_body = build_esim_install_congrats_email_html(
+        order_number=order_number,
+        country=country,
+        package_name=package_name,
+        flag_emoji=flag_emoji,
+        dashboard_url=dashboard_url,
+        app_url=app_url,
+    )
+    subject = "You’re installed — connect automatically when you land"
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
 
 

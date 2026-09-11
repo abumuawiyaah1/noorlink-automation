@@ -193,6 +193,20 @@ def run_admin_script(key: str) -> Dict[str, Any]:
             result["tasks"]["usage_sync"] = process_esim_usage_sync()
         except Exception as exc:
             result["tasks"]["usage_sync"] = {"error": str(exc)[:240]}
+        try:
+            from app.services.install_reminders import (
+                process_install_congrats,
+                process_install_reminders,
+            )
+
+            help_result = process_install_reminders()
+            congrats_result = process_install_congrats()
+            result["tasks"]["install_reminders"] = {
+                "help": help_result,
+                "congrats": congrats_result,
+            }
+        except Exception as exc:
+            result["tasks"]["install_reminders"] = {"error": str(exc)[:240]}
         result["note"] = "Insider mass-send excluded — use full cron for newsletters."
         return result
 

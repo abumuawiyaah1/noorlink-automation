@@ -540,6 +540,25 @@ async def cron_run(authorization: Optional[str] = Header(None)):
         logger.warning("eSIM usage sync failed during cron: %s", exc)
         usage_sync = {"success": False, "error": str(exc)[:240]}
 
+    # After usage sync so activation_status is fresher when available.
+    install_reminders = None
+    try:
+        from app.services.install_reminders import (
+            process_install_congrats,
+            process_install_reminders,
+        )
+
+        help_result = process_install_reminders()
+        congrats_result = process_install_congrats()
+        install_reminders = {
+            "success": bool(help_result.get("success")) and bool(congrats_result.get("success")),
+            "help": help_result,
+            "congrats": congrats_result,
+        }
+    except Exception as exc:
+        logger.warning("eSIM install reminders failed during cron: %s", exc)
+        install_reminders = {"success": False, "error": str(exc)[:240]}
+
     monthly_summary = None
     # Monthly admin brief sends on the 1st at 6:00 New York via /api/cron/admin-reports.
 
@@ -577,6 +596,7 @@ async def cron_run(authorization: Optional[str] = Header(None)):
         catalog_sync=catalog_sync,
         expiry_reminders=expiry_reminders,
         usage_sync=usage_sync,
+        install_reminders=install_reminders,
         monthly_summary=monthly_summary,
         log_retention=log_retention,
         auto_refunds=auto_refunds,

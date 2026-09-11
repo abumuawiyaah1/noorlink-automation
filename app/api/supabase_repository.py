@@ -1786,3 +1786,26 @@ def list_orders_for_usage_sync(
         raise SupabaseRepositoryError(str(exc)) from exc
     return list(result.data or [])
 
+
+def list_orders_for_install_reminders(
+    *,
+    since_iso: str,
+    limit: int = 100,
+) -> list[Dict[str, Any]]:
+    """Recent fulfilled orders that may need an install-help nudge."""
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("orders")
+            .select("*")
+            .in_("status", ["delivered", "paid", "active"])
+            .gte("fulfilled_at", since_iso)
+            .order("fulfilled_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("list_orders_for_install_reminders failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    return list(result.data or [])
+

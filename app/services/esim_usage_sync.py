@@ -366,6 +366,15 @@ def apply_usage_snapshot(
 
     db.merge_order_metadata(order_number, meta_patch)
 
+    # Congrats + landing steps once provider reports the profile installed.
+    if snapshot.get("activated"):
+        try:
+            from app.services.install_reminders import maybe_send_install_congrats
+
+            maybe_send_install_congrats(order_number)
+        except Exception as exc:
+            logger.warning("Install congrats hook failed for %s: %s", order_number, exc)
+
     allowance = db.get_breakage_allowance_by_order_number(order_number)
     if allowance and snapshot.get("data_used_gb") is not None:
         used_mb = int(round(float(snapshot["data_used_gb"]) * 1024))

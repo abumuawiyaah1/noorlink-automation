@@ -115,6 +115,10 @@ class Settings(BaseSettings):
     affiliate_auto_payout_wait_hours: int = 72
     # Max payout amount (cents) eligible for 72h auto-approve
     affiliate_auto_payout_max_cents: int = 50000
+    # Hours after fulfillment before an install-help nudge (if not yet installed)
+    install_reminder_hours: int = 24
+    # Only consider orders fulfilled within this lookback window
+    install_reminder_lookback_days: int = 14
     # Resend webhook signing secret for inbound support email (email.received)
     resend_inbound_webhook_secret: str = ""
     # Resend webhook signing secret for delivery events (bounce, complaint, delivered)

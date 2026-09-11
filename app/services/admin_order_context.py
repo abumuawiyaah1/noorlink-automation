@@ -41,6 +41,12 @@ def build_order_context(*, order_number: str) -> Dict[str, Any]:
         pass
 
     reminder_labels = []
+    if reminders.get("install_help_sent_at"):
+        reminder_labels.append(f"Install help sent: {reminders['install_help_sent_at']}")
+    if reminders.get("install_congrats_sent_at"):
+        reminder_labels.append(
+            f"Install congrats sent: {reminders['install_congrats_sent_at']}"
+        )
     if reminders.get("low_data_70_sent_at"):
         reminder_labels.append(f"Low data (70%) sent: {reminders['low_data_70_sent_at']}")
     if reminders.get("expiring_soon_sent_at"):
