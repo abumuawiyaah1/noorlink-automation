@@ -1,0 +1,63 @@
+-- Full ZESIMO_SKU_MAP (30 SKUs) → plan_fulfillment_map.
+-- Source of truth: app/services/zesimo_sku_map.py (fulfillment_rows).
+-- Live DB was upserted 2026-09-10; this migration keeps repo/prod in sync.
+
+insert into public.plan_fulfillment_map (
+  catalog_key,
+  country_code,
+  country_slug,
+  data_gb,
+  validity_days,
+  provider,
+  provider_sku,
+  provider_slug,
+  wholesale_cents,
+  notes,
+  is_active,
+  admin_approved
+)
+values
+  ('sa-unlimited-3gb-7d', 'SA', 'saudi-arabia', 3.0, 7, 'zesimo', '10903', 'zesimo-sa-unlimited-7d', 2142, 'Zesimo phase 1: Saudi Arabia Unlimited 7 Days', true, true),
+  ('sa-unlimited-3gb-10d', 'SA', 'saudi-arabia', 3.0, 10, 'zesimo', '10905', 'zesimo-sa-unlimited-10d', 2786, 'Zesimo phase 1: Saudi Arabia Unlimited 10 Days', true, true),
+  ('me-5gb-15', null, 'regional-middle-east', 5.0, 15, 'zesimo', '1085', 'zesimo-me-5gb-15d', 991, 'Zesimo phase 1: MIDDLE EAST 5GB 15 Days', true, true),
+  ('me-10gb-30', null, 'regional-middle-east', 10.0, 30, 'zesimo', '1086', 'zesimo-me-10gb-30d', 1784, 'Zesimo phase 1: MIDDLE EAST 10GB 30 Days', true, true),
+  ('eu-5gb-30', null, 'regional-europe', 5.0, 30, 'zesimo', '11707', 'zesimo-eu-5gb-30d', 602, 'Zesimo phase 2: Europe 5GB 30 Days', true, true),
+  ('eu-10gb-30', null, 'regional-europe', 10.0, 30, 'zesimo', '11709', 'zesimo-eu-10gb-30d', 966, 'Zesimo phase 2: Europe 10GB 30 Days', true, true),
+  ('la-5gb-30', null, 'regional-south-america', 5.0, 30, 'zesimo', '12121', 'zesimo-la-5gb-30d', 1050, 'Zesimo phase 2: Latin America 5GB 30 Days', true, true),
+  ('la-10gb-30', null, 'regional-south-america', 10.0, 30, 'zesimo', '12122', 'zesimo-la-10gb-30d', 1764, 'Zesimo phase 2: Latin America 10GB 30 Days', true, true),
+  ('mx-5gb-30', 'MX', 'mexico', 5.0, 30, 'zesimo', '8186', 'zesimo-mx-5gb-30d', 812, 'Zesimo phase 2: Mexico 5GB 30 Days', true, true),
+  ('mx-10gb-30', 'MX', 'mexico', 10.0, 30, 'zesimo', '8188', 'zesimo-mx-10gb-30d', 1400, 'Zesimo phase 2: Mexico 10GB 30 Days', true, true),
+  ('us-5gb-30', 'US', 'united-states', 5.0, 30, 'zesimo', '3363', 'zesimo-us-5gb-30d', 463, 'Zesimo phase 2: United States 5GB 30 Days', true, true),
+  ('us-10gb-30', 'US', 'united-states', 10.0, 30, 'zesimo', '7673', 'zesimo-us-10gb-30d', 809, 'Zesimo phase 2: United States 10GB 30 Days', true, true),
+  ('na-10gb-30', null, 'regional-north-america', 10.0, 30, 'zesimo', '587', 'zesimo-na-10gb-30d', 1403, 'Zesimo phase 2: North America 10GB 30 Days', true, true),
+  ('as-5gb-30', null, 'regional-asia-pacific', 5.0, 30, 'zesimo', '11733', 'zesimo-as-5gb-30d', 434, 'Zesimo phase 2: Asia 5GB 30 Days', true, true),
+  ('as-10gb-30', null, 'regional-asia-pacific', 10.0, 30, 'zesimo', '11736', 'zesimo-as-10gb-30d', 714, 'Zesimo phase 2: Asia 10GB 30 Days', true, true),
+  ('eu-20gb-30', null, 'regional-europe', 20.0, 30, 'zesimo', '11711', 'zesimo-eu-20gb-30d', 1526, 'Zesimo phase 3: Europe 20GB 30 Days', true, true),
+  ('as-20gb-30', null, 'regional-asia-pacific', 20.0, 30, 'zesimo', '11738', 'zesimo-as-20gb-30d', 1092, 'Zesimo phase 3: Asia 20GB 30 Days', true, true),
+  ('us-20gb-30', 'US', 'united-states', 20.0, 30, 'zesimo', '7677', 'zesimo-us-20gb-30d', 1450, 'Zesimo phase 3: United States 20GB 30 Days', true, true),
+  ('la-20gb-30', null, 'regional-south-america', 20.0, 30, 'zesimo', '12123', 'zesimo-la-20gb-30d', 2814, 'Zesimo phase 3: Latin America 20GB 30 Days', true, true),
+  ('mx-20gb-30', 'MX', 'mexico', 20.0, 30, 'zesimo', '8190', 'zesimo-mx-20gb-30d', 2226, 'Zesimo phase 3: Mexico 20GB 30 Days', true, true),
+  ('eu-1gb-7', null, 'regional-europe', 1.0, 7, 'zesimo', '11701', 'zesimo-eu-1gb-7d', 252, 'Zesimo phase 3: Europe 1GB 7 Days', true, true),
+  ('na-1gb-7', null, 'regional-north-america', 1.0, 7, 'zesimo', '580', 'zesimo-na-1gb-7d', 182, 'Zesimo phase 3: North America 1GB 7 Days', true, true),
+  ('gulf-5gb-30', null, 'regional-gulf', 5.0, 30, 'zesimo', '2544', 'zesimo-gulf-5gb-30d', 1512, 'Zesimo phase 3: Gulf Region 5GB 30 Days', true, true),
+  ('la-3gb-30', null, 'regional-south-america', 3.0, 30, 'zesimo', '12094', 'zesimo-la-3gb-30d', 700, 'Zesimo phase 3: Latin America 3GB 30 Days', true, true),
+  ('gl-1gb-5', null, 'regional-global', 1.0, 5, 'zesimo', '11818', 'zesimo-global-1gb-5d', 350, 'Zesimo phase 4: Global 1GB 5 Days', true, true),
+  ('gl-3gb-30', null, 'regional-global', 3.0, 30, 'zesimo', '11804', 'zesimo-global-3gb-30d', 938, 'Zesimo phase 4: Global 3GB 30 Days', true, true),
+  ('gl-5gb-30', null, 'regional-global', 5.0, 30, 'zesimo', '11806', 'zesimo-global-5gb-30d', 1470, 'Zesimo phase 4: Global 5GB 30 Days', true, true),
+  ('gl-10gb-30', null, 'regional-global', 10.0, 30, 'zesimo', '11808', 'zesimo-global-10gb-30d', 2520, 'Zesimo phase 4: Global 10GB 30 Days', true, true),
+  ('na-3gb-30', null, 'regional-north-america', 3.0, 30, 'zesimo', '2290', 'zesimo-na-3gb-30d', 785, 'Zesimo phase 4: North America 3GB 30 Days', true, true),
+  ('na-5gb-30', null, 'regional-north-america', 5.0, 30, 'zesimo', '7063', 'zesimo-na-5gb-30d', 1175, 'Zesimo phase 4: North America 5GB 30 Days', true, true)
+on conflict (catalog_key) do update set
+  country_code = excluded.country_code,
+  country_slug = excluded.country_slug,
+  data_gb = excluded.data_gb,
+  validity_days = excluded.validity_days,
+  provider = excluded.provider,
+  provider_sku = excluded.provider_sku,
+  provider_slug = excluded.provider_slug,
+  wholesale_cents = excluded.wholesale_cents,
+  notes = excluded.notes,
+  is_active = true,
+  admin_approved = true,
+  period_num = null,
+  updated_at = now();

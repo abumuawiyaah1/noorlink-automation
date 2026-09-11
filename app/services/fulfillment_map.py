@@ -268,6 +268,11 @@ def normalize_country_slug(value: Optional[str]) -> str:
         "uae": "uae",
         "united arab emirates": "uae",
         "united-arab-emirates": "uae",
+        # Inventory / frontend use "usa"; Zesimo map uses united-states.
+        "usa": "united-states",
+        "us": "united-states",
+        "united states": "united-states",
+        "u-s-a": "united-states",
     }
     if raw in aliases:
         return aliases[raw]
