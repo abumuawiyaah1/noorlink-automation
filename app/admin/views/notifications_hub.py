@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from starlette.requests import Request
+from starlette.responses import JSONResponse
 from sqladmin import BaseView, expose
 
 from app.admin.nav_catalog import NOTIFICATIONS_CATEGORY
 from app.admin.roles import ALL_ROLES, session_role
-from app.services.admin_do_next import notifications_with_soft_reminders
+from app.services.admin_do_next import (
+    notifications_with_soft_reminders,
+    soft_reminders_for_role,
+)
 from app.services.admin_notifications import notification_badge_count
 
 
@@ -19,6 +23,29 @@ class NotificationsHubView(BaseView):
 
     def is_visible(self, request: Request) -> bool:
         return self.is_accessible(request)
+
+    # Secondary route first — sqladmin sets view.identity from the *last* @expose
+    @expose("/reminders.json", identity="reminders-json", methods=["GET"])
+    async def reminders_json(self, request: Request):
+        """Soft reminders for the sticky orange ack banner (all admin pages)."""
+        if not self.is_accessible(request):
+            return JSONResponse({"reminders": []}, status_code=401)
+        role = session_role(request)
+        items = soft_reminders_for_role(role)
+        return JSONResponse(
+            {
+                "reminders": [
+                    {
+                        "key": item.key,
+                        "title": item.title,
+                        "detail": item.detail,
+                        "count": item.count,
+                        "link_path": item.link_path,
+                    }
+                    for item in items
+                ]
+            }
+        )
 
     @expose("/notifications", identity="notifications-hub", methods=["GET"])
     async def hub(self, request: Request):

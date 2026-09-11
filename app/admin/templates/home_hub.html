@@ -9,7 +9,14 @@
   }
   .nl-do-card--urgent { border-left: 4px solid #dc2626; }
   .nl-do-card--warning { border-left: 4px solid #FF9500; }
-  .nl-do-card--info, .nl-do-card--soft { border-left: 4px solid #0F3D3E; }
+  .nl-do-card--info { border-left: 4px solid #0F3D3E; }
+  .nl-do-card--soft {
+    border-left: 4px solid #FF9500;
+    background: #FFF8EF;
+    border-color: #ffd39a;
+  }
+  .nl-do-card--soft .nl-do-count { background: #FF9500; color: #05191A; }
+  .nl-do-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; }
   .nl-do-count {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 2rem; height: 2rem; border-radius: 999px; background: #F3F7F7;
@@ -30,15 +37,25 @@
   {% if do_next %}
   <h2 class="h6 text-muted text-uppercase mb-3" style="letter-spacing:.04em;">Do next</h2>
   {% for item in do_next %}
-  <article class="nl-do-card nl-do-card--{{ item.severity }}">
+  <article class="nl-do-card nl-do-card--{{ item.severity }}"
+    {% if item.severity == 'soft' %}data-nl-reminder-key="{{ item.key }}" data-nl-reminder-count="{{ item.count }}"{% endif %}>
     <div class="d-flex gap-3 align-items-start">
       <span class="nl-do-count" title="Count">{{ item.count }}</span>
       <div>
-        <h3 class="h6 mb-1">{{ item.title }}</h3>
+        <h3 class="h6 mb-1">
+          {{ item.title }}
+          {% if item.severity == 'soft' %}<span class="badge ms-1" style="background:#FF9500;color:#05191A;">Reminder</span>{% endif %}
+        </h3>
         <p class="small text-muted mb-0">{{ item.detail }}</p>
       </div>
     </div>
-    <a class="btn btn-sm {% if item.severity == 'urgent' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{{ item.link_path }}">{{ item.cta }}</a>
+    <div class="nl-do-actions">
+      <a class="btn btn-sm {% if item.severity == 'urgent' %}btn-primary{% elif item.severity == 'soft' %}btn-dark{% else %}btn-outline-primary{% endif %}" href="{{ item.link_path }}">{{ item.cta }}</a>
+      {% if item.severity == 'soft' %}
+      <button type="button" class="btn btn-sm btn-outline-dark nl-do-ack"
+        data-ack-key="{{ item.key }}" data-ack-count="{{ item.count }}">Got it</button>
+      {% endif %}
+    </div>
   </article>
   {% endfor %}
   {% else %}
@@ -69,4 +86,37 @@
   </div>
   {% endif %}
 </div>
+<script>
+(function () {
+  var ACK_KEY = "nl-admin-acked-reminders";
+  function loadAcked() {
+    try { return JSON.parse(localStorage.getItem(ACK_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function saveAcked(map) {
+    try { localStorage.setItem(ACK_KEY, JSON.stringify(map)); } catch (e) {}
+  }
+  function hideAckedCards() {
+    var map = loadAcked();
+    document.querySelectorAll("[data-nl-reminder-key]").forEach(function (el) {
+      var token = el.getAttribute("data-nl-reminder-key") + ":" + el.getAttribute("data-nl-reminder-count");
+      if (map[token]) el.style.display = "none";
+    });
+  }
+  document.querySelectorAll(".nl-do-ack").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var key = btn.getAttribute("data-ack-key");
+      var count = btn.getAttribute("data-ack-count");
+      var map = loadAcked();
+      map[key + ":" + count] = Date.now();
+      saveAcked(map);
+      var card = btn.closest("[data-nl-reminder-key]");
+      if (card) card.style.display = "none";
+      // Refresh sticky bar if present
+      if (window.location) window.location.reload();
+    });
+  });
+  hideAckedCards();
+})();
+</script>
 {% endblock %}

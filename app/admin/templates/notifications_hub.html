@@ -4,7 +4,11 @@
 <style>
   .nl-notif-urgent { border-left: 4px solid #dc2626; }
   .nl-notif-warning { border-left: 4px solid #FF9500; }
-  .nl-notif-info { border-left: 4px solid #0F3D3E; }
+  .nl-notif-info {
+    border-left: 4px solid #FF9500;
+    background: #FFF8EF;
+    border-color: #ffd39a;
+  }
   .nl-help-playbook { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: #fff; }
   .nl-doc-pre { background: #F3F7F7; border-radius: 10px; padding: 1rem; font-size: 13px; max-height: 480px; overflow: auto; white-space: pre-wrap; }
   .nl-check-ok { color: #059669; }
@@ -21,20 +25,57 @@
   </div>
   {% else %}
   {% for n in notifications %}
-  <a href="{{ n.link_path }}" class="text-decoration-none text-dark d-block mb-3">
+  <div class="mb-3" {% if n.severity == 'info' %}data-nl-reminder-key="{{ n.key }}" data-nl-reminder-count="{{ n.count }}"{% endif %}>
     <div class="nl-wizard-panel nl-notif-{{ n.severity }}">
-      <div class="d-flex justify-content-between align-items-start">
+      <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
         <div>
-          <span class="badge {% if n.severity == 'urgent' %}bg-danger{% elif n.severity == 'warning' %}bg-warning text-dark{% else %}bg-secondary{% endif %} me-2">{{ n.count }}</span>
+          {% if n.severity == 'urgent' %}
+          <span class="badge bg-danger me-2">{{ n.count }}</span>
+          {% elif n.severity == 'warning' %}
+          <span class="badge bg-warning text-dark me-2">{{ n.count }}</span>
+          {% else %}
+          <span class="badge me-2" style="background:#FF9500;color:#05191A;">{{ n.count }}</span>
+          {% endif %}
           <strong>{{ n.title }}</strong>
-          {% if n.severity == 'info' %}<span class="badge bg-light text-dark border ms-1">Reminder</span>{% endif %}
+          {% if n.severity == 'info' %}<span class="badge ms-1" style="background:#FF9500;color:#05191A;">Reminder</span>{% endif %}
           <p class="small text-muted mb-0 mt-1">{{ n.detail }}</p>
         </div>
-        <span class="text-muted small">&rarr;</span>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-sm {% if n.severity == 'info' %}btn-dark{% else %}btn-outline-primary{% endif %}" href="{{ n.link_path }}">Open</a>
+          {% if n.severity == 'info' %}
+          <button type="button" class="btn btn-sm btn-outline-dark nl-notif-ack"
+            data-ack-key="{{ n.key }}" data-ack-count="{{ n.count }}">Got it</button>
+          {% endif %}
+        </div>
       </div>
     </div>
-  </a>
+  </div>
   {% endfor %}
   {% endif %}
 </div>
+<script>
+(function () {
+  var ACK_KEY = "nl-admin-acked-reminders";
+  function loadAcked() {
+    try { return JSON.parse(localStorage.getItem(ACK_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function saveAcked(map) {
+    try { localStorage.setItem(ACK_KEY, JSON.stringify(map)); } catch (e) {}
+  }
+  document.querySelectorAll("[data-nl-reminder-key]").forEach(function (el) {
+    var map = loadAcked();
+    var token = el.getAttribute("data-nl-reminder-key") + ":" + el.getAttribute("data-nl-reminder-count");
+    if (map[token]) el.style.display = "none";
+  });
+  document.querySelectorAll(".nl-notif-ack").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var map = loadAcked();
+      map[btn.getAttribute("data-ack-key") + ":" + btn.getAttribute("data-ack-count")] = Date.now();
+      saveAcked(map);
+      window.location.reload();
+    });
+  });
+})();
+</script>
 {% endblock %}
