@@ -11,7 +11,7 @@ Orders are atomic + idempotent via Idempotency-Key (use order_number).
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Mapping, MutableMapping, Optional
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional
 
 import httpx
 
@@ -216,6 +216,71 @@ class ZesimoClient:
             raise ZesimoError("Zesimo wallet response was not an object", payload=payload)
         return payload
 
+    async def get_esim(self, esim_id: int | str) -> Dict[str, Any]:
+        """GET /esims/{id} — live status + usage. Returns the esim object."""
+        payload = await self._request("GET", f"/esims/{esim_id}")
+        if not isinstance(payload, dict):
+            raise ZesimoError("Zesimo get_esim response was not an object", payload=payload)
+        esim = payload.get("esim")
+        if isinstance(esim, dict):
+            return esim
+        return payload
+
+    async def list_esims(
+        self,
+        *,
+        iccid: str = "",
+        status: str = "",
+    ) -> List[Dict[str, Any]]:
+        """GET /esims — optional ICCID / status filters."""
+        params: Dict[str, Any] = {}
+        if iccid:
+            params["iccid"] = iccid
+        if status:
+            params["status"] = status
+        payload = await self._request("GET", "/esims", params=params or None)
+        if isinstance(payload, dict):
+            rows = payload.get("data")
+            if isinstance(rows, list):
+                return [r for r in rows if isinstance(r, dict)]
+        if isinstance(payload, list):
+            return [r for r in payload if isinstance(r, dict)]
+        return []
+
+    async def list_topup_packages(self, esim_id: int | str) -> List[Dict[str, Any]]:
+        """GET /esims/{id}/topup-packages — packages compatible with this eSIM."""
+        payload = await self._request("GET", f"/esims/{esim_id}/topup-packages")
+        if isinstance(payload, dict):
+            rows = payload.get("data")
+            if isinstance(rows, list):
+                return [r for r in rows if isinstance(r, dict)]
+        if isinstance(payload, list):
+            return [r for r in payload if isinstance(r, dict)]
+        return []
+
+    async def topup_esim(
+        self,
+        esim_id: int | str,
+        *,
+        package_id: Optional[int] = None,
+        package_code: str = "",
+        replace_existing_plan: bool = False,
+    ) -> Dict[str, Any]:
+        """POST /esims/{id}/topup — activate an additional plan on the eSIM."""
+        body: Dict[str, Any] = {}
+        if package_id is not None:
+            body["package_id"] = int(package_id)
+        if package_code:
+            body["package_code"] = str(package_code)
+        if not body:
+            raise ZesimoError("topup_esim requires package_id or package_code")
+        if replace_existing_plan:
+            body["replace_existing_plan"] = True
+        payload = await self._request("POST", f"/esims/{esim_id}/topup", json=body)
+        if not isinstance(payload, dict):
+            raise ZesimoError("Zesimo topup response was not an object", payload=payload)
+        return payload
+
 
 def first_esim_from_order_payload(payload: Mapping[str, Any]) -> Dict[str, Any]:
     """Extract the first eSIM credential object from place/get order response."""
@@ -228,3 +293,15 @@ def first_esim_from_order_payload(payload: Mapping[str, Any]) -> Dict[str, Any]:
         if isinstance(first, dict):
             return first
     raise ZesimoError("Zesimo order response missing esims[0]", payload=payload)
+
+
+def resolve_zesimo_esim_id(*candidates: Any) -> Optional[int]:
+    """Parse a Zesimo numeric eSIM id from common fulfillment fields."""
+    for value in candidates:
+        if value is None or value == "":
+            continue
+        try:
+            return int(str(value).strip())
+        except (TypeError, ValueError):
+            continue
+    return None

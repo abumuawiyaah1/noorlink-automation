@@ -230,17 +230,22 @@ def _install_fields_from_row(row: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _usage_fields_from_row(row: Dict[str, Any], extras: Dict[str, Any]) -> Dict[str, Any]:
+    from app.services.esim_topup import topup_capabilities
+
     meta = row.get("metadata") or {}
     if not isinstance(meta, dict):
-        return {}
+        meta = {}
+
+    # Live eligibility — don't trust a stale snapshot flag alone.
+    caps = topup_capabilities(row)
+    topup_supported = bool(caps.get("supported"))
+    topup_reason = caps.get("reason")
+
     snapshot = meta.get("usage_snapshot")
     if not isinstance(snapshot, dict):
-        from app.services.esim_topup import topup_capabilities
-
-        caps = topup_capabilities(row)
         return {
-            "topup_supported": bool(caps.get("supported")),
-            "topup_reason": caps.get("reason"),
+            "topup_supported": topup_supported,
+            "topup_reason": topup_reason,
         }
 
     days_remaining = snapshot.get("days_remaining", extras.get("days_remaining"))
@@ -257,6 +262,7 @@ def _usage_fields_from_row(row: Dict[str, Any], extras: Dict[str, Any]) -> Dict[
         "data_remaining_gb": data_remaining_gb,
         "data_used_gb": data_used_gb if data_used_gb is not None else extras.get("data_used_gb"),
         "data_total_gb": data_total_gb if data_total_gb is not None else extras.get("data_total_gb"),
-        "topup_supported": bool(snapshot.get("topup_supported")),
+        "topup_supported": topup_supported,
+        "topup_reason": topup_reason,
         "wallet_balance_usd": snapshot.get("wallet_balance_usd"),
     }

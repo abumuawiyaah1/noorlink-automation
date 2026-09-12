@@ -639,6 +639,7 @@ async def _zesimo_provision_async(
         esim = first_esim_from_order_payload(payload)
         lpa_string = str(esim.get("activation_code") or "").strip()
         iccid = str(esim.get("iccid") or "").strip()
+        esim_id = str(esim.get("id") or esim.get("esim_tran_no") or "").strip()
         provider_order_id = ""
         order_obj = payload.get("order") if isinstance(payload, dict) else None
         if isinstance(order_obj, dict):
@@ -655,6 +656,7 @@ async def _zesimo_provision_async(
                     continue
                 lpa_string = str(esim.get("activation_code") or "").strip()
                 iccid = str(esim.get("iccid") or iccid).strip()
+                esim_id = str(esim.get("id") or esim.get("esim_tran_no") or esim_id).strip()
                 if lpa_string:
                     payload = refreshed
                     break
@@ -670,9 +672,10 @@ async def _zesimo_provision_async(
     smdp = _smdp_from_lpa(lpa_string)
 
     logger.info(
-        "Provisioned Zesimo eSIM for order %s provider_order=%s iccid=%s sku=%s",
+        "Provisioned Zesimo eSIM for order %s provider_order=%s esim_id=%s iccid=%s sku=%s",
         order_number,
         provider_order_id or "(none)",
+        esim_id or "(none)",
         iccid or "(none)",
         package_id,
     )
@@ -686,6 +689,7 @@ async def _zesimo_provision_async(
         "provider_order_id": provider_order_id,
         "provider_sku": str(package_id),
         "catalog_key": target.catalog_key,
+        "esim_tran_no": esim_id,
         "raw": {"order": payload, "esim": esim},
     }
 

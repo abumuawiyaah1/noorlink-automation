@@ -2106,7 +2106,7 @@ async def stripe_webhook(
 
         from app.services.esim_topup import TopUpError, process_topup_checkout, topup_retail_cents
 
-        if topup_provider == "esimaccess":
+        if topup_provider in {"esimaccess", "zesimo"}:
             expected_cents = retail_cents
         elif fund_usd is not None:
             expected_cents = topup_retail_cents(fund_usd)

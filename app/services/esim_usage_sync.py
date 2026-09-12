@@ -92,6 +92,11 @@ def _mb_to_gb(value: Any) -> Optional[float]:
         return None
 
 
+def _gb_from_mixed(value: Any) -> Optional[float]:
+    """Accept a value already expressed in GB."""
+    return _first_float(value)
+
+
 def _activation_from_status(*statuses: Any) -> Tuple[str, bool]:
     parts = [str(s or "").strip().lower() for s in statuses if s]
     joined = " ".join(parts)
@@ -198,6 +203,69 @@ def build_usage_snapshot(
                 data_used_gb,
             )
             valid_until = _parse_dt(pkg.get("expiry_date") or pkg.get("valid_until"))
+        topup_supported = False
+
+    elif provider == "zesimo":
+        # Prefer GET /esims/{id} detail; fall back to order.embedded esims.
+        order_obj = payload.get("order") if isinstance(payload.get("order"), dict) else payload
+        esim = {}
+        if isinstance(payload.get("esim"), dict):
+            esim = payload["esim"]
+        elif isinstance(payload.get("id"), (int, str)) and (
+            "data_used_mb" in payload or "data_package_mb" in payload or "status" in payload
+        ):
+            # Bare EsimDetail object returned as the payload root.
+            esim = payload
+        else:
+            esims = order_obj.get("esims") if isinstance(order_obj, dict) else None
+            if isinstance(esims, list) and esims and isinstance(esims[0], dict):
+                esim = esims[0]
+
+        package = esim.get("package") if isinstance(esim.get("package"), dict) else {}
+        esim_status = str(
+            esim.get("status_qr")
+            or esim.get("status")
+            or esim.get("state")
+            or order_obj.get("status")
+            or payload.get("status")
+            or ""
+        )
+        activation_status, activated = _activation_from_status(esim_status)
+        if not activated and str(esim.get("status") or "").lower() == "active":
+            activation_status, activated = "active", True
+        if esim.get("plan_activated_at") and not activated_at:
+            activated_at = str(esim.get("plan_activated_at"))
+            activation_status, activated = "active", True
+
+        data_total_gb = _first_float(
+            _mb_to_gb(esim.get("data_package_mb") or esim.get("data_mb") or esim.get("total_mb")),
+            _bytes_to_gb(esim.get("data_total_bytes") or esim.get("data_bytes") or esim.get("total_bytes")),
+            _gb_from_mixed(package.get("data_gb") or esim.get("data_gb") or esim.get("total_gb")),
+            data_total_gb,
+        )
+        data_used_gb = _first_float(
+            _mb_to_gb(esim.get("data_used_mb") or esim.get("used_mb")),
+            _bytes_to_gb(esim.get("data_used_bytes") or esim.get("used_bytes")),
+            _gb_from_mixed(esim.get("used_gb") or esim.get("data_used_gb")),
+            data_used_gb,
+        )
+        remaining = _first_float(
+            _mb_to_gb(esim.get("data_left_mb") or esim.get("remaining_mb") or esim.get("data_remaining_mb")),
+            _bytes_to_gb(esim.get("data_left_bytes") or esim.get("remaining_bytes")),
+            _gb_from_mixed(esim.get("remaining_gb") or esim.get("data_remaining_gb")),
+        )
+        if remaining is not None and data_total_gb is not None and data_used_gb is None:
+            data_used_gb = max(0.0, float(data_total_gb) - float(remaining))
+        valid_until = _parse_dt(
+            esim.get("plan_expired_at")
+            or esim.get("expires_at")
+            or esim.get("expiry_date")
+            or esim.get("expired_at")
+            or order_obj.get("expires_at")
+        )
+        if data_used_gb is None and data_total_gb is not None:
+            provider_notes.append("zesimo_usage_not_reported")
+        topup_supported = True
 
     elif provider == "simbase":
         usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else payload
@@ -308,6 +376,71 @@ async def _fetch_provider_payload(provider: str, row: Dict[str, Any]) -> Dict[st
 
         async with TelnaClient() as client:
             return await client.get_euicc_profile(iccid)
+
+    if provider == "zesimo":
+        from app.services.zesimo import (
+            ZesimoClient,
+            ZesimoError,
+            first_esim_from_order_payload,
+            resolve_zesimo_esim_id,
+        )
+
+        order_id = str(fulfillment.get("provider_order_id") or "").strip()
+        raw = fulfillment.get("raw") if isinstance(fulfillment.get("raw"), dict) else {}
+        raw_esim = raw.get("esim") if isinstance(raw.get("esim"), dict) else {}
+        esim_id = resolve_zesimo_esim_id(
+            fulfillment.get("esim_tran_no"),
+            fulfillment.get("provider_esim_id"),
+            fulfillment.get("esim_id"),
+            raw_esim.get("id"),
+            raw_esim.get("esim_tran_no"),
+        )
+
+        async with ZesimoClient() as client:
+            if esim_id is None and iccid:
+                try:
+                    matches = await client.list_esims(iccid=iccid)
+                except ZesimoError:
+                    matches = []
+                for match in matches:
+                    esim_id = resolve_zesimo_esim_id(match.get("id"), match.get("esim_tran_no"))
+                    if esim_id is not None:
+                        break
+
+            if esim_id is None and order_id:
+                try:
+                    order_payload = await client.get_order(order_id)
+                    embedded = first_esim_from_order_payload(order_payload)
+                    esim_id = resolve_zesimo_esim_id(
+                        embedded.get("id"), embedded.get("esim_tran_no")
+                    )
+                except (ZesimoError, Exception):
+                    pass
+
+            if esim_id is not None:
+                try:
+                    esim = await client.get_esim(esim_id)
+                except ZesimoError as exc:
+                    logger.warning(
+                        "Zesimo get_esim(%s) failed for %s: %s",
+                        esim_id,
+                        row.get("order_number"),
+                        exc,
+                    )
+                else:
+                    return {
+                        "esim": esim,
+                        "esim_id": esim_id,
+                        "source": "get_esim",
+                    }
+
+            if order_id:
+                payload = await client.get_order(order_id)
+                return payload if isinstance(payload, dict) else {"data": payload}
+
+        raise UsageSyncError(
+            "Zesimo sync requires esim id (fulfillment.esim_tran_no) or provider_order_id."
+        )
 
     if provider == "simbase":
         if not iccid:
@@ -426,9 +559,15 @@ async def sync_order_usage(
         allowance_row=allowance,
         overrides=overrides,
     )
-    merge_fulfillment = {}
+    merge_fulfillment: Dict[str, Any] = {}
     if snapshot.get("activated_at"):
         merge_fulfillment["activated_at"] = snapshot["activated_at"]
+    discovered_esim_id = provider_payload.get("esim_id") if isinstance(provider_payload, dict) else None
+    if provider == "zesimo" and discovered_esim_id is not None:
+        fulfillment = _metadata_dict(row).get("fulfillment") or {}
+        if isinstance(fulfillment, dict):
+            if str(fulfillment.get("esim_tran_no") or "") != str(discovered_esim_id):
+                merge_fulfillment["esim_tran_no"] = str(discovered_esim_id)
     return apply_usage_snapshot(order_number, snapshot, merge_fulfillment=merge_fulfillment)
 
 

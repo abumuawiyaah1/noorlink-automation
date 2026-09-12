@@ -307,6 +307,159 @@ def find_access_offer(
     return None
 
 
+def normalize_zesimo_topup_package(pkg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Map a Zesimo TopupPackage into the shared customer offer shape."""
+    if not isinstance(pkg, dict):
+        return None
+
+    behaviour = str(pkg.get("topup_behaviour") or "").strip().lower()
+    # Self-serve: only accumulating top-ups (never wipe remaining data).
+    if behaviour and behaviour != "accumulates":
+        return None
+
+    package_id = pkg.get("id")
+    try:
+        package_id_int = int(package_id) if package_id is not None else None
+    except (TypeError, ValueError):
+        package_id_int = None
+    package_code = str(pkg.get("package_code") or package_id or "").strip()
+    if package_id_int is None and not package_code:
+        return None
+
+    try:
+        wholesale_usd = float(pkg.get("reseller_price"))
+    except (TypeError, ValueError):
+        wholesale_usd = None
+    if wholesale_usd is None or wholesale_usd <= 0:
+        return None
+
+    data_gb = pkg.get("data_gb")
+    try:
+        data_gb_f = float(data_gb) if data_gb is not None else None
+    except (TypeError, ValueError):
+        data_gb_f = None
+    duration_days = None
+    try:
+        if pkg.get("duration_days") is not None:
+            duration_days = int(pkg.get("duration_days"))
+    except (TypeError, ValueError):
+        duration_days = None
+
+    name = str(pkg.get("name") or "").strip() or f"Package {package_code}"
+    if data_gb_f and duration_days:
+        data_label = f"{data_gb_f:g} GB"
+        display_name = f"{data_label} / {duration_days} days"
+    elif data_gb_f:
+        data_label = f"{data_gb_f:g} GB"
+        display_name = f"{name} · {data_label}"
+    else:
+        data_label = None
+        display_name = name
+
+    retail_cents = topup_retail_cents(wholesale_usd)
+    offer_key = str(package_id_int or package_code)
+    offer_id = _make_offer_id("zesimo", offer_key, None)
+
+    return {
+        "offer_id": offer_id,
+        "slug": None,
+        "package_code": package_code or None,
+        "package_id": package_id_int,
+        "name": display_name,
+        "data_label": data_label,
+        "days": duration_days,
+        "period_num": None,
+        "daypass": False,
+        "wholesale_usd": wholesale_usd,
+        "retail_usd": retail_cents / 100.0,
+        "retail_cents": retail_cents,
+        "topup_behaviour": behaviour or "accumulates",
+    }
+
+
+async def _resolve_zesimo_esim_id(row: Dict[str, Any], client: Any) -> Optional[int]:
+    from app.services.zesimo import (
+        first_esim_from_order_payload,
+        resolve_zesimo_esim_id,
+        ZesimoError,
+    )
+
+    fulfillment = _fulfillment(row)
+    raw = fulfillment.get("raw") if isinstance(fulfillment.get("raw"), dict) else {}
+    raw_esim = raw.get("esim") if isinstance(raw.get("esim"), dict) else {}
+
+    esim_id = resolve_zesimo_esim_id(
+        fulfillment.get("esim_tran_no"),
+        fulfillment.get("provider_esim_id"),
+        fulfillment.get("esim_id"),
+        raw_esim.get("id"),
+        raw_esim.get("esim_tran_no"),
+    )
+
+    if esim_id is None:
+        iccid = str(row.get("iccid") or "").strip()
+        if iccid:
+            try:
+                matches = await client.list_esims(iccid=iccid)
+            except ZesimoError as exc:
+                logger.warning("Zesimo list_esims failed for %s: %s", row.get("order_number"), exc)
+                matches = []
+            for match in matches:
+                esim_id = resolve_zesimo_esim_id(match.get("id"), match.get("esim_tran_no"))
+                if esim_id is not None:
+                    break
+
+    if esim_id is None:
+        order_id = str(fulfillment.get("provider_order_id") or "").strip()
+        if order_id:
+            try:
+                payload = await client.get_order(order_id)
+                esim = first_esim_from_order_payload(payload)
+                esim_id = resolve_zesimo_esim_id(esim.get("id"), esim.get("esim_tran_no"))
+            except (ZesimoError, Exception) as exc:
+                logger.warning(
+                    "Zesimo get_order for esim id failed for %s: %s",
+                    row.get("order_number"),
+                    exc,
+                )
+
+    if esim_id is None:
+        return None
+
+    # Persist discovered id for later top-ups / usage sync.
+    order_number = str(row.get("order_number") or "")
+    if order_number and str(fulfillment.get("esim_tran_no") or "") != str(esim_id):
+        db.merge_order_metadata(
+            order_number,
+            {"fulfillment": {**fulfillment, "esim_tran_no": str(esim_id)}},
+        )
+    return esim_id
+
+
+async def list_zesimo_topup_offers(row: Dict[str, Any]) -> List[Dict[str, Any]]:
+    from app.services.zesimo import ZesimoClient, ZesimoError
+
+    try:
+        async with ZesimoClient() as client:
+            esim_id = await _resolve_zesimo_esim_id(row, client)
+            if esim_id is None:
+                return []
+            packages = await client.list_topup_packages(esim_id)
+    except ZesimoError as exc:
+        logger.warning("Zesimo top-up package list failed for %s: %s", row.get("order_number"), exc)
+        return []
+
+    offers: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+    for pkg in packages:
+        offer = normalize_zesimo_topup_package(pkg)
+        if offer and offer["offer_id"] not in seen:
+            seen.add(offer["offer_id"])
+            offers.append(offer)
+    offers.sort(key=lambda o: (float(o.get("retail_usd") or 0), str(o.get("name") or "")))
+    return offers
+
+
 def topup_capabilities(row: Dict[str, Any]) -> Dict[str, Any]:
     provider = resolve_order_provider(row)
     iccid = str(row.get("iccid") or "").strip()
@@ -332,6 +485,12 @@ def topup_capabilities(row: Dict[str, Any]) -> Dict[str, Any]:
         else:
             topup_supported = True
             mode = "access_package"
+    elif provider == "zesimo":
+        if status not in {"delivered", "active"}:
+            reason = "Top-up is available after this eSIM is issued and active."
+        else:
+            topup_supported = True
+            mode = "zesimo_package"
     elif provider == "telna":
         reason = "Telna top-up is not wired yet — contact support."
     else:
@@ -356,17 +515,27 @@ def topup_capabilities(row: Dict[str, Any]) -> Dict[str, Any]:
 
 async def topup_capabilities_async(row: Dict[str, Any]) -> Dict[str, Any]:
     caps = topup_capabilities(row)
-    if not caps.get("supported") or caps.get("mode") != "access_package":
+    mode = caps.get("mode")
+    if not caps.get("supported") or mode not in {"access_package", "zesimo_package"}:
         return caps
 
-    offers = await list_access_topup_offers(row)
-    if not offers:
-        caps["supported"] = False
-        caps["packages"] = []
-        caps["reason"] = (
+    if mode == "zesimo_package":
+        offers = await list_zesimo_topup_offers(row)
+        empty_reason = (
+            "No accumulating top-up packages are available for this eSIM right now. "
+            "Contact support if you need more data."
+        )
+    else:
+        offers = await list_access_topup_offers(row)
+        empty_reason = (
             "No reloadable top-up packages are available for this eSIM right now. "
             "Contact support if you need more data."
         )
+
+    if not offers:
+        caps["supported"] = False
+        caps["packages"] = []
+        caps["reason"] = empty_reason
         return caps
 
     caps["packages"] = offers
@@ -567,6 +736,85 @@ async def apply_access_topup(
     return {"ok": True, "order_number": order_number, "offer": offer, "entry": entry}
 
 
+async def apply_zesimo_topup(
+    row: Dict[str, Any],
+    offer: Dict[str, Any],
+    *,
+    source: str = "stripe_checkout",
+    actor: Optional[str] = None,
+    stripe_session_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Activate a Zesimo accumulating top-up package on an existing eSIM."""
+    from app.services.zesimo import ZesimoClient, ZesimoError
+
+    order_number = str(row.get("order_number") or "")
+    iccid = str(row.get("iccid") or "").strip()
+    provider = resolve_order_provider(row)
+
+    if provider != "zesimo":
+        raise TopUpError("Only Zesimo plans support this package top-up.")
+    if not iccid:
+        raise TopUpError("Order has no ICCID.")
+
+    package_id = offer.get("package_id")
+    package_code = str(offer.get("package_code") or "").strip()
+    try:
+        package_id_int = int(package_id) if package_id is not None else None
+    except (TypeError, ValueError):
+        package_id_int = None
+    if package_id_int is None and not package_code:
+        raise TopUpError("Top-up package is missing package id.")
+
+    wholesale_usd = float(offer.get("wholesale_usd") or 0)
+
+    async with ZesimoClient() as client:
+        esim_id = await _resolve_zesimo_esim_id(row, client)
+        if esim_id is None:
+            raise TopUpError("Could not find this eSIM at Zesimo for top-up.")
+        try:
+            result = await client.topup_esim(
+                esim_id,
+                package_id=package_id_int,
+                package_code=package_code if package_id_int is None else "",
+                replace_existing_plan=False,
+            )
+        except ZesimoError as exc:
+            raise TopUpError(str(exc)) from exc
+
+    entry = {
+        "at": datetime.now(timezone.utc).isoformat(),
+        "provider": "zesimo",
+        "mode": "zesimo_package",
+        "offer_id": offer.get("offer_id"),
+        "package_id": package_id_int,
+        "package_code": package_code or None,
+        "wholesale_usd": wholesale_usd,
+        "retail_usd": float(offer.get("retail_usd") or 0) or None,
+        "source": source,
+        "actor": actor,
+        "stripe_session_id": stripe_session_id,
+        "esim_id": esim_id,
+        "provider_result": result if isinstance(result, dict) else {"raw": result},
+    }
+    _append_topup_history(row, entry)
+
+    refreshed = db.get_order_row_by_order_number(order_number) or row
+    try:
+        sync_order_usage_blocking(refreshed, source="topup")
+    except Exception:
+        logger.warning("Post Zesimo top-up usage sync failed for %s", order_number)
+
+    logger.info(
+        "Zesimo top-up on %s iccid=%s esim_id=%s package=%s source=%s",
+        order_number,
+        iccid,
+        esim_id,
+        package_id_int or package_code,
+        source,
+    )
+    return {"ok": True, "order_number": order_number, "offer": offer, "entry": entry}
+
+
 async def resolve_topup_checkout_quote(
     row: Dict[str, Any],
     *,
@@ -588,10 +836,14 @@ async def resolve_topup_checkout_quote(
     order_number = str(row.get("order_number") or "")
     mode = caps.get("mode")
 
-    if mode == "access_package":
+    if mode in {"access_package", "zesimo_package"}:
         offers = list(caps.get("packages") or [])
         if not offers:
-            offers = await list_access_topup_offers(row)
+            offers = (
+                await list_zesimo_topup_offers(row)
+                if mode == "zesimo_package"
+                else await list_access_topup_offers(row)
+            )
         offer = find_access_offer(
             offers,
             offer_id=offer_id,
@@ -603,13 +855,15 @@ async def resolve_topup_checkout_quote(
             raise TopUpError("Choose a top-up package from the available options.")
         return {
             "mode": mode,
-            "topup_provider": "esimaccess",
+            "topup_provider": "zesimo" if mode == "zesimo_package" else "esimaccess",
             "iccid": iccid,
             "order_number": order_number,
             "offer": offer,
             "offer_id": offer.get("offer_id"),
             "package_slug": offer.get("slug"),
-            "package_code": offer.get("package_code"),
+            "package_code": offer.get("package_code") or (
+                str(offer.get("package_id")) if offer.get("package_id") is not None else None
+            ),
             "period_num": offer.get("period_num"),
             "wholesale_usd": float(offer.get("wholesale_usd") or 0) or None,
             "fund_usd": None,
@@ -671,7 +925,44 @@ async def process_topup_checkout(
         raise TopUpError(str(caps.get("reason") or "Top-up not supported."))
 
     provider = str(topup_provider or caps.get("provider") or "")
-    if provider == "esimaccess" or caps.get("mode") == "access_package":
+    mode = caps.get("mode")
+
+    if provider == "zesimo" or mode == "zesimo_package":
+        offers = await list_zesimo_topup_offers(row)
+        offer = find_access_offer(
+            offers,
+            offer_id=offer_id,
+            slug=package_slug,
+            package_code=package_code,
+            period_num=period_num,
+        )
+        if not offer and (package_code or offer_id):
+            wholesale = None
+            if retail_cents:
+                wholesale = round((retail_cents / 100.0) / TOPUP_MARKUP, 4)
+            pkg_id = None
+            try:
+                pkg_id = int(package_code) if package_code else None
+            except (TypeError, ValueError):
+                pkg_id = None
+            offer = {
+                "offer_id": offer_id or package_code,
+                "package_id": pkg_id,
+                "package_code": package_code,
+                "wholesale_usd": wholesale or 0,
+                "retail_usd": (retail_cents / 100.0) if retail_cents else None,
+            }
+        if not offer:
+            raise TopUpError("Top-up package is no longer available.")
+        return await apply_zesimo_topup(
+            row,
+            offer,
+            source="stripe_checkout",
+            actor=buyer_email,
+            stripe_session_id=stripe_session_id,
+        )
+
+    if provider == "esimaccess" or mode == "access_package":
         offers = await list_access_topup_offers(row)
         offer = find_access_offer(
             offers,

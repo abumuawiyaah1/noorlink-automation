@@ -173,6 +173,91 @@ def test_normalize_access_daypass_package():
     assert offer["wholesale_usd"] == 6.804
 
 
+def test_topup_capabilities_zesimo_enabled():
+    row = {
+        "order_number": "NL-Z1",
+        "status": "active",
+        "iccid": "8944900",
+        "metadata": {"fulfillment": {"provider": "zesimo", "esim_tran_no": "1001"}},
+    }
+    caps = topup_capabilities(row)
+    assert caps["supported"] is True
+    assert caps["mode"] == "zesimo_package"
+    assert caps["provider"] == "zesimo"
+
+
+def test_normalize_zesimo_accumulates_package():
+    from app.services.esim_topup import normalize_zesimo_topup_package
+
+    offer = normalize_zesimo_topup_package(
+        {
+            "id": 565,
+            "package_code": "EU-3GB-30",
+            "name": "Europe 3 GB / 30 days",
+            "reseller_price": 4.5,
+            "data_gb": 3,
+            "duration_days": 30,
+            "topup_behaviour": "accumulates",
+        }
+    )
+    assert offer is not None
+    assert offer["package_id"] == 565
+    assert offer["package_code"] == "EU-3GB-30"
+    assert offer["wholesale_usd"] == 4.5
+    assert offer["retail_cents"] == int(round(4.5 * 1.35 * 100))
+    assert offer["name"] == "3 GB / 30 days"
+    assert offer["topup_behaviour"] == "accumulates"
+
+
+def test_normalize_zesimo_skips_replaces_package():
+    from app.services.esim_topup import normalize_zesimo_topup_package
+
+    offer = normalize_zesimo_topup_package(
+        {
+            "id": 566,
+            "package_code": "EU-5GB-30",
+            "name": "Europe 5 GB",
+            "reseller_price": 6.0,
+            "data_gb": 5,
+            "duration_days": 30,
+            "topup_behaviour": "replaces",
+        }
+    )
+    assert offer is None
+
+
+def test_build_usage_snapshot_zesimo_esim_detail():
+    row = {
+        "order_number": "NL-Z2",
+        "iccid": "8944901",
+        "metadata": {"fulfillment": {"provider": "zesimo"}, "validity_days": 30},
+        "fulfilled_at": "2026-08-01T12:00:00+00:00",
+    }
+    snapshot = build_usage_snapshot(
+        provider="zesimo",
+        source="test",
+        row=row,
+        provider_payload={
+            "esim": {
+                "id": 1001,
+                "status": "active",
+                "status_qr": "Installed",
+                "data_package_mb": 3072.0,
+                "data_used_mb": 1024.0,
+                "data_left_mb": 2048.0,
+                "plan_activated_at": "2026-08-02T10:00:00+00:00",
+                "plan_expired_at": "2026-09-01T10:00:00+00:00",
+            },
+            "source": "get_esim",
+        },
+    )
+    assert snapshot["activated"] is True
+    assert snapshot["topup_supported"] is True
+    assert snapshot["data_total_gb"] == 3.0
+    assert snapshot["data_used_gb"] == 1.0
+    assert snapshot["valid_until"] == "2026-09-01T10:00:00+00:00"
+
+
 def test_topup_retail_markup():
     assert topup_retail_cents(10.0) == int(round(10 * 1.35 * 100))
 

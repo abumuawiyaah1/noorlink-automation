@@ -194,3 +194,52 @@ def test_enforce_provider_credentials_ok_with_key(monkeypatch):
         source="test",
     )
     enforce_provider_credentials(target)
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_get_esim_and_topup_packages():
+    respx.get(f"{BASE}/esims/1001").mock(
+        return_value=Response(
+            200,
+            json={
+                "esim": {
+                    "id": 1001,
+                    "status": "active",
+                    "data_package_mb": 3072,
+                    "data_used_mb": 512,
+                    "data_left_mb": 2560,
+                }
+            },
+        )
+    )
+    respx.get(f"{BASE}/esims/1001/topup-packages").mock(
+        return_value=Response(
+            200,
+            json={
+                "data": [
+                    {
+                        "id": 565,
+                        "package_code": "EU-3GB-30",
+                        "reseller_price": 4.5,
+                        "data_gb": 3,
+                        "duration_days": 30,
+                        "topup_behaviour": "accumulates",
+                    }
+                ]
+            },
+        )
+    )
+    respx.post(f"{BASE}/esims/1001/topup").mock(
+        return_value=Response(200, json={"ok": True, "topup_id": 91})
+    )
+
+    async with ZesimoClient(api_key="zk_test", base_url=BASE) as client:
+        esim = await client.get_esim(1001)
+        assert esim["id"] == 1001
+        assert esim["data_used_mb"] == 512
+        packages = await client.list_topup_packages(1001)
+        assert len(packages) == 1
+        assert packages[0]["topup_behaviour"] == "accumulates"
+        result = await client.topup_esim(1001, package_id=565)
+        assert result["ok"] is True
