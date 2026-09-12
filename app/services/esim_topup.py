@@ -506,6 +506,18 @@ def topup_capabilities(row: Dict[str, Any]) -> Dict[str, Any]:
         "mode": mode,
         "iccid": iccid or None,
         "amounts_usd": TOPUP_AMOUNTS_USD if (topup_supported and mode == "wallet") else [],
+        "amount_offers": (
+            [
+                {
+                    "fund_usd": float(a),
+                    "retail_cents": topup_retail_cents(float(a)),
+                    "retail_usd": topup_retail_cents(float(a)) / 100.0,
+                }
+                for a in TOPUP_AMOUNTS_USD
+            ]
+            if (topup_supported and mode == "wallet")
+            else []
+        ),
         "packages": [],
         "min_usd": MIN_TOPUP_USD if (topup_supported and mode == "wallet") else None,
         "max_usd": MAX_TOPUP_USD if (topup_supported and mode == "wallet") else None,

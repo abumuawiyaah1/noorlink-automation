@@ -84,6 +84,7 @@ from .schemas import (
     TopUpOptionsResponse,
     TopUpSessionRequest,
     TopUpSessionResponse,
+    TopUpPaymentIntentResponse,
     TopUpPayPalCreateResponse,
     TopUpPayPalCaptureRequest,
     TopUpPayPalCaptureResponse,
@@ -311,6 +312,124 @@ def _verify_stripe_paid_amount(order_row: dict, event) -> bool:
         )
         return False
     return True
+
+
+async def _fulfill_paid_topup_from_stripe_meta(meta: dict) -> JSONResponse:
+    """Apply a paid top-up from Checkout Session or PaymentIntent metadata."""
+    order_number = meta.get("order_number")
+    topup_provider = str(meta.get("topup_provider") or "").strip().lower()
+    payment_ref = str(
+        meta.get("session_id") or meta.get("payment_intent_id") or ""
+    ).strip()
+
+    fund_raw = meta.get("fund_usd")
+    fund_usd = None
+    if fund_raw not in (None, ""):
+        try:
+            fund_usd = float(fund_raw)
+        except (TypeError, ValueError):
+            fund_usd = None
+
+    period_raw = meta.get("period_num")
+    period_num = None
+    if period_raw not in (None, ""):
+        try:
+            period_num = int(period_raw)
+        except (TypeError, ValueError):
+            period_num = None
+
+    retail_raw = meta.get("retail_cents")
+    retail_cents = None
+    if retail_raw not in (None, ""):
+        try:
+            retail_cents = int(retail_raw)
+        except (TypeError, ValueError):
+            retail_cents = None
+
+    from app.services.esim_topup import TopUpError, process_topup_checkout, topup_retail_cents
+
+    if topup_provider in {"esimaccess", "zesimo"}:
+        expected_cents = retail_cents
+    elif fund_usd is not None:
+        expected_cents = topup_retail_cents(fund_usd)
+    else:
+        logger.error("Top-up webhook missing amount metadata for %s", order_number)
+        return JSONResponse({"received": True, "handled": False})
+
+    received_cents = meta.get("amount_cents") or 0
+    if expected_cents and received_cents and expected_cents != received_cents:
+        logger.error(
+            "Top-up amount mismatch for %s: expected %s got %s",
+            order_number,
+            expected_cents,
+            received_cents,
+        )
+        return JSONResponse(
+            {
+                "received": True,
+                "handled": False,
+                "error": "amount_mismatch",
+                "order_number": order_number,
+            }
+        )
+
+    # Idempotency: skip if this Stripe payment was already applied.
+    if order_number and payment_ref:
+        try:
+            row = db.get_order_row_by_order_number(str(order_number))
+        except db.SupabaseRepositoryError as exc:
+            raise _db_error(exc) from exc
+        if row:
+            meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+            topups = meta.get("topups") if isinstance(meta.get("topups"), dict) else {}
+            history = topups.get("history") if isinstance(topups.get("history"), list) else []
+            for entry in history:
+                if isinstance(entry, dict) and str(entry.get("stripe_session_id") or "") == payment_ref:
+                    return JSONResponse(
+                        {
+                            "received": True,
+                            "handled": True,
+                            "topup": "already_applied",
+                            "order_number": order_number,
+                        }
+                    )
+
+    try:
+        await process_topup_checkout(
+            order_number=str(order_number or ""),
+            fund_usd=fund_usd,
+            offer_id=meta.get("offer_id"),
+            package_slug=meta.get("package_slug"),
+            package_code=meta.get("package_code"),
+            period_num=period_num,
+            topup_provider=topup_provider or None,
+            retail_cents=retail_cents or expected_cents,
+            stripe_session_id=payment_ref or None,
+            buyer_email=meta.get("customer_email"),
+        )
+    except TopUpError as exc:
+        logger.error("Top-up fulfillment failed for %s: %s", order_number, exc)
+        return JSONResponse(
+            {
+                "received": True,
+                "handled": True,
+                "topup": "failed",
+                "order_number": order_number,
+                "error": str(exc)[:200],
+            }
+        )
+
+    return JSONResponse(
+        {
+            "received": True,
+            "handled": True,
+            "topup": "completed",
+            "order_number": order_number,
+            "fund_usd": fund_usd,
+            "topup_provider": topup_provider or "citrus",
+            "offer_id": meta.get("offer_id"),
+        }
+    )
 
 
 @app.get("/", response_model=RootResponse)
@@ -956,6 +1075,7 @@ async def orders_topup_options(
         provider=caps.get("provider"),
         mode=caps.get("mode"),
         amounts_usd=list(caps.get("amounts_usd") or []),
+        amount_offers=list(caps.get("amount_offers") or []),
         packages=list(caps.get("packages") or []),
         min_usd=caps.get("min_usd"),
         max_usd=caps.get("max_usd"),
@@ -1036,6 +1156,81 @@ async def orders_topup_session(body: TopUpSessionRequest):
         fund_usd=quote.get("fund_usd"),
         offer_id=quote.get("offer_id"),
         message="Redirect to Stripe to add data to your eSIM.",
+    )
+
+
+@app.post("/api/orders/topup/payment-intent", response_model=TopUpPaymentIntentResponse)
+async def orders_topup_payment_intent(body: TopUpSessionRequest):
+    """Create a PaymentIntent for Apple Pay / Google Pay / Link on My eSIMs."""
+    try:
+        looked_up = db.lookup_order(body.order_id, str(body.email))
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not looked_up:
+        return TopUpPaymentIntentResponse(
+            success=False,
+            message="Order not found for that email.",
+        )
+
+    row = db.get_order_row_by_order_number(looked_up.order_number)
+    if not row:
+        return TopUpPaymentIntentResponse(success=False, message="Order not found.")
+
+    from app.services.esim_topup import TopUpError, resolve_topup_checkout_quote
+    from .stripe_checkout import StripeCheckoutError, create_topup_payment_intent
+
+    try:
+        quote = await resolve_topup_checkout_quote(
+            row,
+            fund_usd=body.fund_usd,
+            offer_id=body.offer_id,
+            package_slug=body.package_slug,
+            package_code=body.package_code,
+            period_num=body.period_num,
+        )
+    except TopUpError as exc:
+        return TopUpPaymentIntentResponse(success=False, message=str(exc))
+
+    try:
+        intent = create_topup_payment_intent(
+            parent_order_number=looked_up.order_number,
+            parent_order_id=str(row["id"]),
+            email=str(body.email),
+            iccid=str(quote["iccid"]),
+            amount_cents=int(quote["retail_cents"]),
+            display_name=str(quote["display_name"]),
+            topup_provider=str(quote["topup_provider"]),
+            fund_usd=quote.get("fund_usd"),
+            wholesale_usd=quote.get("wholesale_usd"),
+            offer_id=quote.get("offer_id"),
+            package_slug=quote.get("package_slug"),
+            package_code=quote.get("package_code"),
+            period_num=quote.get("period_num"),
+        )
+    except StripeCheckoutError as exc:
+        logger.error("Top-up PaymentIntent failed: %s", exc)
+        report_critical_event(
+            event_type="topup_payment_intent_failed",
+            source="api.topup_express",
+            message=f"Top-up Stripe PaymentIntent failed: {exc}",
+            order_number=str(looked_up.order_number),
+            details={"path": "topup_payment_intent"},
+            title="Top-up wallet payment failed to start",
+        )
+        return TopUpPaymentIntentResponse(
+            success=False,
+            message="Could not start wallet payment. Try again in a minute.",
+        )
+
+    return TopUpPaymentIntentResponse(
+        success=True,
+        client_secret=intent.client_secret,
+        payment_intent_id=intent.id,
+        retail_usd=float(quote["retail_usd"]),
+        retail_cents=int(quote["retail_cents"]),
+        fund_usd=quote.get("fund_usd"),
+        offer_id=quote.get("offer_id"),
+        message="PaymentIntent created for top-up wallets.",
     )
 
 
@@ -1966,6 +2161,11 @@ async def stripe_webhook(
         if not intent_data:
             return JSONResponse({"received": True, "handled": False})
 
+        # My eSIMs express top-up (Apple Pay / Google Pay / Link).
+        if str(intent_data.get("checkout_type") or "").strip().lower() == "topup":
+            intent_data["amount_cents"] = stripe_event_amount_cents(event)
+            return await _fulfill_paid_topup_from_stripe_meta(intent_data)
+
         order_number = intent_data.get("order_number")
         payment_intent_id = intent_data.get("payment_intent_id")
 
@@ -2078,99 +2278,8 @@ async def stripe_webhook(
         return JSONResponse({"received": True, "handled": False})
 
     if session_data.get("checkout_type") == "topup":
-        order_number = session_data.get("order_number")
-        topup_provider = str(session_data.get("topup_provider") or "").strip().lower()
-        fund_raw = session_data.get("fund_usd")
-        fund_usd = None
-        if fund_raw not in (None, ""):
-            try:
-                fund_usd = float(fund_raw)
-            except (TypeError, ValueError):
-                fund_usd = None
-
-        period_raw = session_data.get("period_num")
-        period_num = None
-        if period_raw not in (None, ""):
-            try:
-                period_num = int(period_raw)
-            except (TypeError, ValueError):
-                period_num = None
-
-        retail_raw = session_data.get("retail_cents")
-        retail_cents = None
-        if retail_raw not in (None, ""):
-            try:
-                retail_cents = int(retail_raw)
-            except (TypeError, ValueError):
-                retail_cents = None
-
-        from app.services.esim_topup import TopUpError, process_topup_checkout, topup_retail_cents
-
-        if topup_provider in {"esimaccess", "zesimo"}:
-            expected_cents = retail_cents
-        elif fund_usd is not None:
-            expected_cents = topup_retail_cents(fund_usd)
-        else:
-            logger.error("Top-up webhook missing amount metadata for %s", order_number)
-            return JSONResponse({"received": True, "handled": False})
-
-        received_cents = session_data.get("amount_cents") or 0
-        if expected_cents and received_cents and expected_cents != received_cents:
-            logger.error(
-                "Top-up amount mismatch for %s: expected %s got %s",
-                order_number,
-                expected_cents,
-                received_cents,
-            )
-            return JSONResponse(
-                {
-                    "received": True,
-                    "handled": False,
-                    "error": "amount_mismatch",
-                    "order_number": order_number,
-                }
-            )
-
-        try:
-            import asyncio
-
-            asyncio.run(
-                process_topup_checkout(
-                    order_number=str(order_number or ""),
-                    fund_usd=fund_usd,
-                    offer_id=session_data.get("offer_id"),
-                    package_slug=session_data.get("package_slug"),
-                    package_code=session_data.get("package_code"),
-                    period_num=period_num,
-                    topup_provider=topup_provider or None,
-                    retail_cents=retail_cents or expected_cents,
-                    stripe_session_id=session_data.get("session_id"),
-                    buyer_email=session_data.get("customer_email"),
-                )
-            )
-        except TopUpError as exc:
-            logger.error("Top-up fulfillment failed for %s: %s", order_number, exc)
-            return JSONResponse(
-                {
-                    "received": True,
-                    "handled": True,
-                    "topup": "failed",
-                    "order_number": order_number,
-                    "error": str(exc)[:200],
-                }
-            )
-
-        return JSONResponse(
-            {
-                "received": True,
-                "handled": True,
-                "topup": "completed",
-                "order_number": order_number,
-                "fund_usd": fund_usd,
-                "topup_provider": topup_provider or "citrus",
-                "offer_id": session_data.get("offer_id"),
-            }
-        )
+        session_data["amount_cents"] = stripe_event_amount_cents(event)
+        return await _fulfill_paid_topup_from_stripe_meta(session_data)
 
     order_number = session_data.get("order_number")
     session_id = session_data.get("session_id")

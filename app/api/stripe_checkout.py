@@ -243,3 +243,63 @@ def create_stripe_payment_intent(
     except stripe.StripeError as exc:
         logger.exception("Stripe PaymentIntent failed for %s", order_number)
         raise StripeCheckoutError(str(exc)) from exc
+
+
+def create_topup_payment_intent(
+    *,
+    parent_order_number: str,
+    parent_order_id: str,
+    email: str,
+    iccid: str,
+    amount_cents: int,
+    display_name: str,
+    topup_provider: str = "citrus",
+    fund_usd: Optional[float] = None,
+    wholesale_usd: Optional[float] = None,
+    offer_id: Optional[str] = None,
+    package_slug: Optional[str] = None,
+    package_code: Optional[str] = None,
+    period_num: Optional[int] = None,
+) -> stripe.PaymentIntent:
+    """PaymentIntent for My eSIMs express wallets (Apple Pay / Google Pay / Link)."""
+    settings = get_settings()
+    stripe.api_key = settings.stripe_secret_key
+
+    metadata: Dict[str, str] = {
+        "checkout_type": "topup",
+        "order_number": parent_order_number,
+        "order_id": parent_order_id,
+        "iccid": iccid,
+        "topup_provider": topup_provider,
+        "retail_cents": str(int(amount_cents)),
+    }
+    if fund_usd is not None:
+        metadata["fund_usd"] = str(fund_usd)
+    if wholesale_usd is not None:
+        metadata["wholesale_usd"] = str(wholesale_usd)
+    if offer_id:
+        metadata["offer_id"] = offer_id
+    if package_slug:
+        metadata["package_slug"] = package_slug
+    if package_code:
+        metadata["package_code"] = package_code
+    if period_num is not None:
+        metadata["period_num"] = str(period_num)
+
+    create_kwargs: Dict[str, Any] = {
+        "amount": int(amount_cents),
+        "currency": "usd",
+        "description": display_name,
+        "automatic_payment_methods": {"enabled": True},
+        "metadata": metadata,
+        "receipt_email": email.strip().lower(),
+    }
+    pmc = (settings.stripe_payment_method_configuration or "").strip()
+    if pmc:
+        create_kwargs["payment_method_configuration"] = pmc
+
+    try:
+        return stripe.PaymentIntent.create(**create_kwargs)
+    except stripe.StripeError as exc:
+        logger.exception("Stripe top-up PaymentIntent failed for %s", parent_order_number)
+        raise StripeCheckoutError(str(exc)) from exc

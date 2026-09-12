@@ -122,6 +122,15 @@ def extract_payment_intent_succeeded(
         "order_id": order_id,
         "customer_email": getattr(intent, "receipt_email", None),
         "amount_cents": int(getattr(intent, "amount_received", None) or getattr(intent, "amount", 0) or 0) or None,
+        "checkout_type": metadata.get("checkout_type") if isinstance(metadata, dict) else None,
+        "fund_usd": metadata.get("fund_usd") if isinstance(metadata, dict) else None,
+        "topup_provider": metadata.get("topup_provider") if isinstance(metadata, dict) else None,
+        "offer_id": metadata.get("offer_id") if isinstance(metadata, dict) else None,
+        "package_slug": metadata.get("package_slug") if isinstance(metadata, dict) else None,
+        "package_code": metadata.get("package_code") if isinstance(metadata, dict) else None,
+        "period_num": metadata.get("period_num") if isinstance(metadata, dict) else None,
+        "retail_cents": metadata.get("retail_cents") if isinstance(metadata, dict) else None,
+        "wholesale_usd": metadata.get("wholesale_usd") if isinstance(metadata, dict) else None,
     }
 
 

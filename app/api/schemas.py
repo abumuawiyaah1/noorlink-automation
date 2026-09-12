@@ -209,12 +209,23 @@ class TopUpPackageOffer(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class TopUpAmountOffer(BaseModel):
+    fund_usd: float = Field(..., serialization_alias="fundUsd")
+    retail_cents: int = Field(..., serialization_alias="retailCents")
+    retail_usd: float = Field(..., serialization_alias="retailUsd")
+
+    model_config = {"populate_by_name": True}
+
+
 class TopUpOptionsResponse(BaseModel):
     success: bool
     supported: bool = False
     provider: Optional[str] = None
     mode: Optional[str] = None
     amounts_usd: list[float] = Field(default_factory=list, serialization_alias="amountsUsd")
+    amount_offers: list[TopUpAmountOffer] = Field(
+        default_factory=list, serialization_alias="amountOffers"
+    )
     packages: list[TopUpPackageOffer] = Field(default_factory=list)
     min_usd: Optional[float] = Field(None, serialization_alias="minUsd")
     max_usd: Optional[float] = Field(None, serialization_alias="maxUsd")
@@ -242,6 +253,19 @@ class TopUpSessionResponse(BaseModel):
     checkout_url: Optional[str] = Field(None, serialization_alias="checkoutUrl")
     session_id: Optional[str] = Field(None, serialization_alias="sessionId")
     retail_usd: Optional[float] = Field(None, serialization_alias="retailUsd")
+    fund_usd: Optional[float] = Field(None, serialization_alias="fundUsd")
+    offer_id: Optional[str] = Field(None, serialization_alias="offerId")
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class TopUpPaymentIntentResponse(BaseModel):
+    success: bool
+    client_secret: Optional[str] = Field(None, serialization_alias="clientSecret")
+    payment_intent_id: Optional[str] = Field(None, serialization_alias="paymentIntentId")
+    retail_usd: Optional[float] = Field(None, serialization_alias="retailUsd")
+    retail_cents: Optional[int] = Field(None, serialization_alias="retailCents")
     fund_usd: Optional[float] = Field(None, serialization_alias="fundUsd")
     offer_id: Optional[str] = Field(None, serialization_alias="offerId")
     message: Optional[str] = None
