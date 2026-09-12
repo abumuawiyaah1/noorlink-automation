@@ -1201,6 +1201,38 @@ def send_esim_install_congrats_email(
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
 
 
+def build_my_esims_link_email_html(*, dashboard_url: str, app_url: str) -> str:
+    body = f"""
+      <p style="margin:0 0 16px;color:{TEXT};font-size:16px;line-height:1.6;">
+        Here’s your private link to <strong>My eSIMs</strong> — usage, install QR, and top-up
+        for every plan on this email.
+      </p>
+      <p style="margin:0 0 8px;">{cta_button(href=dashboard_url, label="Open My eSIMs")}</p>
+      <p style="margin:20px 0 0;color:{MUTED};font-size:13px;line-height:1.5;">
+        This link expires in 24 hours. If you didn’t ask for it, you can ignore this email.
+      </p>
+    """
+    return wrap_branded_email(
+        body_html=body,
+        app_url=app_url,
+        preheader="Open your NoorLink eSIMs — usage, install, and top-up.",
+    )
+
+
+def send_my_esims_link_email(*, to_email: str, dashboard_url: str) -> str:
+    settings = get_settings()
+    app_url = settings.app_url.rstrip("/")
+    html_body = build_my_esims_link_email_html(
+        dashboard_url=dashboard_url,
+        app_url=app_url,
+    )
+    return send_email(
+        to_email=to_email,
+        subject="Your My eSIMs link — NoorLink",
+        html_body=html_body,
+    )
+
+
 def send_referral_reward_email(
     *,
     to_email: str,

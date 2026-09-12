@@ -193,6 +193,45 @@ class OrderLookupResponse(BaseModel):
     message: Optional[str] = None
 
 
+class MyEsimsCard(BaseModel):
+    order_number: Optional[str] = Field(None, serialization_alias="orderNumber")
+    package_name: Optional[str] = Field(None, serialization_alias="packageName")
+    country: Optional[str] = None
+    flag: Optional[str] = None
+    status: Optional[str] = None
+    activation_status: Optional[str] = Field(None, serialization_alias="activationStatus")
+    data_remaining_gb: Optional[float] = Field(None, serialization_alias="dataRemainingGb")
+    data_total_gb: Optional[float] = Field(None, serialization_alias="dataTotalGb")
+    days_remaining: Optional[int] = Field(None, serialization_alias="daysRemaining")
+    wallet_balance_usd: Optional[float] = Field(None, serialization_alias="walletBalanceUsd")
+    fulfillment_pending: bool = Field(False, serialization_alias="fulfillmentPending")
+    created_at: Optional[str] = Field(None, serialization_alias="createdAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class MyEsimsListResponse(BaseModel):
+    success: bool
+    email: Optional[EmailStr] = None
+    orders: list[MyEsimsCard] = Field(default_factory=list)
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class MyEsimsLinkRequest(BaseModel):
+    email: EmailStr
+
+    model_config = {"populate_by_name": True}
+
+
+class MyEsimsLinkResponse(BaseModel):
+    success: bool
+    message: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
 class TopUpPackageOffer(BaseModel):
     offer_id: str = Field(..., serialization_alias="offerId")
     slug: Optional[str] = None

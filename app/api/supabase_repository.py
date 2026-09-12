@@ -1294,6 +1294,39 @@ def lookup_order(order_id: str, email: str) -> Optional[Order]:
     return order
 
 
+def list_order_rows_for_email(email: str, *, limit: int = 25) -> List[Dict[str, Any]]:
+    """Return recent orders for a buyer email (newest first)."""
+    client = get_supabase_client()
+    normalized = email.strip().lower()
+    if not normalized:
+        return []
+    try:
+        result = (
+            client.table("orders")
+            .select("*")
+            .eq("email", normalized)
+            .order("created_at", desc=True)
+            .limit(max(1, min(int(limit), 50)))
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("list_order_rows_for_email failed")
+        raise SupabaseRepositoryError(str(exc)) from exc
+    return [row for row in (result.data or []) if isinstance(row, dict)]
+
+
+def list_orders_for_email(email: str, *, limit: int = 25) -> List[Order]:
+    """Enrich rows into customer Order models for My eSIMs."""
+    orders: List[Order] = []
+    for row in list_order_rows_for_email(email, limit=limit):
+        if not order_access_email_matches(row, email):
+            continue
+        allowance = get_breakage_allowance_by_order_id(str(row["id"]))
+        _, order = enrich_order_row(row, allowance_row=allowance)
+        orders.append(order)
+    return orders
+
+
 def lookup_order_by_stripe_session(
     session_id: str,
     *,

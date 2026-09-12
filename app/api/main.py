@@ -79,6 +79,10 @@ from .schemas import (
     OrderLookupResponse,
     OrderResendEsRequest,
     OrderResendEsResponse,
+    MyEsimsListResponse,
+    MyEsimsLinkRequest,
+    MyEsimsLinkResponse,
+    MyEsimsCard,
     PromoValidateRequest,
     PromoValidateResponse,
     TopUpOptionsResponse,
@@ -1489,6 +1493,149 @@ async def orders_lookup(
     if not row:
         return OrderLookupResponse(found=True, order=order)
     return _lookup_order_response(row, refresh=refresh)
+
+
+@app.post("/api/orders/my-esims/request-link", response_model=MyEsimsLinkResponse)
+async def orders_my_esims_request_link(body: MyEsimsLinkRequest, request: Request):
+    """Email a signed 24h link that opens My eSIMs for this address."""
+    from app.services.api_rate_limit import check_rate_limit
+    from app.services.email_service import EmailDeliveryError, send_my_esims_link_email
+    from app.services.my_esims_access import (
+        MyEsimsTokenError,
+        create_my_esims_token,
+        my_esims_dashboard_url,
+    )
+
+    forwarded = request.headers.get("x-forwarded-for")
+    ip_address = (
+        forwarded.split(",")[0].strip()
+        if forwarded
+        else (request.client.host if request.client else "unknown")
+    )
+    allowed, retry_after = check_rate_limit(
+        f"my-esims-link:{ip_address}",
+        max_calls=8,
+        window_seconds=600,
+    )
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many link requests. Try again in {retry_after} seconds.",
+        )
+
+    email = str(body.email).strip().lower()
+    # Always return a calm success message (don't reveal whether email has orders).
+    try:
+        token = create_my_esims_token(email)
+        url = my_esims_dashboard_url(email, token=token)
+        send_my_esims_link_email(to_email=email, dashboard_url=url)
+    except (MyEsimsTokenError, EmailDeliveryError) as exc:
+        logger.warning("My eSIMs link email failed for %s: %s", email, exc)
+    except Exception as exc:
+        logger.exception("Unexpected My eSIMs link failure for %s: %s", email, exc)
+
+    return MyEsimsLinkResponse(
+        success=True,
+        message="If we have eSIMs for that email, a link is on the way. Check inbox and spam.",
+    )
+
+
+@app.get("/api/orders/my-esims", response_model=MyEsimsListResponse)
+async def orders_my_esims_list(
+    request: Request,
+    token: str = Query(...),
+):
+    """List eSIMs for the email encoded in a valid magic-link token."""
+    from app.services.api_rate_limit import check_rate_limit
+    from app.services.my_esims_access import (
+        MyEsimsTokenError,
+        summarize_order_card,
+        verify_my_esims_token,
+    )
+
+    forwarded = request.headers.get("x-forwarded-for")
+    ip_address = (
+        forwarded.split(",")[0].strip()
+        if forwarded
+        else (request.client.host if request.client else "unknown")
+    )
+    allowed, retry_after = check_rate_limit(
+        f"my-esims-list:{ip_address}",
+        max_calls=40,
+        window_seconds=60,
+    )
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many requests. Try again in {retry_after} seconds.",
+        )
+
+    try:
+        email = verify_my_esims_token(token)
+    except MyEsimsTokenError as exc:
+        return MyEsimsListResponse(success=False, message=str(exc))
+
+    try:
+        orders = db.list_orders_for_email(email, limit=25)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    cards = [MyEsimsCard(**summarize_order_card(o)) for o in orders]
+    if not cards:
+        return MyEsimsListResponse(
+            success=True,
+            email=email,
+            orders=[],
+            message="No eSIMs found for this email yet.",
+        )
+    return MyEsimsListResponse(success=True, email=email, orders=cards)
+
+
+@app.get("/api/orders/siblings", response_model=MyEsimsListResponse)
+async def orders_siblings(
+    request: Request,
+    order_id: str = Query(..., alias="orderId"),
+    email: str = Query(...),
+):
+    """After a verified order lookup, return other eSIMs on the same email."""
+    from app.services.api_rate_limit import check_rate_limit
+    from app.services.my_esims_access import summarize_order_card
+
+    forwarded = request.headers.get("x-forwarded-for")
+    ip_address = (
+        forwarded.split(",")[0].strip()
+        if forwarded
+        else (request.client.host if request.client else "unknown")
+    )
+    allowed, retry_after = check_rate_limit(
+        f"order-siblings:{ip_address}",
+        max_calls=30,
+        window_seconds=60,
+    )
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many requests. Try again in {retry_after} seconds.",
+        )
+
+    try:
+        verified = db.lookup_order(order_id, email)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+    if not verified:
+        return MyEsimsListResponse(success=False, message="Order not found for that email.")
+
+    try:
+        orders = db.list_orders_for_email(str(email).strip().lower(), limit=25)
+    except db.SupabaseRepositoryError as exc:
+        raise _db_error(exc) from exc
+
+    cards = [MyEsimsCard(**summarize_order_card(o)) for o in orders]
+    return MyEsimsListResponse(
+        success=True,
+        email=str(email).strip().lower(),
+        orders=cards,
+    )
 
 
 @app.post("/api/orders/resend-esim", response_model=OrderResendEsResponse)
