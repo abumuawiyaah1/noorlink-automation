@@ -20,6 +20,8 @@ from app.services.email_brand import (
     WHATSAPP_NUMBER,
     cta_button,
     is_pilgrimage_order,
+    landing_ready_guide_block,
+    landing_ready_guide_url,
     pilgrimage_gift_guides_block,
     review_request_block,
     wrap_branded_email,
@@ -423,7 +425,7 @@ def build_fulfillment_email_html(
         ),
         body_html=body,
         app_url=app_url,
-        tip="Install on Wi‑Fi before travel. After landing, turn on Data Roaming for the NoorLink line and set it as your Mobile Data SIM."
+        tip="Install on Wi‑Fi before travel. Then open the before-you-fly guide: turn the travel line ON, Data Roaming ON, and set Cellular Data to the travel line."
         if not regional.get("is_regional")
         else "Regional plan: your data allowance is shared across the whole trip. Install on Wi‑Fi before you fly.",
     )
@@ -1095,9 +1097,11 @@ def build_esim_install_help_email_html(
           <strong style="color:{PRIMARY};">When does the plan start?</strong><br/>
           Installing at home does not use up your trip days. Your data package typically
           starts when the eSIM connects to a supported network at your destination —
-          not at checkout. After you land, turn the NoorLink line on and enable Data Roaming.
+          not at checkout. After install, follow the before-you-fly picture guide so data
+          works when you land.
         </td></tr>
       </table>
+      {landing_ready_guide_block(app_url=app_url)}
       <p style="text-align:center;margin:0 0 12px;">
         {cta_button(href=dashboard_url, label="Open install steps")}
       </p>
@@ -1115,7 +1119,7 @@ def build_esim_install_help_email_html(
         title="Your eSIM is ready — we’re here if you need a hand",
         body_html=body,
         app_url=app_url,
-        tip="Install on Wi‑Fi before departure. Keep your main number for calls/WhatsApp; use NoorLink for data abroad.",
+        tip="Install on Wi‑Fi before departure. Keep your main number for calls/WhatsApp; use the travel eSIM for data abroad. Picture guide: line ON → roaming ON → Cellular Data = travel line.",
     )
 
 
@@ -1166,24 +1170,26 @@ def build_esim_install_congrats_email_html(
         Set these once before you fly so when you land (and turn Airplane Mode off),
         your phone can attach to a local network without hunting for a SIM shop.
       </p>
+      {landing_ready_guide_block(app_url=app_url)}
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#F3F7F7;border:1px solid #E5E7EB;border-radius:12px;margin:0 0 24px;">
         <tr><td style="padding:18px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:{TEXT};">
           <strong style="color:{PRIMARY};">Before you fly — do this once</strong>
           <ol style="margin:12px 0 0;padding-left:20px;">
             <li style="margin-bottom:10px;">
               Open <strong>Settings → Cellular / Mobile Data</strong> and turn
-              <strong>ON</strong> the NoorLink (travel) line.
+              <strong>ON</strong> your travel line (may be named Travel, Secondary, or NoorLink).
             </li>
             <li style="margin-bottom:10px;">
-              Turn <strong>Data Roaming ON</strong> for that NoorLink line.
+              Turn <strong>Data Roaming ON</strong> for that travel line.
             </li>
             <li style="margin-bottom:10px;">
-              Set <strong>Mobile Data</strong> to the NoorLink line.
-              Keep your home line on for calls / WhatsApp / iMessage if you like.
+              Set <strong>Cellular / Mobile Data</strong> to the travel line —
+              not Primary. Keep your home line on for calls / WhatsApp / iMessage if you like.
             </li>
             <li style="margin-bottom:0;">
               Leave it like that. After you land, turn Airplane Mode off —
               your phone should connect to a supported network automatically.
+              Do not tap Delete eSIM.
             </li>
           </ol>
         </td></tr>
@@ -1204,7 +1210,8 @@ def build_esim_install_congrats_email_html(
         title="Nice work — here’s how to connect on landing",
         body_html=body,
         app_url=app_url,
-        tip="If the line doesn’t attach after landing, toggle Airplane Mode once, then confirm Data Roaming is on for NoorLink.",
+        tip="If the line doesn’t attach after landing, toggle Airplane Mode once, then confirm Data Roaming is on for the travel line. Full pictures: "
+        + landing_ready_guide_url(app_url),
     )
 
 

@@ -102,6 +102,7 @@ def _self_serve_links() -> str:
     base = settings.app_url.rstrip("/")
     return (
         f"• Look up your order / usage: {base}/dashboard\n"
+        f"• Before you fly (picture guide): {base}/help/before-you-fly\n"
         f"• Destinations & plans: {base}/destinations\n"
         f"• Install tips: {base}/support\n"
     )
@@ -198,12 +199,16 @@ def build_auto_reply_body(
             )
             parts.append("")
         if intent == "install":
+            settings = get_settings()
+            guide = f"{settings.app_url.rstrip('/')}/help/before-you-fly"
             parts.extend(
                 [
-                    "Quick install tips:",
+                    "Quick install + data-ready tips:",
                     "1. Connect to Wi‑Fi before you fly",
-                    "2. Open the QR email (or dashboard) and scan / tap the install link",
-                    "3. After install, turn on Data Roaming for the NoorLink line when you land",
+                    "2. Open the QR email (or My eSIMs) and scan / tap the install link",
+                    "3. Before you fly: travel line ON → Data Roaming ON → Cellular Data = travel line (not Primary)",
+                    "4. After landing: Airplane Mode off. Do not tap Delete eSIM.",
+                    f"Picture guide (iPhone / Samsung / Other): {guide}",
                     "",
                 ]
             )

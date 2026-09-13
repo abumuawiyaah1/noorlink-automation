@@ -67,7 +67,7 @@ _CATEGORY_BY_SLUG: Dict[str, CategoryConfig] = {
             "Thanks for contacting us about install or QR delivery. We will walk you through "
             "the steps or resend your code if needed."
         ),
-        "received_tip": "Install on Wi‑Fi before you fly — then turn on Data Roaming when you land.",
+        "received_tip": "Install on Wi‑Fi before you fly — then follow noorlink.co/help/before-you-fly so data works on landing.",
         "assigned_customer_intro": (
             "Someone from our install team is now helping with your QR code or setup."
         ),
@@ -82,9 +82,24 @@ _CATEGORY_BY_SLUG: Dict[str, CategoryConfig] = {
                     "Here is a quick install checklist:\n"
                     "1. Connect to Wi‑Fi.\n"
                     "2. Open Settings → Cellular → Add eSIM (or scan the QR from your email).\n"
-                    "3. Label the line (e.g. Travel) and set it for mobile data when you arrive.\n"
-                    "4. Turn on Data Roaming for that line after landing.\n\n"
+                    "3. Label the line (e.g. Travel) if asked.\n"
+                    "4. Before you fly: travel line ON → Data Roaming ON → Cellular Data = travel line.\n\n"
+                    "Picture guide (iPhone / Samsung / Other):\n"
+                    "https://noorlink.co/help/before-you-fly\n\n"
                     "If a step fails, tell us your phone model and we will tailor the steps."
+                ),
+            },
+            {
+                "key": "data_ready",
+                "label": "Installed but no data",
+                "body": (
+                    "Installed is not enough — most “no internet” cases are one of these left off:\n"
+                    "1. Travel line / eSIM still OFF → turn it ON\n"
+                    "2. Data Roaming OFF on that line → turn it ON\n"
+                    "3. Cellular / Mobile Data still on Primary → choose the travel line\n\n"
+                    "After landing: Airplane Mode off, wait ~1 minute. Do not tap Delete eSIM.\n\n"
+                    "Picture guide: https://noorlink.co/help/before-you-fly\n"
+                    "If it still fails, reply with a screenshot of Cellular / SIMs settings."
                 ),
             },
             {
@@ -272,8 +287,22 @@ COMMON_REPLY_TEMPLATES: List[ReplyTemplate] = [
             "Best practice: install on Wi‑Fi before you fly.\n"
             "1. Open Settings → Cellular → Add eSIM (or scan the QR).\n"
             "2. Keep your home line for calls/SMS if you want.\n"
-            "3. After landing, turn on Data Roaming for the travel eSIM and select it for mobile data.\n\n"
+            "3. Before you fly: travel line ON → Data Roaming ON → Cellular Data = travel line.\n\n"
+            "Picture guide: https://noorlink.co/help/before-you-fly\n"
             "If a step fails, reply with your phone model and we will guide you."
+        ),
+    },
+    {
+        "key": "common_data_ready",
+        "label": "Installed but no data",
+        "body": (
+            "Installed is not enough. Check these three on Wi‑Fi before you fly "
+            "(same idea on iPhone, Samsung, and other phones):\n"
+            "1. Travel line ON\n"
+            "2. Data Roaming ON for that line\n"
+            "3. Cellular / Mobile Data = travel line (not Primary)\n\n"
+            "After landing: Airplane Mode off. Do not Delete eSIM.\n"
+            "Guide: https://noorlink.co/help/before-you-fly"
         ),
     },
     {

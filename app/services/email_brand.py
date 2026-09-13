@@ -19,8 +19,11 @@ from urllib.parse import quote
 PRIMARY = "#0F3D3E"
 PRIMARY_DARK = "#05191A"
 ACCENT = "#FF9500"
+ACCENT_SOFT = "#FFF3E0"
+ACCENT_BORDER = "#FFD59A"
 BG = "#F3F5F7"
 SURFACE = "#FFFFFF"
+MIST = "#F3F7F7"
 TEXT = "#111827"
 MUTED = "#6B7280"
 WHATSAPP = "#25D366"
@@ -85,6 +88,66 @@ def cta_button(*, href: str, label: str, secondary: bool = False) -> str:
          style="display:inline-block;background:{ACCENT};color:{PRIMARY_DARK};padding:14px 28px;border-radius:999px;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;">
         {html.escape(label)}
       </a>
+    """
+
+
+LANDING_READY_GUIDE_PATH = "/help/before-you-fly"
+
+
+def landing_ready_guide_url(app_url: str) -> str:
+    return f"{app_url.rstrip('/')}{LANDING_READY_GUIDE_PATH}"
+
+
+def landing_ready_guide_block(*, app_url: str) -> str:
+    """Visual before-you-fly checklist for install / landing emails (light surface)."""
+    base = app_url.rstrip("/")
+    guide_url = landing_ready_guide_url(base)
+    img_base = f"{base}/images/guides"
+    steps = (
+        ("1 · Line ON", f"{img_base}/guide-iphone-line-on.jpg"),
+        ("2 · Data Roaming ON", f"{img_base}/guide-iphone-roaming-on.jpg"),
+        ("3 · Cellular Data = travel line", f"{img_base}/guide-iphone-data-line.jpg"),
+    )
+    cells = []
+    for caption, src in steps:
+        cells.append(
+            f"""
+        <td align="center" valign="top" style="padding:6px;width:33%;">
+          <img src="{html.escape(src)}"
+               width="180"
+               alt="{html.escape(caption)}"
+               style="display:block;width:100%;max-width:180px;height:auto;border:0;border-radius:10px;margin:0 auto 8px;background:{MIST};"/>
+          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.35;color:{PRIMARY};font-weight:700;">
+            {html.escape(caption)}
+          </p>
+        </td>
+            """
+        )
+    return f"""
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:{ACCENT_SOFT};border:1px solid {ACCENT_BORDER};border-radius:12px;margin:0 0 24px;">
+        <tr><td style="padding:18px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:{TEXT};">
+          <p style="margin:0 0 6px;font-size:18px;font-weight:800;letter-spacing:-0.02em;color:{PRIMARY};">
+            Noor<span style="color:{ACCENT};">Link</span>
+          </p>
+          <p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:{ACCENT};">
+            Before you fly
+          </p>
+          <strong style="color:{PRIMARY};">Installed is not enough — make data ready</strong>
+          <p style="margin:8px 0 14px;color:{MUTED};font-size:13px;line-height:1.5;">
+            Before you fly on Wi‑Fi: travel line ON → Data Roaming ON → Cellular Data =
+            travel line (not Primary). Menu names vary; the switches are the same on
+            iPhone, Samsung, and other phones.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:{SURFACE};border-radius:10px;">
+            <tr>
+              {"".join(cells)}
+            </tr>
+          </table>
+          <p style="text-align:center;margin:16px 0 0;">
+            {cta_button(href=guide_url, label="Open full picture guide")}
+          </p>
+        </td></tr>
+      </table>
     """
 
 
