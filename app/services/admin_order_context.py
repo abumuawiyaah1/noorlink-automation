@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from app.api import supabase_repository as db
+from app.services.expiry_reminders import preview_reminder_status
 
 
 class AdminOrderContextError(Exception):
@@ -49,12 +50,22 @@ def build_order_context(*, order_number: str) -> Dict[str, Any]:
         )
     if reminders.get("low_data_70_sent_at"):
         reminder_labels.append(f"Low data (70%) sent: {reminders['low_data_70_sent_at']}")
+    if reminders.get("low_data_90_sent_at"):
+        reminder_labels.append(f"Almost out (90%) sent: {reminders['low_data_90_sent_at']}")
+    if reminders.get("expiring_3d_sent_at"):
+        reminder_labels.append(f"Expiring in 3 days sent: {reminders['expiring_3d_sent_at']}")
     if reminders.get("expiring_soon_sent_at"):
         reminder_labels.append(f"Expiring soon sent: {reminders['expiring_soon_sent_at']}")
     if reminders.get("expiry_sent_at"):
         reminder_labels.append(f"Expired notice sent: {reminders['expiry_sent_at']}")
     if not reminder_labels:
         reminder_labels.append("No reminder emails sent yet")
+
+    reminder_preview: Dict[str, Any] = {}
+    try:
+        reminder_preview = preview_reminder_status(row)
+    except Exception:
+        reminder_preview = {}
 
     return {
         "order_number": normalized,
@@ -74,6 +85,7 @@ def build_order_context(*, order_number: str) -> Dict[str, Any]:
         "gift_sender_name": gift.get("sender_name"),
         "gift_message": gift.get("message"),
         "reminder_labels": reminder_labels,
+        "reminder_preview": reminder_preview,
         "suspended_at": simbase.get("suspended_at"),
         "usage_guard": simbase.get("usage_guard"),
         "is_complimentary": bool(complimentary.get("granted_by")),

@@ -890,6 +890,8 @@ def build_esim_expiring_soon_email_html(
     app_url: str,
 ) -> str:
     flag = flag_emoji or ""
+    days = max(0, int(days_remaining))
+    day_word = "day" if days == 1 else "days"
     data_line = ""
     if data_remaining_gb is not None:
         data_line = (
@@ -900,7 +902,7 @@ def build_esim_expiring_soon_email_html(
       <p style="margin:0 0 16px;">
         A quick heads-up: your <strong style="color:{PRIMARY};">{html.escape(package_name)}</strong>
         for {flag} <strong>{html.escape(country)}</strong> has about
-        <strong style="color:{ACCENT};">{int(days_remaining)} day</strong> of validity left.
+        <strong style="color:{ACCENT};">{days} {day_word}</strong> of validity left.
       </p>
       <p style="margin:0 0 16px;">
         Order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong>.
@@ -916,9 +918,14 @@ def build_esim_expiring_soon_email_html(
         </a>
       </p>
     """
+    title = (
+        "Your eSIM expires tomorrow — stay connected"
+        if days == 1
+        else "Your eSIM has a few days left"
+    )
     return wrap_branded_email(
         eyebrow="Validity reminder",
-        title="Your eSIM expires soon — stay connected",
+        title=title,
         body_html=body,
         app_url=app_url,
         tip="Buying a follow-up plan early means you can install on Wi‑Fi with zero stress.",
@@ -949,7 +956,12 @@ def send_esim_expiring_soon_email(
         dashboard_url=dashboard_url,
         app_url=app_url,
     )
-    subject = "Your eSIM Expires Soon — Stay Connected"
+    days = max(0, int(days_remaining))
+    subject = (
+        "Your eSIM expires tomorrow"
+        if days == 1
+        else "Your eSIM has a few days left"
+    )
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
 
 
@@ -965,6 +977,7 @@ def build_esim_low_data_email_html(
     plans_url: str,
     dashboard_url: str,
     app_url: str,
+    tier: str = "70",
 ) -> str:
     flag = flag_emoji or ""
     country_label = html.escape(country)
@@ -977,22 +990,28 @@ def build_esim_low_data_email_html(
             f"<strong style=\"color:{PRIMARY};\">{html.escape(str(total_gb))} GB</strong>."
         )
 
+    nearly_empty = str(tier) == "90"
+    lead = (
+        "You’re close to using the full data on this line."
+        if nearly_empty
+        else "Recharge when you’re ready so maps and messages stay easy."
+    )
     body = f"""
       <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
-        <strong style="color:{PRIMARY};">Recharge now to keep using your eSIM.</strong>
+        <strong style="color:{PRIMARY};">{lead}</strong>
       </p>
       <p style="margin:0 0 16px;">
-        This is a friendly reminder that your {flag} <strong>{country_label}</strong> eSIM
-        has used <strong style="color:{ACCENT};">{usage_label}</strong> of the available data.
+        Your {flag} <strong>{country_label}</strong> eSIM has used
+        <strong style="color:{ACCENT};">{usage_label}</strong> of the available data.
         {usage_detail}
       </p>
       <p style="margin:0 0 16px;">
-        You can recharge your data any time by choosing a top-up package below.
+        Same install — no new QR. Add data anytime from My eSIMs or the plans page.
         Order <strong style="color:{PRIMARY};">{html.escape(order_number)}</strong>
         · Plan <em>{html.escape(package_name)}</em>.
       </p>
       <p style="text-align:center;margin:0 0 12px;">
-        {cta_button(href=plans_url, label="Choose a top-up package")}
+        {cta_button(href=plans_url, label="Add data to this eSIM")}
       </p>
       <p style="text-align:center;margin:0;">
         <a href="{html.escape(dashboard_url)}" style="color:{PRIMARY};font-weight:700;text-decoration:none;">
@@ -1002,7 +1021,11 @@ def build_esim_low_data_email_html(
     """
     return wrap_branded_email(
         eyebrow="Data reminder",
-        title="Recharge now to keep using your eSIM",
+        title=(
+            "Your eSIM is almost out of data"
+            if nearly_empty
+            else "A quick note about your eSIM data"
+        ),
         body_html=body,
         app_url=app_url,
         tip="Top up before you hit 100% so maps, rides, and messages stay online.",
@@ -1022,6 +1045,7 @@ def send_esim_low_data_email(
     plans_url: str,
     dashboard_url: str,
     app_url: str,
+    tier: str = "70",
 ) -> str:
     html_body = build_esim_low_data_email_html(
         order_number=order_number,
@@ -1034,8 +1058,13 @@ def send_esim_low_data_email(
         plans_url=plans_url,
         dashboard_url=dashboard_url,
         app_url=app_url,
+        tier=tier,
     )
-    subject = "Recharge now to keep using your eSIM"
+    subject = (
+        "Your eSIM is almost out of data"
+        if str(tier) == "90"
+        else "A quick note about your eSIM data"
+    )
     return send_email(to_email=to_email, subject=subject, html_body=html_body)
 
 

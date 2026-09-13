@@ -1270,7 +1270,8 @@ def suspend_order_by_iccid(
 
 def lookup_order(order_id: str, email: str) -> Optional[Order]:
     client = get_supabase_client()
-    order_number = order_id.strip()
+    # Order IDs are stored uppercase (NL-XXXXXXXX); normalize customer input.
+    order_number = order_id.strip().upper()
 
     try:
         result = (

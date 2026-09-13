@@ -125,7 +125,7 @@ See `.env.example` for full list.
 
 ## Cron (`POST /api/cron/run`)
 
-Daily job: expire promos, send due Insider, Telna catalog sync, expiry reminders, usage sync, log retention (90d), **48h support auto-refund** (strict), **72h affiliate payout auto-approve** (strict; still send funds manually). Day 1 of month: finance summary email.
+Twice daily (06:00 + 18:00 UTC via GitHub Actions): expire promos, send due Insider, Telna catalog sync, eSIM usage sync + reminder ladder (70% → 90% → 3d → 1d → expired; max one email/order/day), log retention (90d), **48h support auto-refund** (strict), **72h affiliate payout auto-approve** (strict; still send funds manually). Day 1 of month: finance summary email.
 
 Env: `SUPPORT_AUTO_REFUND_*`, `AFFILIATE_AUTO_PAYOUT_WAIT_HOURS`, `AFFILIATE_AUTO_PAYOUT_MAX_CENTS`.
 Service: `app/services/affiliate_payout_requests.py`. Migration: `20260829290000_affiliate_payout_requests.sql`.

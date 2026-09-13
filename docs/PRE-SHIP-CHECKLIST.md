@@ -47,11 +47,11 @@ Set `RESEND_EVENTS_WEBHOOK_SECRET` and `RESEND_INBOUND_WEBHOOK_SECRET` on Railwa
 
 ## 4. Schedule daily cron
 
-Hit `POST https://api.noorlink.co/api/cron/run` once per day with header:
+Hit `POST https://api.noorlink.co/api/cron/run` **twice per day** with header:
 
 `Authorization: Bearer YOUR_CRON_SECRET`
 
-(GitHub Actions workflow `.github/workflows/insider-cron.yml` already does this.)
+(GitHub Actions workflow `.github/workflows/insider-cron.yml` runs at **06:00 and 18:00 UTC**.)
 
 Tasks: expire promos, Insider send queue, Telna catalog sync, expiry reminders, usage sync, log retention (90 days), 48h auto-refunds, 72h affiliate payout auto-approve, daily admin brief at 6:00 America/New_York, monthly finance summary on the 1st UTC.
 

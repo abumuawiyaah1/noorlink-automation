@@ -2,8 +2,9 @@ name: Insider cron
 
 on:
   schedule:
-    # Daily at 14:00 UTC — catches first-Tuesday sends + promo expiry
-    - cron: "0 14 * * *"
+    # Twice daily — usage sync + customer reminders sooner, still 1 email/order/day.
+    # 06:00 UTC and 18:00 UTC.
+    - cron: "0 6,18 * * *"
   workflow_dispatch:
 
 jobs:

@@ -35,10 +35,42 @@
 
     <h3 class="h6 mt-3">Usage</h3>
     <p>ICCID: {{ context.iccid or '—' }} · Used: {{ context.data_used_gb or '—' }} / {{ context.data_total_gb or '—' }} GB · Top-ups: {{ context.topup_count }}</p>
+    {% if context.reminder_preview %}
+    <p class="small text-muted mb-2">
+      Live check:
+      {% if context.reminder_preview.usage_pct is not none %}
+        {{ context.reminder_preview.usage_pct }}% used
+      {% else %}
+        usage % unknown
+      {% endif %}
+      ·
+      {% if context.reminder_preview.days_remaining is not none %}
+        {{ context.reminder_preview.days_remaining }} day(s) left
+      {% else %}
+        days left unknown
+      {% endif %}
+      {% if context.reminder_preview.data_remaining_gb is not none %}
+        · ~{{ context.reminder_preview.data_remaining_gb }} GB left
+      {% endif %}
+    </p>
+    {% endif %}
     {% if context.usage_guard %}<p class="text-warning">Usage guard: {{ context.usage_guard }}{% if context.suspended_at %} (since {{ context.suspended_at }}){% endif %}</p>{% endif %}
 
     <h3 class="h6 mt-3">Reminder emails</h3>
     <ul class="small">{% for label in context.reminder_labels %}<li>{{ label }}</li>{% endfor %}</ul>
+    {% if context.reminder_preview %}
+    <div class="small p-3 mt-2" style="background:#F3F7F7;border-radius:10px;">
+      <strong>Next cron would send:</strong>
+      {% if context.reminder_preview.next_eligible %}
+        {{ context.reminder_preview.next_eligible }}
+      {% else %}
+        nothing right now
+      {% endif %}
+      {% if context.reminder_preview.blocked_reason %}
+        <br /><span class="text-muted">{{ context.reminder_preview.blocked_reason }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
 
     {% if context.breakage %}
     <h3 class="h6 mt-3">Breakage allowance</h3>

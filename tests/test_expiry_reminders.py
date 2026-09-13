@@ -235,3 +235,168 @@ def test_low_data_below_threshold_skips():
 
     assert result["low_data_sent"] == 0
     send_low.assert_not_called()
+
+
+def test_low_data_90_waits_a_day_after_70():
+    now = datetime.now(timezone.utc)
+    created = (now - timedelta(days=4)).isoformat()
+    seventy_sent = (now - timedelta(days=2)).isoformat()
+    row = {
+        "id": "oid-low90",
+        "order_number": "NL-LOW90",
+        "email": "user@example.com",
+        "country": "turkey",
+        "package_name": "Turkey 10GB",
+        "status": "delivered",
+        "created_at": created,
+        "fulfilled_at": created,
+        "data_total_gb": 10,
+        "data_used_gb": 9.2,
+        "amount_cents": 2999,
+        "currency": "USD",
+        "metadata": {
+            "validity_days": 15,
+            "reminders": {"low_data_70_sent_at": seventy_sent},
+        },
+    }
+
+    with (
+        patch(
+            "app.services.expiry_reminders.db.list_orders_for_expiry_reminders",
+            return_value=[row],
+        ),
+        patch(
+            "app.services.expiry_reminders.db.get_breakage_allowance_by_order_id",
+            return_value=None,
+        ),
+        patch(
+            "app.services.expiry_reminders.send_esim_low_data_email",
+            return_value="msg-90",
+        ) as send_low,
+        patch("app.services.expiry_reminders.send_esim_expired_email"),
+        patch("app.services.expiry_reminders.send_esim_expiring_soon_email"),
+        patch("app.services.expiry_reminders.db.merge_order_metadata") as merge,
+    ):
+        result = process_esim_expiry_reminders()
+
+    assert result["low_data_90_sent"] == 1
+    assert result["low_data_sent"] == 0
+    assert send_low.call_args.kwargs["tier"] == "90"
+    assert "low_data_90_sent_at" in merge.call_args[0][1]["reminders"]
+
+
+def test_expiring_heads_up_at_three_days():
+    now = datetime.now(timezone.utc)
+    created = (now - timedelta(days=4)).isoformat()
+    row = {
+        "id": "oid-3d",
+        "order_number": "NL-3D",
+        "email": "soon@example.com",
+        "country": "germany",
+        "package_name": "Germany 3GB",
+        "status": "delivered",
+        "created_at": created,
+        "fulfilled_at": created,
+        "data_total_gb": 3,
+        "data_used_gb": 0.5,
+        "amount_cents": 1499,
+        "currency": "USD",
+        "metadata": {"validity_days": 7},
+    }
+
+    with (
+        patch(
+            "app.services.expiry_reminders.db.list_orders_for_expiry_reminders",
+            return_value=[row],
+        ),
+        patch(
+            "app.services.expiry_reminders.db.get_breakage_allowance_by_order_id",
+            return_value=None,
+        ),
+        patch("app.services.expiry_reminders.send_esim_expired_email"),
+        patch(
+            "app.services.expiry_reminders.send_esim_expiring_soon_email",
+            return_value="msg-3d",
+        ) as send_soon,
+        patch("app.services.expiry_reminders.send_esim_low_data_email"),
+        patch("app.services.expiry_reminders.db.merge_order_metadata") as merge,
+    ):
+        result = process_esim_expiry_reminders()
+
+    assert result["expiring_3d_sent"] == 1
+    assert result["expiring_soon_sent"] == 0
+    assert send_soon.call_args.kwargs["days_remaining"] == 3
+    assert "expiring_3d_sent_at" in merge.call_args[0][1]["reminders"]
+
+
+def test_skips_second_reminder_same_day():
+    now = datetime.now(timezone.utc)
+    created = (now - timedelta(days=2)).isoformat()
+    row = {
+        "id": "oid-same-day",
+        "order_number": "NL-SAME",
+        "email": "user@example.com",
+        "country": "france",
+        "package_name": "France 10GB",
+        "status": "delivered",
+        "created_at": created,
+        "fulfilled_at": created,
+        "data_total_gb": 10,
+        "data_used_gb": 9.5,
+        "amount_cents": 2999,
+        "currency": "USD",
+        "metadata": {
+            "validity_days": 15,
+            "reminders": {"low_data_70_sent_at": now.isoformat()},
+        },
+    }
+
+    with (
+        patch(
+            "app.services.expiry_reminders.db.list_orders_for_expiry_reminders",
+            return_value=[row],
+        ),
+        patch(
+            "app.services.expiry_reminders.db.get_breakage_allowance_by_order_id",
+            return_value=None,
+        ),
+        patch("app.services.expiry_reminders.send_esim_low_data_email") as send_low,
+        patch("app.services.expiry_reminders.send_esim_expired_email"),
+        patch("app.services.expiry_reminders.send_esim_expiring_soon_email"),
+    ):
+        result = process_esim_expiry_reminders()
+
+    assert result["low_data_90_sent"] == 0
+    send_low.assert_not_called()
+
+
+def test_preview_shows_next_low_data_step():
+    from app.services.expiry_reminders import preview_reminder_status
+
+    now = datetime.now(timezone.utc)
+    created = (now - timedelta(days=2)).isoformat()
+    row = {
+        "id": "oid-preview",
+        "order_number": "NL-PREV",
+        "email": "user@example.com",
+        "country": "turkey",
+        "package_name": "Turkey 10GB",
+        "status": "delivered",
+        "created_at": created,
+        "fulfilled_at": created,
+        "data_total_gb": 10,
+        "data_used_gb": 7.5,
+        "amount_cents": 2999,
+        "currency": "USD",
+        "metadata": {"validity_days": 15},
+    }
+
+    with patch(
+        "app.services.expiry_reminders.db.get_breakage_allowance_by_order_id",
+        return_value=None,
+    ):
+        preview = preview_reminder_status(row)
+
+    assert preview["usage_pct"] >= 70
+    assert preview["next_eligible"] == "Low data (70%)"
+    assert preview["blocked_reason"] is None
