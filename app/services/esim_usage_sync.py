@@ -31,8 +31,118 @@ ACTIVATION_STATES = frozenset(
         "active",
         "activated",
         "using",
+        "got_resource",
+        "shipped",
     }
 )
+
+# eSIM Access esimStatus numeric codes (docs + live payloads).
+ACCESS_ESIM_STATUS = {
+    1: "CREATE",
+    2: "PAYING",
+    3: "PAID",
+    4: "GETTING_RESOURCE",
+    5: "GOT_RESOURCE",
+    6: "IN_USE",
+    7: "USED_UP",
+    8: "UNUSED_EXPIRED",
+    9: "USED_EXPIRED",
+    10: "CANCEL",
+    11: "REVOKED",
+}
+
+
+def _access_status_label(value: Any) -> str:
+    if value is None or value == "":
+        return ""
+    try:
+        as_int = int(value)
+    except (TypeError, ValueError):
+        return str(value).strip()
+    return ACCESS_ESIM_STATUS.get(as_int, str(value).strip())
+
+
+def _sum_access_package_volumes(profile: Dict[str, Any]) -> Tuple[
+    Optional[float], Optional[float], Optional[float]
+]:
+    """Return (total_bytes, used_bytes, unused_bytes) from profile + packageList."""
+    packages = profile.get("packageList") or profile.get("package_list") or []
+    total = _first_float(
+        profile.get("totalVolume"),
+        profile.get("total_volume"),
+        profile.get("totalDataVolume"),
+    )
+    used = _first_float(
+        profile.get("orderUsage"),
+        profile.get("order_usage"),
+        profile.get("usedVolume"),
+        profile.get("used_volume"),
+    )
+    unused = _first_float(
+        profile.get("unusedVolume"),
+        profile.get("unused_volume"),
+        profile.get("remain"),
+        profile.get("remainingVolume"),
+    )
+    if isinstance(packages, list) and packages:
+        pkg_total = 0.0
+        pkg_used = 0.0
+        pkg_unused = 0.0
+        saw_total = False
+        saw_used = False
+        saw_unused = False
+        for pkg in packages:
+            if not isinstance(pkg, dict):
+                continue
+            t = _first_float(pkg.get("volume"), pkg.get("totalVolume"), pkg.get("dataVolume"))
+            u = _first_float(pkg.get("orderUsage"), pkg.get("usedVolume"), pkg.get("usage"))
+            r = _first_float(pkg.get("unusedVolume"), pkg.get("remain"), pkg.get("remainingVolume"))
+            if t is not None:
+                pkg_total += float(t)
+                saw_total = True
+            if u is not None:
+                pkg_used += float(u)
+                saw_used = True
+            if r is not None:
+                pkg_unused += float(r)
+                saw_unused = True
+        if total is None and saw_total:
+            total = pkg_total
+        if used is None and saw_used:
+            used = pkg_used
+        if unused is None and saw_unused:
+            unused = pkg_unused
+    return total, used, unused
+
+
+def _activation_from_status(*statuses: Any) -> Tuple[str, bool]:
+    parts = [str(s or "").strip().lower() for s in statuses if s is not None and s != ""]
+    joined = " ".join(parts)
+    if any(token in joined for token in ACTIVATION_STATES):
+        if "enabled" in joined or "in_use" in joined or "using" in joined:
+            return "active", True
+        if "install" in joined:
+            return "installed", True
+        if "got_resource" in joined or "shipped" in joined:
+            return "provisioned", False
+        return "activated", True
+    if any(token in joined for token in ("released", "allocated", "paid", "create", "getting_resource")):
+        return "provisioned", False
+    if any(
+        token in joined
+        for token in (
+            "depleted",
+            "used_up",
+            "expired",
+            "terminated",
+            "unused_expired",
+            "used_expired",
+            "cancel",
+            "revoked",
+        )
+    ):
+        return "expired", True
+    return "unknown", False
 
 
 class UsageSyncError(Exception):
@@ -48,16 +158,39 @@ def _metadata_dict(row: Dict[str, Any]) -> Dict[str, Any]:
     return dict(meta) if isinstance(meta, dict) else {}
 
 
+# Normalize catalog / admin / legacy spellings onto one sync key.
+PROVIDER_ALIASES = {
+    "citrus": "citrus",
+    "citrusmobile": "citrus",
+    "citrus_mobile": "citrus",
+    "esimaccess": "esimaccess",
+    "esim_access": "esimaccess",
+    "esim-access": "esimaccess",
+    "access": "esimaccess",
+    "zesimo": "zesimo",
+    "telna": "telna",
+    "simbase": "simbase",
+    "mock": "mock",
+    "noorlink-mock": "noorlink-mock",
+    "noorlink_mock": "noorlink-mock",
+}
+
+
+def normalize_provider_name(raw: Any) -> str:
+    key = str(raw or "").strip().lower().replace(" ", "_")
+    return PROVIDER_ALIASES.get(key, key)
+
+
 def resolve_order_provider(row: Dict[str, Any]) -> str:
     meta = _metadata_dict(row)
     fulfillment = meta.get("fulfillment") or {}
     if isinstance(fulfillment, dict):
-        provider = str(fulfillment.get("provider") or "").strip().lower()
+        provider = normalize_provider_name(fulfillment.get("provider"))
         if provider:
             return provider
     plan = meta.get("fulfillment_plan") or {}
     if isinstance(plan, dict):
-        provider = str(plan.get("provider") or "").strip().lower()
+        provider = normalize_provider_name(plan.get("provider"))
         if provider:
             return provider
     return ""
@@ -124,41 +257,97 @@ def _citrus_funded_usd(meta: Dict[str, Any], fulfillment: Dict[str, Any]) -> Opt
     return funded
 
 
+def _access_order_no(fulfillment: Dict[str, Any]) -> str:
+    return str(
+        fulfillment.get("provider_order_id")
+        or fulfillment.get("order_no")
+        or fulfillment.get("orderNo")
+        or fulfillment.get("esimaccess_order_no")
+        or ""
+    ).strip()
+
+
+def _access_esim_tran_no(fulfillment: Dict[str, Any]) -> str:
+    return str(
+        fulfillment.get("esim_tran_no")
+        or fulfillment.get("esimTranNo")
+        or fulfillment.get("provider_esim_id")
+        or ""
+    ).strip()
+
+
 def order_supports_usage_refresh(row: Dict[str, Any]) -> bool:
     """True when we have enough identifiers to poll the upstream provider."""
-    if str(row.get("iccid") or "").strip():
-        return True
+    iccid = str(row.get("iccid") or "").strip()
     provider = resolve_order_provider(row)
     meta = _metadata_dict(row)
     fulfillment = meta.get("fulfillment") or {}
     if not isinstance(fulfillment, dict):
         fulfillment = {}
+
+    if provider in {"citrus", "telna", "simbase"}:
+        return bool(iccid)
     if provider == "zesimo":
         return bool(
-            fulfillment.get("esim_tran_no")
+            iccid
+            or fulfillment.get("esim_tran_no")
             or fulfillment.get("provider_esim_id")
             or fulfillment.get("esim_id")
             or fulfillment.get("provider_order_id")
         )
     if provider == "esimaccess":
-        return bool(fulfillment.get("provider_order_id") or fulfillment.get("order_no"))
-    return False
+        return bool(iccid or _access_order_no(fulfillment) or _access_esim_tran_no(fulfillment))
+    if provider in {"mock", "noorlink-mock"}:
+        return True
+    # Unknown provider: still try when ICCID is present.
+    return bool(iccid)
 
 
-def _activation_from_status(*statuses: Any) -> Tuple[str, bool]:
-    parts = [str(s or "").strip().lower() for s in statuses if s]
-    joined = " ".join(parts)
-    if any(token in joined for token in ACTIVATION_STATES):
-        if "enabled" in joined or "in_use" in joined or "using" in joined:
-            return "active", True
-        if "install" in joined:
-            return "installed", True
-        return "activated", True
-    if any(token in joined for token in ("released", "got_resource", "allocated")):
-        return "provisioned", False
-    if any(token in joined for token in ("depleted", "used_up", "expired", "terminated")):
-        return "expired", True
-    return "unknown", False
+def _payload_has_usage_markers(payload: Dict[str, Any]) -> bool:
+    return any(
+        key in payload
+        for key in (
+            "wallet_balance_usd",
+            "total_data_charged_usd",
+            "balance_usd",
+            "orderUsage",
+            "order_usage",
+            "totalVolume",
+            "unusedVolume",
+            "data_used_mb",
+            "data_left_mb",
+            "data_used_bytes",
+            "data_used_gb",
+            "esimList",
+            "packages",
+            "bytes",
+            "usage_bytes",
+        )
+    )
+
+
+def normalize_provider_payload(provider: str, raw: Any) -> Dict[str, Any]:
+    """
+    Flatten common provider envelopes (`data`, `esim`, `obj`, …) so usage
+    extractors see wallet / volume fields at the top level.
+    """
+    if not isinstance(raw, dict):
+        return {}
+
+    if _payload_has_usage_markers(raw):
+        return raw
+
+    for key in ("data", "esim", "obj", "result", "profile"):
+        inner = raw.get(key)
+        if isinstance(inner, dict):
+            nested = normalize_provider_payload(provider, inner)
+            if nested and (_payload_has_usage_markers(nested) or key in {"esim", "profile"}):
+                return nested
+
+    if provider == "simbase" and isinstance(raw.get("usage"), dict):
+        return raw
+
+    return raw
 
 
 def build_usage_snapshot(
@@ -167,6 +356,7 @@ def build_usage_snapshot(
     source: str,
     row: Dict[str, Any],
     provider_payload: Optional[Dict[str, Any]] = None,
+    provider_fetch_ok: bool = False,
     allowance_row: Optional[Dict[str, Any]] = None,
     overrides: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
@@ -191,7 +381,7 @@ def build_usage_snapshot(
     topup_supported = provider == "citrus"
     provider_notes: List[str] = []
 
-    payload = provider_payload or {}
+    payload = normalize_provider_payload(provider, provider_payload or {})
     fulfillment = meta.get("fulfillment") or {}
     if not isinstance(fulfillment, dict):
         fulfillment = {}
@@ -250,26 +440,12 @@ def build_usage_snapshot(
         profile = payload
         if isinstance(payload.get("esimList"), list) and payload["esimList"]:
             profile = payload["esimList"][0]
-        esim_status = str(profile.get("esimStatus") or profile.get("esim_status") or "")
+        esim_status = _access_status_label(
+            profile.get("esimStatus") if profile.get("esimStatus") is not None else profile.get("esim_status")
+        )
         smdp_status = str(profile.get("smdpStatus") or profile.get("smdp_status") or "")
         activation_status, activated = _activation_from_status(esim_status, smdp_status)
-        total_bytes = (
-            profile.get("totalVolume")
-            or profile.get("total_volume")
-            or profile.get("totalDataVolume")
-        )
-        used_bytes = (
-            profile.get("orderUsage")
-            or profile.get("order_usage")
-            or profile.get("usedVolume")
-            or profile.get("used_volume")
-        )
-        unused_bytes = (
-            profile.get("unusedVolume")
-            or profile.get("unused_volume")
-            or profile.get("remain")
-            or profile.get("remainingVolume")
-        )
+        total_bytes, used_bytes, unused_bytes = _sum_access_package_volumes(profile)
         if total_bytes is not None:
             data_total_gb = _bytes_to_gb(total_bytes)
         if used_bytes is not None:
@@ -279,14 +455,29 @@ def build_usage_snapshot(
                 data_used_gb = _bytes_to_gb(float(total_bytes) - float(unused_bytes))
             except (TypeError, ValueError):
                 pass
-        elif data_used_gb is None and data_total_gb is not None and activated:
-            # Access often reports 0 usage explicitly via missing used + full unused.
-            data_used_gb = 0.0
+        elif (
+            data_used_gb is None
+            and data_total_gb is not None
+            and unused_bytes is not None
+            and activated
+        ):
+            try:
+                if float(unused_bytes) >= float(total_bytes or 0):
+                    data_used_gb = 0.0
+            except (TypeError, ValueError):
+                pass
+        # Catalog total as fallback when Access only reports used/unused.
+        if data_total_gb is None and catalog_total_gb is not None:
+            data_total_gb = catalog_total_gb
+            if unused_bytes is not None and data_used_gb is None:
+                rem = _bytes_to_gb(unused_bytes)
+                if rem is not None:
+                    data_used_gb = max(0.0, float(data_total_gb) - float(rem))
         expired_raw = profile.get("expiredTime") or profile.get("expired_time")
         valid_until = _parse_dt(expired_raw)
-        if profile.get("packageList"):
+        if profile.get("packageList") or profile.get("package_list"):
             provider_notes.append("package_list_present")
-        topup_supported = bool(row.get("iccid"))
+        topup_supported = bool(row.get("iccid") or _access_esim_tran_no(fulfillment))
 
     elif provider == "telna":
         profile = payload
@@ -465,13 +656,14 @@ def build_usage_snapshot(
     if activated and not activated_at:
         activated_at = _utc_now_iso()
 
-    # Fixed GB plans with no live used yet: treat as 0 used so remaining shows full allowance.
+    # Pre-activation catalog rows only: show full allowance when we never polled upstream.
     if (
         usage_mode == "data_gb"
         and data_total_gb is not None
         and data_used_gb is None
-        and not provider_payload
+        and not provider_fetch_ok
         and not allowance_row
+        and not activated
     ):
         data_used_gb = 0.0
 
@@ -554,9 +746,25 @@ async def _fetch_provider_payload(provider: str, row: Dict[str, Any]) -> Dict[st
     if provider == "esimaccess":
         from app.services.esim_access import EsimAccessClient
 
-        order_no = str(fulfillment.get("provider_order_id") or "").strip()
+        order_no = _access_order_no(fulfillment)
+        esim_tran_no = _access_esim_tran_no(fulfillment)
+        if not order_no and not iccid and not esim_tran_no:
+            raise UsageSyncError(
+                "eSIM Access sync requires ICCID, provider orderNo, or esimTranNo."
+            )
         async with EsimAccessClient() as client:
-            profiles = await client.query_esims(order_no=order_no, iccid=iccid)
+            profiles = await client.query_esims(
+                order_no=order_no,
+                iccid=iccid,
+                esim_tran_no=esim_tran_no,
+            )
+            # Fallback: if combined query returned nothing, try identifiers alone.
+            if not profiles and order_no and (iccid or esim_tran_no):
+                profiles = await client.query_esims(order_no=order_no)
+            if not profiles and iccid and (order_no or esim_tran_no):
+                profiles = await client.query_esims(iccid=iccid)
+            if not profiles and esim_tran_no and (order_no or iccid):
+                profiles = await client.query_esims(esim_tran_no=esim_tran_no)
             if profiles:
                 return {"esimList": profiles, **profiles[0]}
             return {"esimList": []}
@@ -732,8 +940,10 @@ async def sync_order_usage(
 
     allowance = db.get_breakage_allowance_by_order_number(order_number)
     provider_payload: Dict[str, Any] = {}
+    provider_fetch_ok = False
     try:
         provider_payload = await _fetch_provider_payload(provider, row)
+        provider_fetch_ok = True
     except UsageSyncError:
         raise
     except Exception as exc:
@@ -748,6 +958,7 @@ async def sync_order_usage(
         source=source,
         row=row,
         provider_payload=provider_payload,
+        provider_fetch_ok=provider_fetch_ok,
         allowance_row=allowance,
         overrides=overrides,
     )
@@ -799,7 +1010,9 @@ def parse_esimaccess_webhook_usage(content: Dict[str, Any]) -> Dict[str, Any]:
         gb = _bytes_to_gb(total)
         if gb is not None:
             overrides["data_total_gb"] = gb
-    esim_status = content.get("esimStatus") or content.get("esim_status")
+    esim_status = _access_status_label(
+        content.get("esimStatus") if content.get("esimStatus") is not None else content.get("esim_status")
+    )
     smdp_status = content.get("smdpStatus") or content.get("smdp_status")
     activation_status, activated = _activation_from_status(esim_status, smdp_status)
     overrides["activation_status"] = activation_status

@@ -303,17 +303,18 @@ class EsimAccessClient:
         *,
         order_no: str = "",
         iccid: str = "",
+        esim_tran_no: str = "",
         page_num: int = 1,
         page_size: int = 20,
     ) -> List[Dict[str, Any]]:
-        data = await self._request(
-            "/esim/query",
-            {
-                "orderNo": order_no,
-                "iccid": iccid,
-                "pager": {"pageNum": page_num, "pageSize": page_size},
-            },
-        )
+        body: Dict[str, Any] = {
+            "orderNo": order_no,
+            "iccid": iccid,
+            "pager": {"pageNum": page_num, "pageSize": page_size},
+        }
+        if esim_tran_no:
+            body["esimTranNo"] = esim_tran_no
+        data = await self._request("/esim/query", body)
         obj = data.get("obj") if isinstance(data, dict) else None
         if not isinstance(obj, dict):
             return []

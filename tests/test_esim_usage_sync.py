@@ -9,6 +9,7 @@ from httpx import Response
 from app.services.esim_topup import topup_capabilities, topup_retail_cents
 from app.services.esim_usage_sync import (
     build_usage_snapshot,
+    normalize_provider_payload,
     parse_esimaccess_webhook_usage,
     resolve_order_provider,
 )
@@ -21,6 +22,28 @@ def test_resolve_order_provider_from_metadata():
         }
     }
     assert resolve_order_provider(row) == "citrus"
+
+
+def test_resolve_order_provider_aliases_access():
+    row = {"metadata": {"fulfillment": {"provider": "esim_access"}}}
+    assert resolve_order_provider(row) == "esimaccess"
+    row2 = {"metadata": {"fulfillment_plan": {"provider": "Access"}}}
+    assert resolve_order_provider(row2) == "esimaccess"
+
+
+def test_order_supports_access_without_iccid():
+    from app.services.esim_usage_sync import order_supports_usage_refresh
+
+    row = {
+        "iccid": None,
+        "metadata": {
+            "fulfillment": {
+                "provider": "esimaccess",
+                "provider_order_id": "B2601010001",
+            }
+        },
+    }
+    assert order_supports_usage_refresh(row) is True
 
 
 def test_build_usage_snapshot_citrus_wallet():
@@ -39,6 +62,7 @@ def test_build_usage_snapshot_citrus_wallet():
         provider="citrus",
         source="test",
         row=row,
+        provider_fetch_ok=True,
         provider_payload={
             "status": "active",
             "wallet_balance_usd": 8.5,
@@ -58,6 +82,46 @@ def test_build_usage_snapshot_citrus_wallet():
     assert snapshot["usage_pct"] == 57.5
 
 
+def test_normalize_provider_payload_citrus_data_wrapper():
+    inner = {
+        "iccid": "8944",
+        "status": "active",
+        "wallet_balance_usd": 4.25,
+        "total_data_charged_usd": 2.0,
+    }
+    flat = normalize_provider_payload("citrus", {"data": inner})
+    assert flat["wallet_balance_usd"] == 4.25
+    assert flat["total_data_charged_usd"] == 2.0
+
+
+def test_build_usage_snapshot_citrus_nested_data_envelope():
+    row = {
+        "order_number": "NL-1c",
+        "iccid": "8944",
+        "metadata": {
+            "validity_days": 15,
+            "fulfillment": {"provider": "citrus", "funded_usd": 20.0},
+        },
+        "fulfilled_at": "2026-08-01T12:00:00+00:00",
+    }
+    snapshot = build_usage_snapshot(
+        provider="citrus",
+        source="test",
+        row=row,
+        provider_fetch_ok=True,
+        provider_payload={
+            "data": {
+                "status": "active",
+                "wallet_balance_usd": 8.5,
+                "total_data_charged_usd": 11.5,
+            }
+        },
+    )
+    assert snapshot["usage_mode"] == "wallet"
+    assert snapshot["wallet_balance_usd"] == 8.5
+    assert snapshot["wallet_charged_usd"] == 11.5
+
+
 def test_build_usage_snapshot_citrus_explicit_gb():
     row = {
         "order_number": "NL-1b",
@@ -69,6 +133,7 @@ def test_build_usage_snapshot_citrus_explicit_gb():
         provider="citrus",
         source="test",
         row=row,
+        provider_fetch_ok=True,
         provider_payload={
             "status": "active",
             "wallet_balance_usd": 8.5,
@@ -93,6 +158,7 @@ def test_build_usage_snapshot_esimaccess_unused_volume():
         provider="esimaccess",
         source="test",
         row=row,
+        provider_fetch_ok=True,
         provider_payload={
             "esimStatus": "IN_USE",
             "smdpStatus": "ENABLED",
@@ -104,6 +170,42 @@ def test_build_usage_snapshot_esimaccess_unused_volume():
     assert snapshot["data_total_gb"] == 5.0
     assert snapshot["data_used_gb"] == 2.0
     assert snapshot["data_remaining_gb"] == 3.0
+
+
+def test_build_usage_snapshot_esimaccess_numeric_status_and_packages():
+    row = {
+        "order_number": "NL-2c",
+        "iccid": "8945",
+        "data_total_gb": 3,
+        "metadata": {"fulfillment": {"provider": "esimaccess"}},
+        "fulfilled_at": "2026-08-01T12:00:00+00:00",
+    }
+    snapshot = build_usage_snapshot(
+        provider="esimaccess",
+        source="test",
+        row=row,
+        provider_fetch_ok=True,
+        provider_payload={
+            "esimStatus": 6,  # IN_USE
+            "smdpStatus": "ENABLED",
+            "packageList": [
+                {
+                    "volume": 2 * 1024 * 1024 * 1024,
+                    "orderUsage": 0.5 * 1024 * 1024 * 1024,
+                    "unusedVolume": 1.5 * 1024 * 1024 * 1024,
+                },
+                {
+                    "volume": 1 * 1024 * 1024 * 1024,
+                    "orderUsage": 0.25 * 1024 * 1024 * 1024,
+                    "unusedVolume": 0.75 * 1024 * 1024 * 1024,
+                },
+            ],
+        },
+    )
+    assert snapshot["activated"] is True
+    assert snapshot["data_total_gb"] == 3.0
+    assert snapshot["data_used_gb"] == 0.75
+    assert snapshot["data_remaining_gb"] == 2.25
 
 
 def test_build_usage_snapshot_esimaccess_bytes():

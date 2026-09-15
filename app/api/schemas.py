@@ -210,6 +210,8 @@ class MyEsimsCard(BaseModel):
     usage_mode: Optional[str] = Field(None, serialization_alias="usageMode")
     wallet_balance_usd: Optional[float] = Field(None, serialization_alias="walletBalanceUsd")
     wallet_charged_usd: Optional[float] = Field(None, serialization_alias="walletChargedUsd")
+    usage_pct: Optional[float] = Field(None, serialization_alias="usagePct")
+    usage_synced_at: Optional[str] = Field(None, serialization_alias="usageSyncedAt")
     fulfillment_pending: bool = Field(False, serialization_alias="fulfillmentPending")
     created_at: Optional[str] = Field(None, serialization_alias="createdAt")
 

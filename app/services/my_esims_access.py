@@ -101,6 +101,8 @@ def summarize_order_card(order: Any) -> Dict[str, Any]:
         "usage_mode": getattr(order, "usage_mode", None),
         "wallet_balance_usd": getattr(order, "wallet_balance_usd", None),
         "wallet_charged_usd": getattr(order, "wallet_charged_usd", None),
+        "usage_pct": getattr(order, "usage_pct", None),
+        "usage_synced_at": getattr(order, "usage_synced_at", None),
         "fulfillment_pending": bool(getattr(order, "fulfillment_pending", False)),
         "created_at": getattr(order, "created_at", None),
     }

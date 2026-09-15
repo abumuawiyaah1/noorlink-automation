@@ -8,7 +8,11 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
 from app.api import supabase_repository as db
-from app.services.esim_usage_sync import UsageSyncError, sync_order_usage
+from app.services.esim_usage_sync import (
+    UsageSyncError,
+    order_supports_usage_refresh,
+    sync_order_usage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +36,7 @@ def process_esim_usage_sync(*, limit: int = SYNC_BATCH_LIMIT) -> Dict[str, Any]:
         nonlocal synced, skipped
         for row in rows:
             order_number = str(row.get("order_number") or "")
-            iccid = str(row.get("iccid") or "").strip()
-            if not iccid:
+            if not order_supports_usage_refresh(row):
                 skipped += 1
                 continue
             try:

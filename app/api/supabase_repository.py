@@ -1802,23 +1802,22 @@ def list_orders_for_usage_sync(
     since_iso: str,
     limit: int = 150,
 ) -> list[Dict[str, Any]]:
-    """Delivered/active orders with ICCID for provider usage polling."""
+    """Recent delivered/active orders for provider usage polling."""
     client = get_supabase_client()
     try:
         result = (
             client.table("orders")
             .select("*")
             .in_("status", ["delivered", "active", "suspended"])
-            .not_.is_("iccid", "null")
             .gte("created_at", since_iso)
             .order("updated_at", desc=True)
-            .limit(limit)
+            .limit(max(1, min(int(limit), 300)))
             .execute()
         )
     except Exception as exc:
         logger.exception("list_orders_for_usage_sync failed")
         raise SupabaseRepositoryError(str(exc)) from exc
-    return list(result.data or [])
+    return [row for row in (result.data or []) if isinstance(row, dict)]
 
 
 def list_orders_for_install_reminders(
