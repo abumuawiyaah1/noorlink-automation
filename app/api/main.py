@@ -1036,11 +1036,15 @@ def _lookup_order_response(
         return OrderLookupResponse(found=False, order=None)
 
     row = order_row
-    if refresh and str(row.get("iccid") or "").strip():
+    if refresh:
         try:
-            from app.services.esim_usage_sync import sync_order_usage_blocking
+            from app.services.esim_usage_sync import (
+                order_supports_usage_refresh,
+                sync_order_usage_blocking,
+            )
 
-            row = sync_order_usage_blocking(row, source="api_refresh")
+            if order_supports_usage_refresh(row):
+                row = sync_order_usage_blocking(row, source="api_refresh")
         except Exception as exc:
             logger.warning("Usage refresh on lookup failed for %s: %s", row.get("order_number"), exc)
 

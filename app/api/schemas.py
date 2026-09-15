@@ -140,9 +140,12 @@ class Order(BaseModel):
     activated_at: Optional[str] = Field(None, serialization_alias="activatedAt")
     usage_synced_at: Optional[str] = Field(None, serialization_alias="usageSyncedAt")
     usage_pct: Optional[float] = Field(None, serialization_alias="usagePct")
+    usage_mode: Optional[str] = Field(None, serialization_alias="usageMode")
     topup_supported: bool = Field(False, serialization_alias="topupSupported")
     topup_reason: Optional[str] = Field(None, serialization_alias="topupReason")
     wallet_balance_usd: Optional[float] = Field(None, serialization_alias="walletBalanceUsd")
+    wallet_charged_usd: Optional[float] = Field(None, serialization_alias="walletChargedUsd")
+    wallet_funded_usd: Optional[float] = Field(None, serialization_alias="walletFundedUsd")
 
     model_config = {"populate_by_name": True}
 
@@ -202,8 +205,11 @@ class MyEsimsCard(BaseModel):
     activation_status: Optional[str] = Field(None, serialization_alias="activationStatus")
     data_remaining_gb: Optional[float] = Field(None, serialization_alias="dataRemainingGb")
     data_total_gb: Optional[float] = Field(None, serialization_alias="dataTotalGb")
+    data_used_gb: Optional[float] = Field(None, serialization_alias="dataUsedGb")
     days_remaining: Optional[int] = Field(None, serialization_alias="daysRemaining")
+    usage_mode: Optional[str] = Field(None, serialization_alias="usageMode")
     wallet_balance_usd: Optional[float] = Field(None, serialization_alias="walletBalanceUsd")
+    wallet_charged_usd: Optional[float] = Field(None, serialization_alias="walletChargedUsd")
     fulfillment_pending: bool = Field(False, serialization_alias="fulfillmentPending")
     created_at: Optional[str] = Field(None, serialization_alias="createdAt")
 

@@ -29,7 +29,40 @@ def test_build_usage_snapshot_citrus_wallet():
         "iccid": "8944",
         "data_total_gb": 10,
         "data_used_gb": 1,
-        "metadata": {"validity_days": 15, "fulfillment": {"provider": "citrus"}},
+        "metadata": {
+            "validity_days": 15,
+            "fulfillment": {"provider": "citrus", "funded_usd": 20.0},
+        },
+        "fulfilled_at": "2026-08-01T12:00:00+00:00",
+    }
+    snapshot = build_usage_snapshot(
+        provider="citrus",
+        source="test",
+        row=row,
+        provider_payload={
+            "status": "active",
+            "wallet_balance_usd": 8.5,
+            "total_data_charged_usd": 11.5,
+        },
+    )
+    assert snapshot["provider"] == "citrus"
+    assert snapshot["usage_mode"] == "wallet"
+    assert snapshot["topup_supported"] is True
+    assert snapshot["activated"] is True
+    assert snapshot["wallet_balance_usd"] == 8.5
+    assert snapshot["wallet_charged_usd"] == 11.5
+    assert snapshot["wallet_funded_usd"] == 20.0
+    # Catalog GB must not masquerade as live remaining for Citrus PAYG.
+    assert snapshot["data_remaining_gb"] is None
+    assert snapshot["data_used_gb"] is None
+    assert snapshot["usage_pct"] == 57.5
+
+
+def test_build_usage_snapshot_citrus_explicit_gb():
+    row = {
+        "order_number": "NL-1b",
+        "iccid": "8944",
+        "metadata": {"fulfillment": {"provider": "citrus"}},
         "fulfilled_at": "2026-08-01T12:00:00+00:00",
     }
     snapshot = build_usage_snapshot(
@@ -40,13 +73,37 @@ def test_build_usage_snapshot_citrus_wallet():
             "status": "active",
             "wallet_balance_usd": 8.5,
             "data_used_gb": 1.5,
+            "data_total_gb": 10,
         },
     )
-    assert snapshot["provider"] == "citrus"
-    assert snapshot["topup_supported"] is True
-    assert snapshot["activated"] is True
+    assert snapshot["usage_mode"] == "data_gb"
     assert snapshot["data_used_gb"] == 1.5
-    assert snapshot["wallet_balance_usd"] == 8.5
+    assert snapshot["data_total_gb"] == 10.0
+    assert snapshot["data_remaining_gb"] == 8.5
+
+
+def test_build_usage_snapshot_esimaccess_unused_volume():
+    row = {
+        "order_number": "NL-2b",
+        "iccid": "8945",
+        "metadata": {"fulfillment": {"provider": "esimaccess"}},
+        "fulfilled_at": "2026-08-01T12:00:00+00:00",
+    }
+    snapshot = build_usage_snapshot(
+        provider="esimaccess",
+        source="test",
+        row=row,
+        provider_payload={
+            "esimStatus": "IN_USE",
+            "smdpStatus": "ENABLED",
+            "totalVolume": 5 * 1024 * 1024 * 1024,
+            "unusedVolume": 3 * 1024 * 1024 * 1024,
+        },
+    )
+    assert snapshot["usage_mode"] == "data_gb"
+    assert snapshot["data_total_gb"] == 5.0
+    assert snapshot["data_used_gb"] == 2.0
+    assert snapshot["data_remaining_gb"] == 3.0
 
 
 def test_build_usage_snapshot_esimaccess_bytes():

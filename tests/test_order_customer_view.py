@@ -20,6 +20,8 @@ def test_fulfillment_pending_when_paid_without_qr():
 def test_compute_data_remaining():
     assert compute_data_remaining_gb(data_total_gb=10, data_used_gb=3) == 7.0
     assert compute_data_remaining_gb(allowance_mb=10240, used_mb=2048) == 8.0
+    assert compute_data_remaining_gb(data_total_gb=10, data_used_gb=None) is None
+    assert compute_data_remaining_gb(data_total_gb=10, data_used_gb=0) == 10.0
 
 
 def test_compute_days_remaining():

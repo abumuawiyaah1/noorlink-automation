@@ -86,10 +86,10 @@ def compute_data_remaining_gb(
         remaining_mb = max(0, int(allowance_mb) - used)
         return round(remaining_mb / 1024.0, 2)
 
-    if data_total_gb is None:
+    if data_total_gb is None or data_used_gb is None:
+        # Unknown usage → do not invent "full plan remaining".
         return None
-    used = float(data_used_gb or 0)
-    return round(max(0.0, float(data_total_gb) - used), 2)
+    return round(max(0.0, float(data_total_gb) - float(data_used_gb)), 2)
 
 
 def fulfillment_pending(row: Dict[str, Any]) -> bool:
@@ -248,7 +248,28 @@ def _usage_fields_from_row(row: Dict[str, Any], extras: Dict[str, Any]) -> Dict[
             "topup_reason": topup_reason,
         }
 
+    usage_mode = str(snapshot.get("usage_mode") or "").strip().lower() or None
     days_remaining = snapshot.get("days_remaining", extras.get("days_remaining"))
+
+    if usage_mode == "wallet":
+        # Live meter is USD — never inherit catalog GB remaining/used.
+        return {
+            "activation_status": snapshot.get("activation_status"),
+            "activated_at": snapshot.get("activated_at"),
+            "usage_synced_at": snapshot.get("synced_at"),
+            "usage_pct": snapshot.get("usage_pct"),
+            "usage_mode": usage_mode,
+            "days_remaining": days_remaining,
+            "data_remaining_gb": snapshot.get("data_remaining_gb"),
+            "data_used_gb": snapshot.get("data_used_gb"),
+            "data_total_gb": snapshot.get("data_total_gb"),
+            "topup_supported": topup_supported,
+            "topup_reason": topup_reason,
+            "wallet_balance_usd": snapshot.get("wallet_balance_usd"),
+            "wallet_charged_usd": snapshot.get("wallet_charged_usd"),
+            "wallet_funded_usd": snapshot.get("wallet_funded_usd"),
+        }
+
     data_remaining_gb = snapshot.get("data_remaining_gb", extras.get("data_remaining_gb"))
     data_used_gb = snapshot.get("data_used_gb")
     data_total_gb = snapshot.get("data_total_gb")
@@ -258,6 +279,7 @@ def _usage_fields_from_row(row: Dict[str, Any], extras: Dict[str, Any]) -> Dict[
         "activated_at": snapshot.get("activated_at"),
         "usage_synced_at": snapshot.get("synced_at"),
         "usage_pct": snapshot.get("usage_pct"),
+        "usage_mode": usage_mode,
         "days_remaining": days_remaining,
         "data_remaining_gb": data_remaining_gb,
         "data_used_gb": data_used_gb if data_used_gb is not None else extras.get("data_used_gb"),
@@ -265,4 +287,6 @@ def _usage_fields_from_row(row: Dict[str, Any], extras: Dict[str, Any]) -> Dict[
         "topup_supported": topup_supported,
         "topup_reason": topup_reason,
         "wallet_balance_usd": snapshot.get("wallet_balance_usd"),
+        "wallet_charged_usd": snapshot.get("wallet_charged_usd"),
+        "wallet_funded_usd": snapshot.get("wallet_funded_usd"),
     }

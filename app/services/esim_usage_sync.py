@@ -97,6 +97,54 @@ def _gb_from_mixed(value: Any) -> Optional[float]:
     return _first_float(value)
 
 
+def _citrus_funded_usd(meta: Dict[str, Any], fulfillment: Dict[str, Any]) -> Optional[float]:
+    """Sum initial fund + recorded wallet top-ups for Citrus PAYG."""
+    funded = _first_float(
+        fulfillment.get("funded_usd"),
+        (fulfillment.get("raw") or {}).get("funded_usd")
+        if isinstance(fulfillment.get("raw"), dict)
+        else None,
+    )
+    topups = meta.get("topups")
+    history = topups.get("history") if isinstance(topups, dict) else None
+    if isinstance(history, list):
+        for entry in history:
+            if not isinstance(entry, dict):
+                continue
+            if str(entry.get("provider") or entry.get("mode") or "").lower() not in {
+                "",
+                "citrus",
+                "wallet",
+            }:
+                # Still count fund_usd entries from citrus top-up history.
+                pass
+            add = _first_float(entry.get("fund_usd"), entry.get("wholesale_usd"))
+            if add is not None:
+                funded = (funded or 0.0) + float(add)
+    return funded
+
+
+def order_supports_usage_refresh(row: Dict[str, Any]) -> bool:
+    """True when we have enough identifiers to poll the upstream provider."""
+    if str(row.get("iccid") or "").strip():
+        return True
+    provider = resolve_order_provider(row)
+    meta = _metadata_dict(row)
+    fulfillment = meta.get("fulfillment") or {}
+    if not isinstance(fulfillment, dict):
+        fulfillment = {}
+    if provider == "zesimo":
+        return bool(
+            fulfillment.get("esim_tran_no")
+            or fulfillment.get("provider_esim_id")
+            or fulfillment.get("esim_id")
+            or fulfillment.get("provider_order_id")
+        )
+    if provider == "esimaccess":
+        return bool(fulfillment.get("provider_order_id") or fulfillment.get("order_no"))
+    return False
+
+
 def _activation_from_status(*statuses: Any) -> Tuple[str, bool]:
     parts = [str(s or "").strip().lower() for s in statuses if s]
     joined = " ".join(parts)
@@ -126,8 +174,11 @@ def build_usage_snapshot(
     meta = _metadata_dict(row)
     validity_days = _validity_days_from_row(row)
     start_at = _start_at_from_row(row)
-    data_total_gb = _first_float(row.get("data_total_gb"))
-    data_used_gb = _first_float(row.get("data_used_gb"), 0.0)
+    catalog_total_gb = _first_float(row.get("data_total_gb"))
+    data_total_gb = catalog_total_gb
+    # Do not default used→0; unknown must stay None so remaining is not invented.
+    data_used_gb = _first_float(row.get("data_used_gb"))
+    usage_mode = "data_gb"
 
     activation_status = "unknown"
     activated = False
@@ -135,18 +186,23 @@ def build_usage_snapshot(
     valid_until = None
     esim_status = None
     wallet_balance_usd = None
+    wallet_charged_usd = None
+    wallet_funded_usd = None
     topup_supported = provider == "citrus"
     provider_notes: List[str] = []
 
     payload = provider_payload or {}
     fulfillment = meta.get("fulfillment") or {}
-    if isinstance(fulfillment, dict):
-        activated_at = fulfillment.get("activated_at")
-        prev = meta.get("usage_snapshot") or {}
-        if isinstance(prev, dict) and not activated_at:
-            activated_at = prev.get("activated_at")
+    if not isinstance(fulfillment, dict):
+        fulfillment = {}
+    activated_at = fulfillment.get("activated_at")
+    prev = meta.get("usage_snapshot") or {}
+    if isinstance(prev, dict) and not activated_at:
+        activated_at = prev.get("activated_at")
 
     if provider == "citrus":
+        # Citrus is USD wallet PAYG. Live meter = wallet_balance + total_data_charged_usd.
+        usage_mode = "wallet"
         esim_status = str(payload.get("status") or payload.get("esim_status") or "")
         wallet_balance_usd = _first_float(
             payload.get("wallet_balance_usd"),
@@ -155,15 +211,39 @@ def build_usage_snapshot(
             if isinstance(payload.get("wallet"), dict)
             else None,
         )
-        data_used_gb = _first_float(
+        wallet_charged_usd = _first_float(
+            payload.get("total_data_charged_usd"),
+            payload.get("data_charged_usd"),
+            payload.get("usage_usd"),
+            (payload.get("wallet") or {}).get("total_data_charged_usd")
+            if isinstance(payload.get("wallet"), dict)
+            else None,
+        )
+        wallet_funded_usd = _citrus_funded_usd(meta, fulfillment)
+        # Only trust GB fields if Citrus actually sends them (usually does not).
+        live_gb_used = _first_float(
             payload.get("data_used_gb"),
             _mb_to_gb(payload.get("data_used_mb")),
             _bytes_to_gb(payload.get("data_used_bytes")),
-            data_used_gb,
         )
-        if wallet_balance_usd is not None and data_total_gb is None:
-            data_total_gb = wallet_balance_usd  # PAYG wallet as cap hint
-        activation_status, activated = _activation_from_status(esim_status, payload.get("lifecycle"))
+        live_gb_total = _first_float(
+            payload.get("data_total_gb"),
+            _mb_to_gb(payload.get("data_total_mb")),
+            _bytes_to_gb(payload.get("data_total_bytes")),
+        )
+        if live_gb_used is not None or live_gb_total is not None:
+            usage_mode = "data_gb"
+            data_used_gb = live_gb_used
+            data_total_gb = live_gb_total if live_gb_total is not None else data_total_gb
+            provider_notes.append("citrus_reported_gb")
+        else:
+            # Do not show catalog GB remaining — it stays stuck at full plan.
+            data_used_gb = None
+            data_total_gb = None
+            provider_notes.append("citrus_wallet_usd_meter")
+        activation_status, activated = _activation_from_status(
+            esim_status, payload.get("lifecycle")
+        )
         topup_supported = True
 
     elif provider == "esimaccess":
@@ -173,12 +253,35 @@ def build_usage_snapshot(
         esim_status = str(profile.get("esimStatus") or profile.get("esim_status") or "")
         smdp_status = str(profile.get("smdpStatus") or profile.get("smdp_status") or "")
         activation_status, activated = _activation_from_status(esim_status, smdp_status)
-        total_bytes = profile.get("totalVolume") or profile.get("total_volume")
-        used_bytes = profile.get("orderUsage") or profile.get("order_usage")
+        total_bytes = (
+            profile.get("totalVolume")
+            or profile.get("total_volume")
+            or profile.get("totalDataVolume")
+        )
+        used_bytes = (
+            profile.get("orderUsage")
+            or profile.get("order_usage")
+            or profile.get("usedVolume")
+            or profile.get("used_volume")
+        )
+        unused_bytes = (
+            profile.get("unusedVolume")
+            or profile.get("unused_volume")
+            or profile.get("remain")
+            or profile.get("remainingVolume")
+        )
         if total_bytes is not None:
             data_total_gb = _bytes_to_gb(total_bytes)
         if used_bytes is not None:
             data_used_gb = _bytes_to_gb(used_bytes)
+        elif unused_bytes is not None and total_bytes is not None:
+            try:
+                data_used_gb = _bytes_to_gb(float(total_bytes) - float(unused_bytes))
+            except (TypeError, ValueError):
+                pass
+        elif data_used_gb is None and data_total_gb is not None and activated:
+            # Access often reports 0 usage explicitly via missing used + full unused.
+            data_used_gb = 0.0
         expired_raw = profile.get("expiredTime") or profile.get("expired_time")
         valid_until = _parse_dt(expired_raw)
         if profile.get("packageList"):
@@ -189,32 +292,56 @@ def build_usage_snapshot(
         profile = payload
         esim_status = str(profile.get("state") or profile.get("status") or "")
         activation_status, activated = _activation_from_status(esim_status)
-        packages = profile.get("packages") or profile.get("data_packages")
-        if isinstance(packages, list) and packages:
-            pkg = packages[0] if isinstance(packages[0], dict) else {}
-            data_total_gb = _first_float(
-                _mb_to_gb(pkg.get("initial_balance_mb")),
-                _bytes_to_gb(pkg.get("initial_balance_bytes")),
-                data_total_gb,
-            )
-            data_used_gb = _first_float(
-                _mb_to_gb(pkg.get("spent_balance_mb")),
-                _bytes_to_gb(pkg.get("spent_balance_bytes")),
-                data_used_gb,
-            )
-            valid_until = _parse_dt(pkg.get("expiry_date") or pkg.get("valid_until"))
+        packages = profile.get("packages") or profile.get("data_packages") or []
+        pkg: Dict[str, Any] = {}
+        if isinstance(packages, list) and packages and isinstance(packages[0], dict):
+            pkg = packages[0]
+        elif isinstance(profile.get("package_template"), dict):
+            pkg = profile["package_template"]
+        data_total_gb = _first_float(
+            _mb_to_gb(pkg.get("initial_balance_mb") or pkg.get("data_mb")),
+            _bytes_to_gb(
+                pkg.get("initial_balance_bytes")
+                or pkg.get("data_usage_allowance")
+                or pkg.get("data_bytes")
+                or profile.get("data_usage_allowance")
+            ),
+            data_total_gb,
+        )
+        data_used_gb = _first_float(
+            _mb_to_gb(pkg.get("spent_balance_mb") or pkg.get("used_mb")),
+            _bytes_to_gb(
+                pkg.get("spent_balance_bytes")
+                or pkg.get("data_usage")
+                or pkg.get("used_bytes")
+                or profile.get("data_usage")
+            ),
+            data_used_gb,
+        )
+        remaining = _first_float(
+            _mb_to_gb(pkg.get("remaining_balance_mb") or pkg.get("remaining_mb")),
+            _bytes_to_gb(
+                pkg.get("remaining_balance_bytes")
+                or pkg.get("remaining_bytes")
+                or pkg.get("remaining_data")
+            ),
+        )
+        if remaining is not None and data_total_gb is not None and data_used_gb is None:
+            data_used_gb = max(0.0, float(data_total_gb) - float(remaining))
+        valid_until = _parse_dt(
+            pkg.get("expiry_date") or pkg.get("valid_until") or profile.get("expiry_date")
+        )
         topup_supported = False
 
     elif provider == "zesimo":
         # Prefer GET /esims/{id} detail; fall back to order.embedded esims.
         order_obj = payload.get("order") if isinstance(payload.get("order"), dict) else payload
-        esim = {}
+        esim: Dict[str, Any] = {}
         if isinstance(payload.get("esim"), dict):
             esim = payload["esim"]
         elif isinstance(payload.get("id"), (int, str)) and (
             "data_used_mb" in payload or "data_package_mb" in payload or "status" in payload
         ):
-            # Bare EsimDetail object returned as the payload root.
             esim = payload
         else:
             esims = order_obj.get("esims") if isinstance(order_obj, dict) else None
@@ -226,7 +353,7 @@ def build_usage_snapshot(
             esim.get("status_qr")
             or esim.get("status")
             or esim.get("state")
-            or order_obj.get("status")
+            or (order_obj.get("status") if isinstance(order_obj, dict) else None)
             or payload.get("status")
             or ""
         )
@@ -239,29 +366,35 @@ def build_usage_snapshot(
 
         data_total_gb = _first_float(
             _mb_to_gb(esim.get("data_package_mb") or esim.get("data_mb") or esim.get("total_mb")),
-            _bytes_to_gb(esim.get("data_total_bytes") or esim.get("data_bytes") or esim.get("total_bytes")),
+            _bytes_to_gb(
+                esim.get("data_total_bytes") or esim.get("data_bytes") or esim.get("total_bytes")
+            ),
             _gb_from_mixed(package.get("data_gb") or esim.get("data_gb") or esim.get("total_gb")),
             data_total_gb,
         )
-        data_used_gb = _first_float(
+        # Prefer live provider used/remaining over stale DB used.
+        live_used = _first_float(
             _mb_to_gb(esim.get("data_used_mb") or esim.get("used_mb")),
             _bytes_to_gb(esim.get("data_used_bytes") or esim.get("used_bytes")),
             _gb_from_mixed(esim.get("used_gb") or esim.get("data_used_gb")),
-            data_used_gb,
         )
         remaining = _first_float(
-            _mb_to_gb(esim.get("data_left_mb") or esim.get("remaining_mb") or esim.get("data_remaining_mb")),
+            _mb_to_gb(
+                esim.get("data_left_mb") or esim.get("remaining_mb") or esim.get("data_remaining_mb")
+            ),
             _bytes_to_gb(esim.get("data_left_bytes") or esim.get("remaining_bytes")),
             _gb_from_mixed(esim.get("remaining_gb") or esim.get("data_remaining_gb")),
         )
-        if remaining is not None and data_total_gb is not None and data_used_gb is None:
+        if live_used is not None:
+            data_used_gb = live_used
+        elif remaining is not None and data_total_gb is not None:
             data_used_gb = max(0.0, float(data_total_gb) - float(remaining))
         valid_until = _parse_dt(
             esim.get("plan_expired_at")
             or esim.get("expires_at")
             or esim.get("expiry_date")
             or esim.get("expired_at")
-            or order_obj.get("expires_at")
+            or (order_obj.get("expires_at") if isinstance(order_obj, dict) else None)
         )
         if data_used_gb is None and data_total_gb is not None:
             provider_notes.append("zesimo_usage_not_reported")
@@ -270,14 +403,35 @@ def build_usage_snapshot(
     elif provider == "simbase":
         usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else payload
         details = payload.get("details") if isinstance(payload.get("details"), dict) else {}
-        esim_status = str(details.get("state") or usage.get("state") or "")
+        esim_status = str(details.get("state") or usage.get("state") or usage.get("status") or "")
         activation_status, activated = _activation_from_status(esim_status)
-        usage_bytes = usage.get("bytes") or usage.get("total_bytes") or usage.get("current_bytes")
+        usage_bytes = (
+            usage.get("bytes")
+            or usage.get("total_bytes")
+            or usage.get("current_bytes")
+            or usage.get("used_bytes")
+            or usage.get("data_bytes")
+            or usage.get("usage_bytes")
+        )
         if usage_bytes is not None:
             data_used_gb = _bytes_to_gb(usage_bytes)
-        limit_bytes = row.get("data_limit_bytes") or usage.get("limit_bytes")
+        limit_bytes = (
+            row.get("data_limit_bytes")
+            or usage.get("limit_bytes")
+            or usage.get("data_limit_bytes")
+            or details.get("data_limit_bytes")
+        )
         if limit_bytes is not None:
             data_total_gb = _bytes_to_gb(limit_bytes)
+        remaining_bytes = usage.get("remaining_bytes") or usage.get("bytes_remaining")
+        if (
+            remaining_bytes is not None
+            and data_total_gb is not None
+            and data_used_gb is None
+        ):
+            rem_gb = _bytes_to_gb(remaining_bytes)
+            if rem_gb is not None:
+                data_used_gb = max(0.0, float(data_total_gb) - float(rem_gb))
 
     elif provider in {"mock", "noorlink-mock"}:
         activation_status = "provisioned"
@@ -288,6 +442,7 @@ def build_usage_snapshot(
         used_mb = allowance_row.get("used_mb")
         if allowance_mb is not None:
             data_total_gb = round(int(allowance_mb) / 1024.0, 2)
+            usage_mode = "data_gb"
         if used_mb is not None:
             data_used_gb = round(int(used_mb) / 1024.0, 2)
         valid_until = _parse_dt(allowance_row.get("valid_until")) or valid_until
@@ -302,28 +457,62 @@ def build_usage_snapshot(
             data_total_gb = float(overrides["data_total_gb"])
         if overrides.get("valid_until") is not None:
             valid_until = _parse_dt(overrides["valid_until"])
+        if overrides.get("wallet_charged_usd") is not None:
+            wallet_charged_usd = float(overrides["wallet_charged_usd"])
+        if overrides.get("wallet_balance_usd") is not None:
+            wallet_balance_usd = float(overrides["wallet_balance_usd"])
 
     if activated and not activated_at:
         activated_at = _utc_now_iso()
+
+    # Fixed GB plans with no live used yet: treat as 0 used so remaining shows full allowance.
+    if (
+        usage_mode == "data_gb"
+        and data_total_gb is not None
+        and data_used_gb is None
+        and not provider_payload
+        and not allowance_row
+    ):
+        data_used_gb = 0.0
 
     days_remaining = compute_days_remaining(
         validity_days=validity_days,
         start_at=start_at,
         valid_until=valid_until,
     )
-    data_remaining_gb = compute_data_remaining_gb(
-        data_total_gb=data_total_gb,
-        data_used_gb=data_used_gb,
-    )
+    data_remaining_gb = None
+    if usage_mode == "data_gb":
+        data_remaining_gb = compute_data_remaining_gb(
+            data_total_gb=data_total_gb,
+            data_used_gb=data_used_gb,
+        )
 
     usage_pct = None
-    if data_total_gb and data_total_gb > 0 and data_used_gb is not None:
+    if usage_mode == "data_gb" and data_total_gb and data_total_gb > 0 and data_used_gb is not None:
         usage_pct = min(100.0, round((data_used_gb / data_total_gb) * 100, 1))
+    elif (
+        usage_mode == "wallet"
+        and wallet_funded_usd
+        and wallet_funded_usd > 0
+        and wallet_charged_usd is not None
+    ):
+        usage_pct = min(100.0, round((wallet_charged_usd / wallet_funded_usd) * 100, 1))
+    elif (
+        usage_mode == "wallet"
+        and wallet_funded_usd
+        and wallet_funded_usd > 0
+        and wallet_balance_usd is not None
+    ):
+        spent = max(0.0, float(wallet_funded_usd) - float(wallet_balance_usd))
+        usage_pct = min(100.0, round((spent / float(wallet_funded_usd)) * 100, 1))
+        if wallet_charged_usd is None:
+            wallet_charged_usd = round(spent, 4)
 
     snapshot = {
         "synced_at": _utc_now_iso(),
         "source": source,
         "provider": provider or "unknown",
+        "usage_mode": usage_mode,
         "activation_status": activation_status,
         "activated": activated,
         "activated_at": activated_at,
@@ -336,9 +525,12 @@ def build_usage_snapshot(
         "days_remaining": days_remaining,
         "valid_until": valid_until.isoformat() if valid_until else None,
         "wallet_balance_usd": wallet_balance_usd,
+        "wallet_charged_usd": wallet_charged_usd,
+        "wallet_funded_usd": wallet_funded_usd,
         "topup_supported": topup_supported,
         "iccid": row.get("iccid"),
         "provider_notes": provider_notes,
+        "catalog_data_total_gb": catalog_total_gb,
     }
     return snapshot
 

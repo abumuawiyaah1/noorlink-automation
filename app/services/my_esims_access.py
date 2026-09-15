@@ -96,8 +96,11 @@ def summarize_order_card(order: Any) -> Dict[str, Any]:
         "activation_status": getattr(order, "activation_status", None),
         "data_remaining_gb": getattr(order, "data_remaining_gb", None),
         "data_total_gb": getattr(order, "data_total_gb", None),
+        "data_used_gb": getattr(order, "data_used_gb", None),
         "days_remaining": getattr(order, "days_remaining", None),
+        "usage_mode": getattr(order, "usage_mode", None),
         "wallet_balance_usd": getattr(order, "wallet_balance_usd", None),
+        "wallet_charged_usd": getattr(order, "wallet_charged_usd", None),
         "fulfillment_pending": bool(getattr(order, "fulfillment_pending", False)),
         "created_at": getattr(order, "created_at", None),
     }
