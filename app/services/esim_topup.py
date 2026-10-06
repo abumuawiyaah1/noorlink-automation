@@ -614,6 +614,12 @@ async def fund_citrus_topup(
                 ).execute()
             except Exception:
                 logger.warning("Could not re-enable Citrus eSIM after top-up for %s", order_number)
+        else:
+            # Profile may have been disabled after defund while order stayed active.
+            try:
+                await client.enable_esim(iccid)
+            except Exception:
+                pass
 
     entry = {
         "at": datetime.now(timezone.utc).isoformat(),
@@ -626,6 +632,39 @@ async def fund_citrus_topup(
         "provider_result": result if isinstance(result, dict) else {"raw": result},
     }
     _append_topup_history(row, entry)
+
+    # Extend the sold-data cap so paid top-ups unlock more GB before we cut off.
+    # Clear defunded so the next package/time end can reclaim again.
+    try:
+        from app.services.esim_usage_sync import _citrus_package_data_gb, _citrus_per_gb_usd
+
+        meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+        fulfillment = meta.get("fulfillment") if isinstance(meta.get("fulfillment"), dict) else {}
+        per_gb = _citrus_per_gb_usd(row) or (
+            float(fulfillment["fund_per_gb_usd"])
+            if fulfillment.get("fund_per_gb_usd") is not None
+            else None
+        )
+        patch = {
+            "defunded": False,
+            "defunded_at": None,
+            "suspended_reason": None,
+            "profile_reusable": True,
+        }
+        if per_gb and per_gb > 0:
+            current_gb = _citrus_package_data_gb(row) or 0.0
+            added_gb = round(float(fund_usd) / float(per_gb), 4)
+            patch["package_data_gb"] = round(float(current_gb) + added_gb, 4)
+            patch["fund_per_gb_usd"] = per_gb
+        prior_funded = fulfillment.get("funded_usd")
+        try:
+            prior = float(prior_funded) if prior_funded is not None else 0.0
+        except (TypeError, ValueError):
+            prior = 0.0
+        patch["funded_usd"] = round(prior + float(fund_usd), 2)
+        db.merge_order_metadata(order_number, {"fulfillment": patch})
+    except Exception:
+        logger.warning("Could not extend Citrus package_data_gb after top-up for %s", order_number)
 
     refreshed = db.get_order_row_by_order_number(order_number) or row
     try:

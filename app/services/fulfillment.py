@@ -161,7 +161,13 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as exc:
         # Surface provider wallet / API failures as fulfillment errors
         name = type(exc).__name__
-        if "Insufficient" in name or "EsimAccess" in name or "Citrus" in name:
+        message = str(exc)
+        if (
+            "Insufficient" in name
+            or "EsimAccess" in name
+            or "Citrus" in name
+            or "Citrus" in message
+        ):
             logger.error("Provider fulfillment failed for %s: %s", order_number, exc)
             db.merge_order_metadata(
                 order_number,
@@ -186,6 +192,11 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
             "provider_sku": esim.get("provider_sku"),
             "catalog_key": esim.get("catalog_key"),
             "esim_tran_no": esim.get("esim_tran_no"),
+            "funded_usd": esim.get("funded_usd"),
+            "package_data_gb": esim.get("package_data_gb"),
+            "package_fund_usd": esim.get("package_fund_usd"),
+            "fund_per_gb_usd": esim.get("fund_per_gb_usd"),
+            "fund_rate_tier": esim.get("fund_rate_tier"),
         },
         "travel_assistant": travel_guide,
     }

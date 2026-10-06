@@ -923,6 +923,330 @@ def apply_usage_snapshot(
     return refreshed or row
 
 
+def _citrus_package_data_gb(row: Dict[str, Any]) -> Optional[float]:
+    """Sold data allowance in GB (initial package + top-up extensions)."""
+    meta = _metadata_dict(row)
+    fulfillment = meta.get("fulfillment") or {}
+    if not isinstance(fulfillment, dict):
+        fulfillment = {}
+    plan = meta.get("fulfillment_plan") or {}
+    if not isinstance(plan, dict):
+        plan = {}
+    return _first_float(
+        fulfillment.get("package_data_gb"),
+        plan.get("data_gb"),
+        row.get("data_total_gb"),
+        meta.get("data_gb"),
+    )
+
+
+def _citrus_per_gb_usd(row: Dict[str, Any], snapshot: Optional[Dict[str, Any]] = None) -> Optional[float]:
+    """Reseller $/GB used to convert wallet spend into GB used."""
+    meta = _metadata_dict(row)
+    fulfillment = meta.get("fulfillment") or {}
+    if not isinstance(fulfillment, dict):
+        fulfillment = {}
+    direct = _first_float(
+        fulfillment.get("fund_per_gb_usd"),
+        (fulfillment.get("raw") or {}).get("fund_per_gb_usd")
+        if isinstance(fulfillment.get("raw"), dict)
+        else None,
+    )
+    if direct and direct > 0:
+        return direct
+
+    # Do NOT derive from funded_usd / package_gb — overfunding ($10 for 5GB)
+    # would inflate $/GB and delay the sold-data cut-off.
+    snap = snapshot or {}
+    charged = _first_float(snap.get("wallet_charged_usd"))
+    used_gb = _first_float(snap.get("data_used_gb"))
+    if charged and used_gb and used_gb > 0:
+        return round(float(charged) / float(used_gb), 4)
+    return None
+
+
+def citrus_sold_data_cap_reached(
+    row: Dict[str, Any],
+    snapshot: Dict[str, Any],
+    *,
+    per_gb_usd: Optional[float] = None,
+) -> Optional[str]:
+    """
+    Return a suspend/reclaim reason when the customer is done with the purchase.
+
+    - Sold GB used up (even if wallet still has leftover $)
+    - Validity days exhausted (time expired)
+    - Wallet already empty (webhook miss backup)
+    """
+    if resolve_order_provider(row) != "citrus":
+        return None
+
+    meta = _metadata_dict(row)
+    fulfillment = meta.get("fulfillment") or {}
+    if isinstance(fulfillment, dict) and fulfillment.get("defunded"):
+        return None
+
+    status = str(row.get("status") or "").lower()
+    # Still reclaim leftover $ after suspend if we never defunded.
+    already_suspended = status == "suspended"
+
+    sold_gb = _citrus_package_data_gb(row)
+    charged = _first_float(snapshot.get("wallet_charged_usd"))
+    balance = _first_float(snapshot.get("wallet_balance_usd"))
+    per_gb = per_gb_usd if per_gb_usd and per_gb_usd > 0 else _citrus_per_gb_usd(row, snapshot)
+    days_remaining = snapshot.get("days_remaining")
+
+    if days_remaining is not None:
+        try:
+            if int(days_remaining) <= 0:
+                return "validity_expired"
+        except (TypeError, ValueError):
+            pass
+
+    if already_suspended:
+        # Only continue for leftover reclaim when wallet still has money.
+        if balance is not None and balance > 0.01:
+            return "leftover_wallet_reclaim"
+        return None
+
+    if sold_gb and sold_gb > 0 and charged is not None and per_gb and per_gb > 0:
+        used_gb = float(charged) / float(per_gb)
+        if used_gb + 0.02 >= float(sold_gb):
+            return "package_data_exhausted"
+
+    if balance is not None and balance <= 0.01 and (charged or 0) > 0:
+        return "wallet_depleted"
+
+    return None
+
+
+async def reclaim_citrus_unused_balance(
+    row: Dict[str, Any],
+    *,
+    reason: str,
+    wallet_balance_usd: Optional[float] = None,
+    extra_meta: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Return leftover Citrus SIM wallet $ to the reseller main balance and pause data.
+
+    Keeps the eSIM profile installed so the customer can top up / buy again on the
+    same QR. Does NOT terminate (termination is irreversible and would force a
+    new profile).
+    """
+    from app.services.citrus import CitrusClient, CitrusError
+
+    order_number = str(row.get("order_number") or "")
+    iccid = str(row.get("iccid") or "").strip()
+    meta = _metadata_dict(row)
+    fulfillment = meta.get("fulfillment") or {}
+    if not isinstance(fulfillment, dict):
+        fulfillment = {}
+
+    if fulfillment.get("defunded"):
+        return row
+    if not iccid:
+        logger.warning(
+            "Citrus reclaim skipped for %s — missing iccid (reason=%s)",
+            order_number,
+            reason,
+        )
+        return row
+
+    defund_result = None
+    balance = wallet_balance_usd
+    try:
+        async with CitrusClient() as client:
+            if balance is None:
+                try:
+                    live = await client.get_esim(iccid)
+                    if isinstance(live, dict):
+                        balance = _first_float(
+                            live.get("wallet_balance_usd"),
+                            live.get("balance_usd"),
+                        )
+                except CitrusError as exc:
+                    logger.warning(
+                        "Citrus get_esim failed before reclaim iccid=%s: %s",
+                        iccid,
+                        exc,
+                    )
+
+            if balance is None or balance > 0.01:
+                try:
+                    defund_result = await client.defund_esim(iccid)
+                except CitrusError as exc:
+                    detail = str(exc)
+                    if "NO_BALANCE_TO_RETURN" in detail or "400" in detail:
+                        logger.info(
+                            "Citrus defund skipped (no returnable balance) iccid=%s order=%s",
+                            iccid,
+                            order_number,
+                        )
+                    else:
+                        logger.error(
+                            "Citrus defund failed iccid=%s order=%s reason=%s: %s",
+                            iccid,
+                            order_number,
+                            reason,
+                            exc,
+                        )
+                    try:
+                        await client.disable_esim(iccid)
+                    except CitrusError as disable_exc:
+                        logger.error(
+                            "Citrus disable failed iccid=%s order=%s: %s",
+                            iccid,
+                            order_number,
+                            disable_exc,
+                        )
+            else:
+                # Already $0 — pause data but keep profile for future top-ups.
+                try:
+                    await client.disable_esim(iccid)
+                except CitrusError as exc:
+                    logger.error(
+                        "Citrus disable failed iccid=%s order=%s: %s",
+                        iccid,
+                        order_number,
+                        exc,
+                    )
+    except CitrusError as exc:
+        logger.error(
+            "Citrus client failed during reclaim iccid=%s order=%s: %s",
+            iccid,
+            order_number,
+            exc,
+        )
+
+    updated = row
+    if str(row.get("status") or "").lower() != "suspended":
+        try:
+            updated = db.suspend_order_by_iccid(iccid) or row
+        except db.SupabaseRepositoryError as exc:
+            logger.exception("Failed to suspend Citrus order %s on reclaim", order_number)
+            raise UsageSyncError(str(exc)) from exc
+
+    estimated_return = None
+    if isinstance(defund_result, dict):
+        estimated_return = _first_float(
+            defund_result.get("estimated_return_usd"),
+            defund_result.get("amount_usd"),
+            defund_result.get("returned_usd"),
+        )
+
+    defunded_ok = bool(defund_result) or (balance is not None and balance <= 0.01)
+    patch = {
+        "suspended_reason": reason,
+        "suspended_at": fulfillment.get("suspended_at") or _utc_now_iso(),
+        "defund_estimated_return_usd": estimated_return,
+        "defund_reason": reason,
+        # Profile kept for reuse / top-up — never terminate here.
+        "citrus_terminated": False,
+        "terminate_after_defund": False,
+        "profile_reusable": True,
+    }
+    if extra_meta:
+        patch.update(extra_meta)
+    if defunded_ok:
+        patch["defunded"] = True
+        patch["defunded_at"] = _utc_now_iso()
+    else:
+        # Failed defund with unknown/nonzero balance — allow retry next cron.
+        patch.pop("defunded", None)
+
+    db.merge_order_metadata(order_number, {"fulfillment": patch})
+    logger.warning(
+        "Citrus reclaim order=%s iccid=%s reason=%s defunded=%s profile_kept=True estimated_return=%s",
+        order_number,
+        iccid,
+        reason,
+        defunded_ok,
+        estimated_return,
+    )
+    return db.get_order_row_by_order_number(order_number) or updated or row
+
+
+def reclaim_citrus_unused_balance_blocking(
+    row: Dict[str, Any],
+    *,
+    reason: str,
+    wallet_balance_usd: Optional[float] = None,
+    extra_meta: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    import asyncio
+
+    def _run():
+        return asyncio.run(
+            reclaim_citrus_unused_balance(
+                row,
+                reason=reason,
+                wallet_balance_usd=wallet_balance_usd,
+                extra_meta=extra_meta,
+            )
+        )
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        import concurrent.futures
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(_run).result()
+    return _run()
+
+
+async def enforce_citrus_package_data_cap(
+    row: Dict[str, Any],
+    snapshot: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Stop Citrus service at sold GB or time expiry; return leftover $ to main balance."""
+    from app.services.citrus import CitrusClient
+    from app.services.esim_provision import _citrus_funding_per_gb_usd
+
+    per_gb = _citrus_per_gb_usd(row, snapshot)
+    iccid = str(row.get("iccid") or snapshot.get("iccid") or "").strip()
+    country = str(row.get("country") or "").strip()
+
+    if per_gb is None and (iccid or country):
+        try:
+            async with CitrusClient() as client:
+                rates = await client.get_rates(country=country or None)
+            per_gb = _citrus_funding_per_gb_usd(rates)
+        except Exception as exc:
+            logger.warning(
+                "Citrus rates lookup failed during package-cap check for %s: %s",
+                row.get("order_number"),
+                exc,
+            )
+
+    reason = citrus_sold_data_cap_reached(row, snapshot, per_gb_usd=per_gb)
+    if not reason:
+        return row
+
+    sold_gb = _citrus_package_data_gb(row)
+    charged = _first_float(snapshot.get("wallet_charged_usd"))
+    used_gb = (
+        round(float(charged) / float(per_gb), 4)
+        if charged is not None and per_gb and per_gb > 0
+        else None
+    )
+    return await reclaim_citrus_unused_balance(
+        {**row, "iccid": iccid or row.get("iccid")},
+        reason=reason,
+        wallet_balance_usd=_first_float(snapshot.get("wallet_balance_usd")),
+        extra_meta={
+            "package_cap_gb": sold_gb,
+            "package_cap_used_gb": used_gb,
+            "package_cap_charged_usd": charged,
+            "fund_per_gb_usd": per_gb,
+        },
+    )
+
+
 async def sync_order_usage(
     row: Dict[str, Any],
     *,
@@ -971,7 +1295,18 @@ async def sync_order_usage(
         if isinstance(fulfillment, dict):
             if str(fulfillment.get("esim_tran_no") or "") != str(discovered_esim_id):
                 merge_fulfillment["esim_tran_no"] = str(discovered_esim_id)
-    return apply_usage_snapshot(order_number, snapshot, merge_fulfillment=merge_fulfillment)
+    refreshed = apply_usage_snapshot(order_number, snapshot, merge_fulfillment=merge_fulfillment)
+
+    if provider == "citrus":
+        try:
+            refreshed = await enforce_citrus_package_data_cap(refreshed, snapshot)
+        except Exception as exc:
+            logger.warning(
+                "Citrus package-data cap check failed for %s: %s",
+                order_number,
+                exc,
+            )
+    return refreshed
 
 
 def sync_order_usage_blocking(

@@ -21,7 +21,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from urllib.parse import quote
 
 from app.core.config import get_settings
@@ -108,8 +108,168 @@ def _mock_provision(order_row: Dict[str, Any]) -> Dict[str, str]:
     }
 
 
+def _citrus_plan_meta(order_row: Dict[str, Any]) -> Dict[str, Any]:
+    metadata = order_row.get("metadata") or {}
+    if not isinstance(metadata, dict):
+        return {}
+    plan_meta = metadata.get("fulfillment_plan") or {}
+    return plan_meta if isinstance(plan_meta, dict) else {}
+
+
+def _citrus_data_gb(order_row: Dict[str, Any]) -> Optional[float]:
+    plan_meta = _citrus_plan_meta(order_row)
+    for raw in (
+        plan_meta.get("data_gb"),
+        order_row.get("data_gb"),
+        (order_row.get("metadata") or {}).get("data_gb")
+        if isinstance(order_row.get("metadata"), dict)
+        else None,
+    ):
+        if raw is None:
+            continue
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            continue
+        if value > 0:
+            return value
+    return None
+
+
+def _citrus_network_rates_usd(rates_payload: Any) -> List[float]:
+    """Collect positive per-network $/GB values from a Citrus /rates payload."""
+    rates: List[float] = []
+    if not isinstance(rates_payload, dict):
+        return rates
+
+    def _push(raw: Any) -> None:
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            return
+        if value > 0:
+            rates.append(value)
+
+    countries = rates_payload.get("countries")
+    if isinstance(countries, list):
+        for country in countries:
+            if not isinstance(country, dict):
+                continue
+            networks = country.get("networks")
+            if isinstance(networks, list) and networks:
+                for net in networks:
+                    if isinstance(net, dict):
+                        _push(net.get("per_gb_usd"))
+            else:
+                _push(country.get("cheapest_per_gb_usd"))
+                _push(country.get("reseller_per_gb_usd"))
+    else:
+        networks = rates_payload.get("networks")
+        if isinstance(networks, list):
+            for net in networks:
+                if isinstance(net, dict):
+                    _push(net.get("per_gb_usd"))
+        _push(rates_payload.get("cheapest_per_gb_usd"))
+        _push(rates_payload.get("reseller_per_gb_usd"))
+
+    return rates
+
+
+def _citrus_cheapest_per_gb_usd(rates_payload: Any) -> Optional[float]:
+    """Cheapest reseller $/GB (kept for display / comparisons)."""
+    rates = _citrus_network_rates_usd(rates_payload)
+    return min(rates) if rates else None
+
+
+def _citrus_funding_per_gb_usd(rates_payload: Any) -> Optional[float]:
+    """
+    Mid/high $/GB used to fund sold packages.
+
+    Drops extreme outliers (e.g. Glo at $87/GB), then funds at the average of
+    the median and the highest remaining network rate — closer to guaranteeing
+    sold GB when the phone attaches to a mid/expensive network.
+    """
+    rates = sorted(_citrus_network_rates_usd(rates_payload))
+    if not rates:
+        return None
+    if len(rates) == 1:
+        return round(rates[0], 4)
+
+    mid_idx = (len(rates) - 1) // 2
+    median = rates[mid_idx]
+    # Drop absurd outliers (often one tiny MVNO / edge carrier).
+    filtered = [r for r in rates if r <= max(median * 5.0, rates[0] * 10.0)]
+    if not filtered:
+        filtered = rates
+    filtered = sorted(filtered)
+    f_median = filtered[(len(filtered) - 1) // 2]
+    f_high = filtered[-1]
+    mid_high = (f_median + f_high) / 2.0
+    return round(mid_high, 4)
+
+
+def resolve_citrus_fund_usd(
+    order_row: Dict[str, Any],
+    *,
+    per_gb_usd: Optional[float] = None,
+) -> float:
+    """
+    USD to move onto a new Citrus eSIM wallet at sale time.
+
+    Fund for the data they bought at the mid/high network rate:
+      1) data_gb × mid/high Citrus $/GB (capped at retail so we don't overfund)
+      2) fulfillment_plan.wholesale_cents (mapped cost)
+      3) 50% of retail amount_cents (min $5) — last resort
+    """
+    data_gb = _citrus_data_gb(order_row)
+    retail_usd: Optional[float] = None
+    amount_cents = order_row.get("amount_cents")
+    if amount_cents is not None:
+        try:
+            retail_usd = float(amount_cents) / 100.0
+            if retail_usd <= 0:
+                retail_usd = None
+        except (TypeError, ValueError):
+            retail_usd = None
+
+    if data_gb and per_gb_usd and per_gb_usd > 0:
+        fund = round(float(data_gb) * float(per_gb_usd), 2)
+        # Never put more wholesale on the SIM than the customer paid.
+        if retail_usd is not None:
+            fund = min(fund, round(retail_usd, 2))
+        if fund > 0:
+            return fund
+
+    plan_meta = _citrus_plan_meta(order_row)
+    wholesale = plan_meta.get("wholesale_cents")
+    if wholesale is not None:
+        try:
+            fund = float(wholesale) / 100.0
+            if fund > 0:
+                return round(fund, 2)
+        except (TypeError, ValueError):
+            pass
+
+    if retail_usd is not None:
+        return max(5.0, round(retail_usd * 0.5, 2))
+
+    # Legacy fallback if an old row still carries `price` in dollars.
+    if order_row.get("price") is not None:
+        try:
+            price = float(order_row["price"])
+            if price > 0:
+                return max(5.0, round(price * 0.5, 2))
+        except (TypeError, ValueError):
+            pass
+
+    raise RuntimeError(
+        "Cannot determine Citrus fund amount "
+        "(need data_gb+rates, wholesale_cents, or amount_cents)"
+    )
+
+
 async def _citrus_provision_async(order_row: Dict[str, Any]) -> Dict[str, Any]:
-    from app.services.citrus import CitrusClient
+    from app.services.citrus import CitrusClient, CitrusError
 
     order_number = order_row["order_number"]
     email = str(order_row.get("email") or "")
@@ -119,9 +279,6 @@ async def _citrus_provision_async(order_row: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(metadata, dict):
         metadata = {}
     wants_topup = bool(metadata.get("wants_topup") or metadata.get("wantsTopUp"))
-    plan_meta = metadata.get("fulfillment_plan") or {}
-    if not isinstance(plan_meta, dict):
-        plan_meta = {}
 
     async with CitrusClient() as client:
         payload = await client.provision_esim(
@@ -130,25 +287,50 @@ async def _citrus_provision_async(order_row: Dict[str, Any]) -> Dict[str, Any]:
         )
 
         iccid = str(payload.get("iccid") or "").strip()
-        # Optional fund when customer asked for top-up-capable SIM.
-        if wants_topup and iccid:
-            fund_usd = None
-            if plan_meta.get("wholesale_cents") is not None:
-                fund_usd = float(plan_meta["wholesale_cents"]) / 100.0
-            elif order_row.get("price") is not None:
-                # Conservative starter fund: 50% of retail, min $5
-                fund_usd = max(5.0, round(float(order_row["price"]) * 0.5, 2))
-            if fund_usd and fund_usd > 0:
-                try:
-                    fund_result = await client.fund_esim(iccid, fund_usd)
-                    payload = {**payload, "fund": fund_result, "funded_usd": fund_usd}
-                except Exception as exc:
-                    logger.warning(
-                        "Citrus fund_esim failed for %s iccid=%s: %s",
-                        order_number,
-                        iccid,
-                        exc,
-                    )
+        if not iccid:
+            raise RuntimeError("Citrus provision response missing iccid")
+
+        # Always fund the SIM wallet at sale — Citrus does not auto-debit usage
+        # from the reseller balance. An unfunded SIM is a $0 brick for the buyer.
+        per_gb_usd: Optional[float] = None
+        try:
+            rates = await client.get_rates(country=country or None)
+            per_gb_usd = _citrus_funding_per_gb_usd(rates)
+        except Exception as exc:
+            logger.warning(
+                "Citrus rates lookup failed for %s country=%s: %s",
+                order_number,
+                country,
+                exc,
+            )
+
+        try:
+            fund_usd = resolve_citrus_fund_usd(order_row, per_gb_usd=per_gb_usd)
+        except RuntimeError as exc:
+            raise CitrusError(
+                f"Citrus eSIM {iccid} provisioned but fund amount unknown for "
+                f"{order_number}: {exc}"
+            ) from exc
+
+        try:
+            fund_result = await client.fund_esim(iccid, fund_usd)
+        except CitrusError:
+            raise
+        except Exception as exc:
+            raise CitrusError(
+                f"Citrus eSIM {iccid} provisioned but fund ${fund_usd:.2f} failed "
+                f"for {order_number}: {exc}"
+            ) from exc
+
+        payload = {
+            **payload,
+            "fund": fund_result,
+            "funded_usd": fund_usd,
+            "fund_per_gb_usd": per_gb_usd,
+            "fund_rate_tier": "mid_high",
+            "package_data_gb": _citrus_data_gb(order_row),
+            "package_fund_usd": fund_usd,
+        }
 
     lpa_string = str(payload.get("lpa_string") or "").strip()
     if not lpa_string:
@@ -163,12 +345,16 @@ async def _citrus_provision_async(order_row: Dict[str, Any]) -> Dict[str, Any]:
 
     activation_code = _activation_code_from_lpa(lpa_string)
     smdp = _smdp_from_lpa(lpa_string)
-    iccid = str(payload.get("iccid") or "").strip()
+    funded_usd = payload.get("funded_usd")
+    package_data_gb = payload.get("package_data_gb")
+    fund_per_gb_usd = payload.get("fund_per_gb_usd")
 
     logger.info(
-        "Provisioned Citrus eSIM for order %s iccid=%s topup=%s",
+        "Provisioned Citrus eSIM for order %s iccid=%s funded_usd=%s package_gb=%s topup=%s",
         order_number,
         iccid or "(none)",
+        funded_usd,
+        package_data_gb,
         wants_topup,
     )
     return {
@@ -178,6 +364,11 @@ async def _citrus_provision_async(order_row: Dict[str, Any]) -> Dict[str, Any]:
         "provider": "citrus",
         "iccid": iccid,
         "smdp_address": smdp,
+        "funded_usd": funded_usd,
+        "package_data_gb": package_data_gb,
+        "package_fund_usd": funded_usd,
+        "fund_per_gb_usd": fund_per_gb_usd,
+        "fund_rate_tier": "mid_high",
         "raw": payload,
     }
 

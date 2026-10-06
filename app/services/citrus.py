@@ -172,6 +172,25 @@ class CitrusClient:
         payload = await self._request("GET", "/wallet/balance")
         return payload if isinstance(payload, dict) else {"data": payload}
 
+    async def get_rates(
+        self,
+        *,
+        country: Optional[str] = None,
+        continent: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """GET /rates — reseller per-GB rates (optionally filtered by country)."""
+        params: Dict[str, Any] = {}
+        if country:
+            params["country"] = country
+        if continent:
+            params["continent"] = continent
+        payload = await self._request(
+            "GET",
+            "/rates",
+            params=params or None,
+        )
+        return payload if isinstance(payload, dict) else {"data": payload}
+
     async def list_esims(
         self,
         *,
@@ -233,12 +252,36 @@ class CitrusClient:
         )
         return payload if isinstance(payload, dict) else {"data": payload}
 
+    async def defund_esim(self, iccid: str) -> Dict[str, Any]:
+        """
+        POST /esim/{iccid}/defund — return unused SIM wallet to reseller balance.
+
+        Async (often 202): pauses data immediately; credit settles in ~15 minutes.
+        """
+        iccid = (iccid or "").strip()
+        if not iccid:
+            raise ValueError("iccid is required")
+        payload = await self._request("POST", f"/esim/{iccid}/defund")
+        return payload if isinstance(payload, dict) else {"data": payload}
+
     async def disable_esim(self, iccid: str) -> Dict[str, Any]:
         """POST /esim/{iccid}/disable"""
         iccid = (iccid or "").strip()
         if not iccid:
             raise ValueError("iccid is required")
         payload = await self._request("POST", f"/esim/{iccid}/disable")
+        return payload if isinstance(payload, dict) else {"data": payload}
+
+    async def terminate_esim(self, iccid: str) -> Dict[str, Any]:
+        """
+        POST /esim/{iccid}/terminate — permanently kill the profile (irreversible).
+
+        Remaining wallet balance is forfeited — always defund first when $ remains.
+        """
+        iccid = (iccid or "").strip()
+        if not iccid:
+            raise ValueError("iccid is required")
+        payload = await self._request("POST", f"/esim/{iccid}/terminate")
         return payload if isinstance(payload, dict) else {"data": payload}
 
     async def enable_esim(self, iccid: str) -> Dict[str, Any]:

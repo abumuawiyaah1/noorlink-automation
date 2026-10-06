@@ -368,6 +368,27 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
                         )
                     except db.SupabaseRepositoryError:
                         pass
+
+                # Citrus PAYG: return any leftover SIM wallet to reseller balance.
+                try:
+                    from app.services.esim_usage_sync import (
+                        reclaim_citrus_unused_balance_blocking,
+                        resolve_order_provider,
+                    )
+
+                    if resolve_order_provider(row) == "citrus":
+                        reclaim_citrus_unused_balance_blocking(
+                            row,
+                            reason="validity_expired",
+                        )
+                except Exception as reclaim_exc:
+                    logger.warning(
+                        "Citrus expiry reclaim failed for %s: %s",
+                        order_number,
+                        reclaim_exc,
+                    )
+                    errors.append(f"{order_number}: citrus_reclaim:{reclaim_exc}")
+
                 expired_sent += 1
             except EmailDeliveryError as exc:
                 logger.error("Expired reminder failed for %s: %s", order_number, exc)
