@@ -1,8 +1,8 @@
 """
 Virtual catalog → provider fulfillment resolution.
 
-Looks up plan_fulfillment_map (DB), then falls back to built-in Saudi Access seeds
-so local/dev can route SA before the migration is applied.
+Looks up plan_fulfillment_map (DB), then falls back to built-in Access seeds
+(Saudi + Ghana) so local/dev can route before the migration is applied.
 """
 
 from __future__ import annotations
@@ -177,6 +177,62 @@ STATIC_SA_MAP: List[Dict[str, Any]] = [
     },
 ]
 
+# Ghana storefront ladder → eSIM Access (off Telna Africa cascade).
+STATIC_GHANA_ACCESS_MAP: List[Dict[str, Any]] = [
+    {
+        "catalog_key": "ghana-1gb-7",
+        "country_code": "GH",
+        "country_slug": "ghana",
+        "data_gb": 1.0,
+        "validity_days": 7,
+        "provider": "esimaccess",
+        "provider_sku": "MB025",
+        "provider_slug": "GH_1_7",
+        "wholesale_cents": 175,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "ghana-5gb-30",
+        "country_code": "GH",
+        "country_slug": "ghana",
+        "data_gb": 5.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "MB035",
+        "provider_slug": "GH_5_30",
+        "wholesale_cents": 778,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "ghana-10gb-30",
+        "country_code": "GH",
+        "country_slug": "ghana",
+        "data_gb": 10.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "MB040",
+        "provider_slug": "GH_10_30",
+        "wholesale_cents": 1557,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "ghana-20gb-30",
+        "country_code": "GH",
+        "country_slug": "ghana",
+        "data_gb": 20.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "MB057",
+        "provider_slug": "GH_20_30",
+        "wholesale_cents": 2916,
+        "period_num": None,
+        "is_active": True,
+    },
+]
+
 
 def _regional_fulfillment_seeds() -> List[Dict[str, Any]]:
     """Access SKUs declared on regional template plans."""
@@ -224,7 +280,9 @@ def _regional_fulfillment_seeds() -> List[Dict[str, Any]]:
     return seeds
 
 
-STATIC_FULFILLMENT_MAP: List[Dict[str, Any]] = STATIC_SA_MAP + _regional_fulfillment_seeds()
+STATIC_FULFILLMENT_MAP: List[Dict[str, Any]] = (
+    STATIC_SA_MAP + STATIC_GHANA_ACCESS_MAP + _regional_fulfillment_seeds()
+)
 
 
 @dataclass(frozen=True)
@@ -370,6 +428,7 @@ COUNTRY_MAP_LOCK_SLUGS = frozenset(
         "united-states",
         "usa",
         "mexico",
+        "ghana",
     }
 )
 
@@ -446,7 +505,10 @@ def _me_silent_static_seeds() -> List[Dict[str, Any]]:
 
 
 STATIC_FULFILLMENT_MAP: List[Dict[str, Any]] = (
-    STATIC_SA_MAP + _regional_fulfillment_seeds() + _me_silent_static_seeds()
+    STATIC_SA_MAP
+    + STATIC_GHANA_ACCESS_MAP
+    + _regional_fulfillment_seeds()
+    + _me_silent_static_seeds()
 )
 
 
