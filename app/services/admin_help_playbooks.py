@@ -284,6 +284,20 @@ PLAYBOOKS: Tuple[HelpPlaybook, ...] = (
         area="marketing",
     ),
     HelpPlaybook(
+        id="whatsapp-umrah10",
+        title="Send WhatsApp Umrah code UMRAH10",
+        problem="Pilgrim messaged on WhatsApp — share the 10% Umrah / Hajj discount.",
+        steps=(
+            "Code UMRAH10 is 10% off (active through Aug 2027) — create it in Promo wizard if missing",
+            "Send this link so checkout auto-applies the code: https://noorlink.co/hajj-umrah?promo=UMRAH10",
+            "Or tell them to enter UMRAH10 at checkout on noorlink.co",
+        ),
+        tags=("promo", "whatsapp", "umrah", "hajj", "discount", "UMRAH10"),
+        wizard_path="/admin/promo-wizard",
+        roles=(ROLE_ADMIN, ROLE_SUPPORT, ROLE_MARKETING),
+        area="support",
+    ),
+    HelpPlaybook(
         id="insider-send",
         title="Send Insider newsletter",
         problem="Monthly newsletter or special issue needs to go out.",
