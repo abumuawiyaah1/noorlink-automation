@@ -54,7 +54,7 @@ def test_parse_telna_country_and_bundle_names():
 def test_rank_matches_prefers_exact_then_cheaper():
     products = [
         CatalogProduct(
-            provider="telna",
+            provider="esimaccess",
             provider_sku="a",
             name="Chile-5 GB 7 Days",
             scope="country",
@@ -64,7 +64,7 @@ def test_rank_matches_prefers_exact_then_cheaper():
             wholesale_cents=1200,
         ),
         CatalogProduct(
-            provider="telna",
+            provider="esimaccess",
             provider_sku="b",
             name="Chile-3 GB 7 Days",
             scope="country",
@@ -74,7 +74,7 @@ def test_rank_matches_prefers_exact_then_cheaper():
             wholesale_cents=900,
         ),
         CatalogProduct(
-            provider="telna",
+            provider="esimaccess",
             provider_sku="c",
             name="Chile-3 GB 15 Days",
             scope="country",
@@ -91,7 +91,7 @@ def test_rank_matches_prefers_exact_then_cheaper():
 def test_cascade_country_then_regional_then_global():
     catalog = [
         CatalogProduct(
-            provider="telna",
+            provider="esimaccess",
             provider_sku="latam-3",
             name="Latin America Bundle-3 GB 7 Days",
             scope="regional",
@@ -101,7 +101,7 @@ def test_cascade_country_then_regional_then_global():
             wholesale_cents=850,
         ),
         CatalogProduct(
-            provider="telna",
+            provider="esimaccess",
             provider_sku="global-3",
             name="Global Bundle-3 GB 7 Days",
             scope="global",
@@ -122,7 +122,7 @@ def test_cascade_country_then_regional_then_global():
     # Country SKU wins over regional
     catalog_with_country = [
         CatalogProduct(
-            provider="telna",
+            provider="esimaccess",
             provider_sku="chile-3",
             name="Chile-3 GB 7 Days",
             scope="country",
@@ -167,7 +167,7 @@ def test_choose_prefers_cheaper_cascade_over_map(monkeypatch):
     )
     products = [
         CatalogProduct(
-            provider="telna",
+            provider="esimaccess",
             provider_sku="cheap-chile",
             name="Chile-3 GB 7 Days",
             scope="country",
@@ -194,8 +194,8 @@ def test_choose_keeps_silent_me_map_over_cheaper_country_sku():
 
     mapped = FulfillmentTarget(
         catalog_key="turkey-10gb-30",
-        provider="telna",
-        provider_sku="67f6c112d07af55d502bef78",
+        provider="zesimo",
+        provider_sku="1887",
         wholesale_cents=2800,
         data_gb=10.0,
         validity_days=30,
@@ -203,7 +203,7 @@ def test_choose_keeps_silent_me_map_over_cheaper_country_sku():
     )
     products = [
         CatalogProduct(
-            provider="telna",
+            provider="esimaccess",
             provider_sku="cheap-turkey",
             name="Turkey-10 GB 30 Days",
             scope="country",
@@ -240,7 +240,7 @@ def test_topup_prefers_citrus_when_configured():
     assert chosen.source == "policy:topup"
 
 
-def test_resolve_fulfillment_target_uses_builtin_for_unwired(monkeypatch):
+def test_resolve_fulfillment_target_does_not_cascade_telna(monkeypatch):
     monkeypatch.setattr(
         "app.services.fulfillment_map._fetch_db_maps",
         lambda: [],
@@ -249,7 +249,7 @@ def test_resolve_fulfillment_target_uses_builtin_for_unwired(monkeypatch):
         "app.services.provider_catalog.fetch_catalog_products",
         lambda **kwargs: builtin_catalog(),
     )
-    # Brazil single-country with LatAm ladder step in builtin seed
+    # Telna builtin seed must not fulfill new orders after retirement.
     target = resolve_fulfillment_target(
         {
             "country": "Brazil",
@@ -259,10 +259,7 @@ def test_resolve_fulfillment_target_uses_builtin_for_unwired(monkeypatch):
         },
         package={"data_total_gb": 3.0, "validity_days": 7},
     )
-    assert target is not None
-    assert target.provider == "telna"
-    assert target.source.startswith("catalog:")
-    assert target.provider_sku.startswith("67f6c112")
+    assert target is None or target.provider != "telna"
 
 
 def test_builtin_seed_non_empty():

@@ -280,11 +280,6 @@ def _regional_fulfillment_seeds() -> List[Dict[str, Any]]:
     return seeds
 
 
-STATIC_FULFILLMENT_MAP: List[Dict[str, Any]] = (
-    STATIC_SA_MAP + STATIC_GHANA_ACCESS_MAP + _regional_fulfillment_seeds()
-)
-
-
 @dataclass(frozen=True)
 class FulfillmentTarget:
     catalog_key: str
@@ -385,17 +380,9 @@ def is_saudi_destination(country: Optional[str], country_code: Optional[str] = N
     return normalize_country_slug(country) == "saudi-arabia"
 
 
-# Country storefront pages that silently fulfill on Telna Middle East Bundle.
-# Customers still see "UAE 10GB" / "Turkey 10GB" — not a regional promo.
-# Saudi / Umrah stays on Access (never listed here).
-# Telna remains only for these ME storefronts (no Zesimo Phase 5 cutover yet).
-ME_SILENT_TELNA_COUNTRY_SLUGS = frozenset(
-    {
-        "israel",
-        "tunisia",
-        "cyprus",
-    }
-)
+# Legacy name kept for resolver imports — Telna ME silent cutover is retired.
+# Israel / Tunisia / Cyprus use Access maps (STATIC_ME_ACCESS_MAP + DB).
+ME_SILENT_TELNA_COUNTRY_SLUGS = frozenset()
 
 # Hand-wired single-country maps (Zesimo Phase 5 + prior US/MX). Prefer map over cascade.
 COUNTRY_MAP_LOCK_SLUGS = frozenset(
@@ -429,84 +416,259 @@ COUNTRY_MAP_LOCK_SLUGS = frozenset(
         "usa",
         "mexico",
         "ghana",
+        "aruba",
+        "cayman-islands",
+        "taiwan",
+        "puerto-rico",
+        "israel",
+        "tunisia",
+        "cyprus",
     }
 )
 
-# Telna Middle East Bundle ladder (shared SKUs for silent country fulfillment).
-ME_SILENT_TELNA_LADDER: List[Dict[str, Any]] = [
-    {
-        "data_gb": 1.0,
-        "validity_days": 5,
-        "provider_sku": "67f6c112d07af55d502bef7a",
-        "provider_slug": "telna-me-1gb-5d",
-        "wholesale_cents": 370,
-        "key_suffix": "1gb-5",
-    },
-    {
-        "data_gb": 3.0,
-        "validity_days": 7,
-        "provider_sku": "67f6c112d07af55d502bef79",
-        "provider_slug": "telna-me-3gb-7d",
-        "wholesale_cents": 1000,
-        "key_suffix": "3gb-7",
-    },
-    {
-        "data_gb": 5.0,
-        "validity_days": 15,
-        "provider_sku": "67f6c112d07af55d502bef7b",
-        "provider_slug": "telna-me-5gb-15d",
-        "wholesale_cents": 1620,
-        "key_suffix": "5gb-15",
-    },
-    {
-        "data_gb": 10.0,
-        "validity_days": 30,
-        "provider_sku": "67f6c112d07af55d502bef78",
-        "provider_slug": "telna-me-10gb-30d",
-        "wholesale_cents": 2800,
-        "key_suffix": "10gb-30",
-    },
+# Israel / Tunisia / Cyprus — Access country ladders (was Telna ME silent).
+STATIC_ME_ACCESS_MAP: List[Dict[str, Any]] = [
+    {"catalog_key": "israel-1gb-7", "country_code": "IL", "country_slug": "israel", "data_gb": 1.0, "validity_days": 7, "provider": "esimaccess", "provider_sku": "CKH223", "provider_slug": "IL_1_7", "wholesale_cents": 90, "period_num": None, "is_active": True},
+    {"catalog_key": "israel-5gb-30", "country_code": "IL", "country_slug": "israel", "data_gb": 5.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "CKH225", "provider_slug": "IL_5_30", "wholesale_cents": 425, "period_num": None, "is_active": True},
+    {"catalog_key": "israel-10gb-30", "country_code": "IL", "country_slug": "israel", "data_gb": 10.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "CKH226", "provider_slug": "IL_10_30", "wholesale_cents": 636, "period_num": None, "is_active": True},
+    {"catalog_key": "israel-20gb-30", "country_code": "IL", "country_slug": "israel", "data_gb": 20.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "CKH722", "provider_slug": "IL_20_30", "wholesale_cents": 1220, "period_num": None, "is_active": True},
+    {"catalog_key": "tunisia-1gb-7", "country_code": "TN", "country_slug": "tunisia", "data_gb": 1.0, "validity_days": 7, "provider": "esimaccess", "provider_sku": "KR001", "provider_slug": "TN_1_7", "wholesale_cents": 95, "period_num": None, "is_active": True},
+    {"catalog_key": "tunisia-5gb-30", "country_code": "TN", "country_slug": "tunisia", "data_gb": 5.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "KR003", "provider_slug": "TN_5_30", "wholesale_cents": 423, "period_num": None, "is_active": True},
+    {"catalog_key": "tunisia-10gb-30", "country_code": "TN", "country_slug": "tunisia", "data_gb": 10.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "KR004", "provider_slug": "TN_10_30", "wholesale_cents": 772, "period_num": None, "is_active": True},
+    {"catalog_key": "tunisia-20gb-30", "country_code": "TN", "country_slug": "tunisia", "data_gb": 20.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "KR006", "provider_slug": "TN_20_30", "wholesale_cents": 1311, "period_num": None, "is_active": True},
+    {"catalog_key": "cyprus-1gb-7", "country_code": "CY", "country_slug": "cyprus", "data_gb": 1.0, "validity_days": 7, "provider": "esimaccess", "provider_sku": "CKH208", "provider_slug": "CY_1_7", "wholesale_cents": 57, "period_num": None, "is_active": True},
+    {"catalog_key": "cyprus-5gb-30", "country_code": "CY", "country_slug": "cyprus", "data_gb": 5.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "CKH119", "provider_slug": "CY_5_30", "wholesale_cents": 238, "period_num": None, "is_active": True},
+    {"catalog_key": "cyprus-10gb-30", "country_code": "CY", "country_slug": "cyprus", "data_gb": 10.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "CKH210", "provider_slug": "CY_10_30", "wholesale_cents": 428, "period_num": None, "is_active": True},
+    {"catalog_key": "cyprus-20gb-30", "country_code": "CY", "country_slug": "cyprus", "data_gb": 20.0, "validity_days": 30, "provider": "esimaccess", "provider_sku": "CKH708", "provider_slug": "CY_20_30", "wholesale_cents": 946, "period_num": None, "is_active": True},
 ]
 
 
 def _me_silent_lookup_slugs(slug: str) -> List[str]:
-    """Country slugs that should match silent ME Telna fulfillment map rows."""
-    normalized = normalize_country_slug(slug)
-    if normalized == "united-arab-emirates":
-        normalized = "uae"
-    if normalized in ME_SILENT_TELNA_COUNTRY_SLUGS or slug in ME_SILENT_TELNA_COUNTRY_SLUGS:
-        return [normalized]
+    """Compatibility stub — Telna ME silent list is empty after cutover."""
     return []
 
 
 def _me_silent_static_seeds() -> List[Dict[str, Any]]:
-    """Per-country Telna ME maps so UAE/Turkey/Egypt resolve without regional promo."""
-    seeds: List[Dict[str, Any]] = []
-    for country_slug in sorted(ME_SILENT_TELNA_COUNTRY_SLUGS):
-        if country_slug == "united-arab-emirates":
-            continue  # alias of uae
-        for rung in ME_SILENT_TELNA_LADDER:
-            seeds.append(
-                {
-                    "catalog_key": f"{country_slug}-{rung['key_suffix']}",
-                    "country_code": None,
-                    "country_slug": country_slug,
-                    "data_gb": rung["data_gb"],
-                    "validity_days": rung["validity_days"],
-                    "provider": "telna",
-                    "provider_sku": rung["provider_sku"],
-                    "provider_slug": rung["provider_slug"],
-                    "wholesale_cents": rung["wholesale_cents"],
-                    "period_num": None,
-                    "is_active": True,
-                }
-            )
-    return seeds
+    """No Telna ME silent seeds; Access maps live in STATIC_ME_ACCESS_MAP."""
+    return []
 
+
+STATIC_GAP_FIX_MAP: List[Dict[str, Any]] = [
+    {
+        "catalog_key": "aruba-1gb-7",
+        "country_code": "AW",
+        "country_slug": "aruba",
+        "data_gb": 1.0,
+        "validity_days": 7,
+        "provider": "esimaccess",
+        "provider_sku": "P6ZPW9SU5",
+        "provider_slug": "AW_1_7",
+        "wholesale_cents": 836,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "aruba-5gb-30",
+        "country_code": "AW",
+        "country_slug": "aruba",
+        "data_gb": 5.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "PQMJF478J",
+        "provider_slug": "AW_5_30",
+        "wholesale_cents": 3715,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "aruba-10gb-30",
+        "country_code": "AW",
+        "country_slug": "aruba",
+        "data_gb": 10.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "P2ALZ6B4P",
+        "provider_slug": "AW_10_30",
+        "wholesale_cents": 6779,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "aruba-20gb-30",
+        "country_code": "AW",
+        "country_slug": "aruba",
+        "data_gb": 20.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "P9LT8LCF5",
+        "provider_slug": "AW_20_30",
+        "wholesale_cents": 13929,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "cayman-islands-1gb-7",
+        "country_code": "KY",
+        "country_slug": "cayman-islands",
+        "data_gb": 1.0,
+        "validity_days": 7,
+        "provider": "esimaccess",
+        "provider_sku": "PK93SBDBR",
+        "provider_slug": "KY_1_7",
+        "wholesale_cents": 565,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "cayman-islands-5gb-30",
+        "country_code": "KY",
+        "country_slug": "cayman-islands",
+        "data_gb": 5.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "P7SKZOMJ1",
+        "provider_slug": "KY_5_30",
+        "wholesale_cents": 2512,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "cayman-islands-10gb-30",
+        "country_code": "KY",
+        "country_slug": "cayman-islands",
+        "data_gb": 10.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "PCE87XXRF",
+        "provider_slug": "KY_10_30",
+        "wholesale_cents": 4584,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "cayman-islands-20gb-30",
+        "country_code": "KY",
+        "country_slug": "cayman-islands",
+        "data_gb": 20.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "PXR6X2UVA",
+        "provider_slug": "KY_20_30",
+        "wholesale_cents": 8414,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "taiwan-1gb-7",
+        "country_code": "TW",
+        "country_slug": "taiwan",
+        "data_gb": 1.0,
+        "validity_days": 7,
+        "provider": "esimaccess",
+        "provider_sku": "PLF72QJG4",
+        "provider_slug": "AS-14_1_7",
+        "wholesale_cents": 94,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "taiwan-5gb-30",
+        "country_code": "TW",
+        "country_slug": "taiwan",
+        "data_gb": 5.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "P81GHARZ9",
+        "provider_slug": "AS-14_5_30",
+        "wholesale_cents": 416,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "taiwan-10gb-30",
+        "country_code": "TW",
+        "country_slug": "taiwan",
+        "data_gb": 10.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "P7MMYE69X",
+        "provider_slug": "AS-14_10_30",
+        "wholesale_cents": 759,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "taiwan-20gb-30",
+        "country_code": "TW",
+        "country_slug": "taiwan",
+        "data_gb": 20.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "PJ9W0NTK3",
+        "provider_slug": "AS-14_20_30",
+        "wholesale_cents": 1560,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "puerto-rico-1gb-7",
+        "country_code": "PR",
+        "country_slug": "puerto-rico",
+        "data_gb": 1.0,
+        "validity_days": 7,
+        "provider": "esimaccess",
+        "provider_sku": "CKH315",
+        "provider_slug": "PR_1_7",
+        "wholesale_cents": 169,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "puerto-rico-5gb-30",
+        "country_code": "PR",
+        "country_slug": "puerto-rico",
+        "data_gb": 5.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "CKH347",
+        "provider_slug": "PR_5_30",
+        "wholesale_cents": 752,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "puerto-rico-10gb-30",
+        "country_code": "PR",
+        "country_slug": "puerto-rico",
+        "data_gb": 10.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "PDWMZ77EO",
+        "provider_slug": "CB_10_30",
+        "wholesale_cents": 4490,
+        "period_num": None,
+        "is_active": True,
+    },
+    {
+        "catalog_key": "puerto-rico-20gb-30",
+        "country_code": "PR",
+        "country_slug": "puerto-rico",
+        "data_gb": 20.0,
+        "validity_days": 30,
+        "provider": "esimaccess",
+        "provider_sku": "PY1G7FDKC",
+        "provider_slug": "US_20_30",
+        "wholesale_cents": 1159,
+        "period_num": None,
+        "is_active": True,
+    },
+]
 
 STATIC_FULFILLMENT_MAP: List[Dict[str, Any]] = (
     STATIC_SA_MAP
     + STATIC_GHANA_ACCESS_MAP
+    + STATIC_GAP_FIX_MAP
+    + STATIC_ME_ACCESS_MAP
     + _regional_fulfillment_seeds()
     + _me_silent_static_seeds()
 )

@@ -231,8 +231,11 @@ def upsert_catalog_products(products: Sequence[CatalogProduct]) -> int:
         raise db.SupabaseRepositoryError(str(exc)) from exc
 
 
+RETIRED_CASCADE_PROVIDERS = frozenset({"telna", "weconnect"})
+
+
 def fetch_catalog_products(*, provider: Optional[str] = None) -> List[CatalogProduct]:
-    """Load active catalog from DB; fall back to builtin Telna seed."""
+    """Load active catalog from DB. Telna/WeConnect are excluded from cascade."""
     try:
         client = db.get_supabase_client()
         query = (
@@ -250,6 +253,9 @@ def fetch_catalog_products(*, provider: Optional[str] = None) -> List[CatalogPro
         if rows:
             out: List[CatalogProduct] = []
             for row in rows:
+                prov = str(row.get("provider") or "").strip().lower()
+                if not provider and prov in RETIRED_CASCADE_PROVIDERS:
+                    continue
                 slugs = row.get("country_slugs") or []
                 if not isinstance(slugs, list):
                     slugs = []
@@ -274,6 +280,12 @@ def fetch_catalog_products(*, provider: Optional[str] = None) -> List[CatalogPro
         logger.info("provider_catalog_products unavailable (%s); using builtin seed", exc)
 
     products = builtin_catalog()
+    # Builtin seed is historical Telna data — empty for cascade after retirement.
+    products = [
+        p
+        for p in products
+        if str(p.provider or "").strip().lower() not in RETIRED_CASCADE_PROVIDERS
+    ]
     if provider:
         products = [p for p in products if p.provider == provider]
     return products

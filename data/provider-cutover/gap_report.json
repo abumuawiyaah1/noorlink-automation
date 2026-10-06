@@ -1,0 +1,2646 @@
+{
+  "counts": {
+    "countries_audited": 98,
+    "no_provider": 22,
+    "still_telna": 285,
+    "no_resolve": 96,
+    "expensive": 0,
+    "regional": 15
+  },
+  "no_provider": [
+    {
+      "slug": "aruba",
+      "plan": "1GB/7d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "aruba",
+      "plan": "5GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "aruba",
+      "plan": "10GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "aruba",
+      "plan": "20GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "cayman-islands",
+      "plan": "1GB/7d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "cayman-islands",
+      "plan": "5GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "cayman-islands",
+      "plan": "10GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "cayman-islands",
+      "plan": "20GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "europe",
+      "plan": "1GB/7d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "europe",
+      "plan": "5GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "europe",
+      "plan": "10GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "europe",
+      "plan": "20GB/30d",
+      "iso": "?",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "lebanon",
+      "plan": "1GB/7d",
+      "iso": "LB",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "lebanon",
+      "plan": "5GB/30d",
+      "iso": "LB",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "lebanon",
+      "plan": "10GB/30d",
+      "iso": "LB",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "lebanon",
+      "plan": "20GB/30d",
+      "iso": "LB",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "puerto-rico",
+      "plan": "10GB/30d",
+      "iso": "PR",
+      "why": "no size match"
+    },
+    {
+      "slug": "puerto-rico",
+      "plan": "20GB/30d",
+      "iso": "PR",
+      "why": "no size match"
+    },
+    {
+      "slug": "taiwan",
+      "plan": "1GB/7d",
+      "iso": "TW",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "taiwan",
+      "plan": "5GB/30d",
+      "iso": "TW",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "taiwan",
+      "plan": "10GB/30d",
+      "iso": "TW",
+      "why": "no ISO packs"
+    },
+    {
+      "slug": "taiwan",
+      "plan": "20GB/30d",
+      "iso": "TW",
+      "why": "no ISO packs"
+    }
+  ],
+  "still_telna": [
+    {
+      "slug": "algeria",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "algeria",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "algeria",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "argentina",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "argentina",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "argentina",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "aruba",
+      "plan": "1GB/7d",
+      "sku": "690b2b5e7aff111b7539f7bd",
+      "usd": 16.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "aruba",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "aruba",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "australia",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fe3d",
+      "usd": 4.0,
+      "source": "catalog:country"
+    },
+    {
+      "slug": "australia",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fe25",
+      "usd": 11.0,
+      "source": "catalog:country"
+    },
+    {
+      "slug": "australia",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fe25",
+      "usd": 11.0,
+      "source": "catalog:country"
+    },
+    {
+      "slug": "austria",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "austria",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "austria",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bahamas",
+      "plan": "1GB/7d",
+      "sku": "690b2b5e7aff111b7539f7bd",
+      "usd": 16.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bahamas",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bahamas",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bahrain",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bahrain",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bahrain",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bangladesh",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bangladesh",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bangladesh",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "barbados",
+      "plan": "1GB/7d",
+      "sku": "690b2b5e7aff111b7539f7bd",
+      "usd": 16.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "barbados",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "barbados",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "belgium",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "belgium",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "belgium",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "belize",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "belize",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "belize",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bolivia",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bolivia",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bolivia",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "brazil",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "brazil",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "brazil",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bulgaria",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bulgaria",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "bulgaria",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cambodia",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cambodia",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cambodia",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "canada",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc80043",
+      "usd": 6.6,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "canada",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc80016",
+      "usd": 18.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "canada",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc80016",
+      "usd": 18.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cayman-islands",
+      "plan": "1GB/7d",
+      "sku": "690b2b5e7aff111b7539f7bd",
+      "usd": 16.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cayman-islands",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cayman-islands",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "chile",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "chile",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "chile",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "china",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "china",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "china",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "colombia",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "colombia",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "colombia",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "costa-rica",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "costa-rica",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "costa-rica",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "croatia",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "croatia",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "croatia",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cyprus",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cyprus",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "cyprus",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "static"
+    },
+    {
+      "slug": "czechia",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "czechia",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "czechia",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "denmark",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "denmark",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "denmark",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "dominican-republic",
+      "plan": "1GB/7d",
+      "sku": "690b2b5e7aff111b7539f7bd",
+      "usd": 16.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "dominican-republic",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "dominican-republic",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ecuador",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ecuador",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ecuador",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "egypt",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "egypt",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "egypt",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ethiopia",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ethiopia",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ethiopia",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "fiji",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "fiji",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "fiji",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "finland",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "finland",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "finland",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "france",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "france",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "france",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "germany",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "germany",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "germany",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "greece",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "greece",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "greece",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "guatemala",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "guatemala",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "guatemala",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "honduras",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "honduras",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "honduras",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "hong-kong",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "hong-kong",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "hong-kong",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "hungary",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "hungary",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "hungary",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "iceland",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "iceland",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "iceland",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "india",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "india",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "india",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "indonesia",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "indonesia",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "indonesia",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ireland",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ireland",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ireland",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "israel",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "israel",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "israel",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "static"
+    },
+    {
+      "slug": "italy",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "italy",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "italy",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "jamaica",
+      "plan": "1GB/7d",
+      "sku": "690b2b5e7aff111b7539f7bd",
+      "usd": 16.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "jamaica",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "jamaica",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "japan",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "japan",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "japan",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "jordan",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "jordan",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "jordan",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "kenya",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "kenya",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "kenya",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "kuwait",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "kuwait",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "kuwait",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "lebanon",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "lebanon",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "lebanon",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "malaysia",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "malaysia",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "malaysia",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "maldives",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "maldives",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "maldives",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "malta",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "malta",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "malta",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "mexico",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7ffcc",
+      "usd": 7.5,
+      "source": "catalog:country"
+    },
+    {
+      "slug": "mexico",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7ffb4",
+      "usd": 20.0,
+      "source": "catalog:country"
+    },
+    {
+      "slug": "mexico",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7ffb4",
+      "usd": 20.0,
+      "source": "catalog:country"
+    },
+    {
+      "slug": "morocco",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "morocco",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "morocco",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "netherlands",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "netherlands",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "netherlands",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "new-zealand",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "new-zealand",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "new-zealand",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "nigeria",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "nigeria",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "nigeria",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "norway",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "norway",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "norway",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "oman",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "oman",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "oman",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "pakistan",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "pakistan",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "pakistan",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "panama",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "panama",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "panama",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "paraguay",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "paraguay",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "paraguay",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "peru",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "peru",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "peru",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "philippines",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "philippines",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "philippines",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "poland",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "poland",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "poland",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "portugal",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "portugal",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "portugal",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "puerto-rico",
+      "plan": "1GB/7d",
+      "sku": "690b2b5e7aff111b7539f7bd",
+      "usd": 16.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "puerto-rico",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "puerto-rico",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7c3",
+      "usd": 40.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "qatar",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "qatar",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "qatar",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "romania",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "romania",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "romania",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "russia",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "russia",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "russia",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "rwanda",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "rwanda",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "rwanda",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "senegal",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "senegal",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "senegal",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "singapore",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "singapore",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "singapore",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "south-africa",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "south-africa",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "south-africa",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "south-korea",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "south-korea",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "south-korea",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "spain",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "spain",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "spain",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "sri-lanka",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "sri-lanka",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "sri-lanka",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "sweden",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "sweden",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "sweden",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "switzerland",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "switzerland",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "switzerland",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "taiwan",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "taiwan",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "taiwan",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "tanzania",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "tanzania",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "tanzania",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "thailand",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "thailand",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "thailand",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "trinidad-and-tobago",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "trinidad-and-tobago",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "trinidad-and-tobago",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "tunisia",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "tunisia",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "tunisia",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "static"
+    },
+    {
+      "slug": "turkey",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "turkey",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "turkey",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uae",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef79",
+      "usd": 10.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uae",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uae",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef78",
+      "usd": 28.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uganda",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uganda",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uganda",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uk",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uk",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uk",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ukraine",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc7fefc",
+      "usd": 3.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ukraine",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "ukraine",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc7fed8",
+      "usd": 9.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uruguay",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uruguay",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "uruguay",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "usa",
+      "plan": "1GB/7d",
+      "sku": "66b5db0b899f794eccc80043",
+      "usd": 6.6,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "usa",
+      "plan": "5GB/30d",
+      "sku": "66b5db0b899f794eccc80016",
+      "usd": 18.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "usa",
+      "plan": "10GB/30d",
+      "sku": "66b5db0b899f794eccc80016",
+      "usd": 18.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "venezuela",
+      "plan": "1GB/7d",
+      "sku": "67f6c112d07af55d502bef76",
+      "usd": 8.5,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "venezuela",
+      "plan": "5GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "venezuela",
+      "plan": "10GB/30d",
+      "sku": "67f6c112d07af55d502bef75",
+      "usd": 25.0,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "vietnam",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7c1",
+      "usd": 7.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "vietnam",
+      "plan": "5GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "vietnam",
+      "plan": "10GB/30d",
+      "sku": "690b2b5e7aff111b7539f7bf",
+      "usd": 21.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "zambia",
+      "plan": "1GB/7d",
+      "sku": "690b2b5f7aff111b7539f7cd",
+      "usd": 18.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "zambia",
+      "plan": "5GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    },
+    {
+      "slug": "zambia",
+      "plan": "10GB/30d",
+      "sku": "690b2b5f7aff111b7539f7d8",
+      "usd": 55.25,
+      "source": "catalog:regional"
+    }
+  ],
+  "no_resolve": [
+    {
+      "slug": "algeria",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "argentina",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "aruba",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "australia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "austria",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "bahamas",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "bahrain",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "bangladesh",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "barbados",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "belgium",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "belize",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "bolivia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "brazil",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "bulgaria",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "cambodia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "canada",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "cayman-islands",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "chile",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "china",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "colombia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "costa-rica",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "croatia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "cyprus",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "czechia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "denmark",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "dominican-republic",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "ecuador",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "egypt",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "ethiopia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "fiji",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "finland",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "france",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "germany",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "greece",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "guatemala",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "honduras",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "hong-kong",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "hungary",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "iceland",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "india",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "indonesia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "ireland",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "israel",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "italy",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "jamaica",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "japan",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "jordan",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "kenya",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "kuwait",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "lebanon",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "malaysia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "maldives",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "malta",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "mexico",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "morocco",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "netherlands",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "new-zealand",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "nigeria",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "norway",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "oman",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "pakistan",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "panama",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "paraguay",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "peru",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "philippines",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "poland",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "portugal",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "puerto-rico",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "qatar",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "romania",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "russia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "rwanda",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "saudi-arabia",
+      "plan": "1GB/7d"
+    },
+    {
+      "slug": "senegal",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "singapore",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "south-africa",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "south-korea",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "spain",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "sri-lanka",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "sweden",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "switzerland",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "taiwan",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "tanzania",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "thailand",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "trinidad-and-tobago",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "tunisia",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "turkey",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "uae",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "uganda",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "uk",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "ukraine",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "uruguay",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "usa",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "venezuela",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "vietnam",
+      "plan": "20GB/30d"
+    },
+    {
+      "slug": "zambia",
+      "plan": "20GB/30d"
+    }
+  ],
+  "expensive": [],
+  "regional": [
+    {
+      "id": "regional-north-america",
+      "plan": "20GB/30d",
+      "status": "NO_RESOLVE",
+      "sku": null
+    },
+    {
+      "id": "regional-asia-pacific",
+      "plan": "1GB/7d",
+      "status": "TELNA",
+      "sku": "690b2b5f7aff111b7539f7c1"
+    },
+    {
+      "id": "regional-middle-east",
+      "plan": "5GB/30d",
+      "status": "TELNA",
+      "sku": "67f6c112d07af55d502bef78"
+    },
+    {
+      "id": "regional-middle-east",
+      "plan": "20GB/30d",
+      "status": "NO_RESOLVE",
+      "sku": null
+    },
+    {
+      "id": "regional-caribbean",
+      "plan": "1GB/7d",
+      "status": "TELNA",
+      "sku": "690b2b5e7aff111b7539f7bd"
+    },
+    {
+      "id": "regional-caribbean",
+      "plan": "5GB/30d",
+      "status": "TELNA",
+      "sku": "690b2b5f7aff111b7539f7c3"
+    },
+    {
+      "id": "regional-caribbean",
+      "plan": "10GB/30d",
+      "status": "TELNA",
+      "sku": "690b2b5f7aff111b7539f7c3"
+    },
+    {
+      "id": "regional-caribbean",
+      "plan": "20GB/30d",
+      "status": "NO_RESOLVE",
+      "sku": null
+    },
+    {
+      "id": "regional-africa",
+      "plan": "1GB/7d",
+      "status": "TELNA",
+      "sku": "690b2b5f7aff111b7539f7cd"
+    },
+    {
+      "id": "regional-africa",
+      "plan": "5GB/30d",
+      "status": "TELNA",
+      "sku": "690b2b5f7aff111b7539f7d8"
+    },
+    {
+      "id": "regional-africa",
+      "plan": "10GB/30d",
+      "status": "TELNA",
+      "sku": "690b2b5f7aff111b7539f7d8"
+    },
+    {
+      "id": "regional-africa",
+      "plan": "20GB/30d",
+      "status": "NO_RESOLVE",
+      "sku": null
+    },
+    {
+      "id": "regional-south-america",
+      "plan": "1GB/7d",
+      "status": "TELNA",
+      "sku": "67f6c112d07af55d502bef76"
+    },
+    {
+      "id": "regional-global",
+      "plan": "1GB/7d",
+      "status": "TELNA",
+      "sku": "66b5db0b899f794eccc7fefc"
+    },
+    {
+      "id": "regional-global",
+      "plan": "20GB/30d",
+      "status": "NO_RESOLVE",
+      "sku": null
+    }
+  ],
+  "caribbean_fixed": [
+    [
+      1.0,
+      7,
+      "P8N4TBFDC",
+      5.9
+    ],
+    [
+      3.0,
+      30,
+      "PRHU7ZYL7",
+      14.9
+    ],
+    [
+      5.0,
+      30,
+      "PCFAGC825",
+      26.9
+    ],
+    [
+      10.0,
+      30,
+      "PDWMZ77EO",
+      44.9
+    ]
+  ]
+}

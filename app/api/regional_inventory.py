@@ -17,7 +17,7 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "europe": {
         "name": "Europe",
         "currency": "USD",
-        # Zesimo Europe ladder (cheap twins). Caribbean stays Telna.
+        # Zesimo Europe ladder (cheap twins).
         "plans": {
             "basic": {
                 "name": "Basic",
@@ -86,13 +86,27 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "asia-pacific": {
         "name": "Asia Pacific",
         "currency": "USD",
-        # Zesimo plain Asia ladder (not Asia-20 / Central Asia twins).
+        # Access Asia-14 1GB + Zesimo Asia ladder for larger packs.
         "plans": {
             "basic": {
                 "name": "Basic",
+                "data": "1GB",
+                "days": 7,
+                "price": 9.99,
+                "fulfillment": {
+                    "catalog_key": "as-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "PLF72QJG4",
+                    "provider_slug": "AS-14_1_7",
+                    "wholesale_cents": 94,
+                },
+            },
+            "standard": {
+                "name": "Standard",
                 "data": "5GB",
                 "days": 30,
                 "price": 17.99,
+                "popular": True,
                 "fulfillment": {
                     "catalog_key": "as-5gb-30",
                     "provider": "zesimo",
@@ -101,12 +115,11 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                     "wholesale_cents": 434,
                 },
             },
-            "standard": {
-                "name": "Standard",
+            "plus": {
+                "name": "Plus",
                 "data": "10GB",
                 "days": 30,
                 "price": 29.99,
-                "popular": True,
                 "fulfillment": {
                     "catalog_key": "as-10gb-30",
                     "provider": "zesimo",
@@ -115,8 +128,8 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                     "wholesale_cents": 714,
                 },
             },
-            "plus": {
-                "name": "Plus",
+            "premium": {
+                "name": "Premium",
                 "data": "20GB",
                 "days": 30,
                 "price": 39.99,
@@ -127,13 +140,6 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                     "provider_slug": "zesimo-as-20gb-30d",
                     "wholesale_cents": 1092,
                 },
-            },
-            "premium": {
-                "name": "Premium",
-                "data": "20GB",
-                "days": 30,
-                "price": 39.99,
-                "coming_soon": True,
             },
             "family": {
                 "name": "Family Bundle",
@@ -217,8 +223,7 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "middle-east": {
         "name": "Middle East",
         "currency": "USD",
-        # Regional ME: Zesimo 5/15 + 10/30. Basic aligned to 1GB/7d (Zesimo ME).
-        # Single-country ME pages fulfill on country-specific Zesimo Phase 5 maps.
+        # Access ME-5 ladder + Zesimo where cheaper. Off Telna ME Bundle.
         "plans": {
             "basic": {
                 "name": "Basic",
@@ -235,33 +240,20 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
             },
             "standard": {
                 "name": "Standard",
-                "data": "3GB",
-                "days": 7,
+                "data": "5GB",
+                "days": 30,
                 "price": 22.99,
                 "popular": True,
                 "fulfillment": {
-                    "catalog_key": "me-3gb-7",
-                    "provider": "telna",
-                    "provider_sku": "67f6c112d07af55d502bef79",
-                    "provider_slug": "telna-me-3gb-7d",
-                    "wholesale_cents": 1000,
+                    "catalog_key": "me-5gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PHS28HNA0",
+                    "provider_slug": "ME-5_5_30",
+                    "wholesale_cents": 826,
                 },
             },
             "plus": {
                 "name": "Plus",
-                "data": "5GB",
-                "days": 15,
-                "price": 19.99,
-                "fulfillment": {
-                    "catalog_key": "me-5gb-15",
-                    "provider": "zesimo",
-                    "provider_sku": "1085",
-                    "provider_slug": "zesimo-me-5gb-15d",
-                    "wholesale_cents": 991,
-                },
-            },
-            "premium": {
-                "name": "Premium",
                 "data": "10GB",
                 "days": 30,
                 "price": 32.99,
@@ -271,6 +263,19 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                     "provider_sku": "1086",
                     "provider_slug": "zesimo-me-10gb-30d",
                     "wholesale_cents": 1784,
+                },
+            },
+            "premium": {
+                "name": "Premium",
+                "data": "20GB",
+                "days": 30,
+                "price": 49.99,
+                "fulfillment": {
+                    "catalog_key": "me-20gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PV5V1E2QH",
+                    "provider_slug": "ME-5_20_30",
+                    "wholesale_cents": 3098,
                 },
             },
             "family": {
@@ -286,59 +291,59 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "africa": {
         "name": "Africa",
         "currency": "USD",
-        # Telna Africa Bundle (20 countries).
+        # eSIM Access Africa (21 areas) — off Telna Africa Bundle.
         "plans": {
             "basic": {
                 "name": "Basic",
                 "data": "1GB",
-                "days": 5,
-                "price": 14.99,
+                "days": 7,
+                "price": 12.99,
                 "fulfillment": {
-                    "catalog_key": "af-1gb-5",
-                    "provider": "telna",
-                    "provider_sku": "690b2b5f7aff111b7539f7c9",
-                    "provider_slug": "telna-africa-1gb-5d",
-                    "wholesale_cents": 675,
+                    "catalog_key": "af-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "P62JQDSN9",
+                    "provider_slug": "AF-21_1_7",
+                    "wholesale_cents": 368,
                 },
             },
             "standard": {
                 "name": "Standard",
-                "data": "3GB",
-                "days": 7,
-                "price": 29.99,
+                "data": "5GB",
+                "days": 30,
+                "price": 34.99,
                 "popular": True,
                 "fulfillment": {
-                    "catalog_key": "af-3gb-7",
-                    "provider": "telna",
-                    "provider_sku": "690b2b5f7aff111b7539f7cd",
-                    "provider_slug": "telna-africa-3gb-7d",
-                    "wholesale_cents": 1825,
+                    "catalog_key": "af-5gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "P9XH83PKC",
+                    "provider_slug": "AF-21_5_30",
+                    "wholesale_cents": 1636,
                 },
             },
             "plus": {
                 "name": "Plus",
-                "data": "5GB",
-                "days": 15,
-                "price": 44.99,
+                "data": "10GB",
+                "days": 30,
+                "price": 54.99,
                 "fulfillment": {
-                    "catalog_key": "af-5gb-15",
-                    "provider": "telna",
-                    "provider_sku": "690b2b5f7aff111b7539f7d6",
-                    "provider_slug": "telna-africa-5gb-15d",
-                    "wholesale_cents": 3025,
+                    "catalog_key": "af-10gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PH39WU6ZR",
+                    "provider_slug": "AF-21_10_30",
+                    "wholesale_cents": 2986,
                 },
             },
             "premium": {
                 "name": "Premium",
-                "data": "10GB",
+                "data": "20GB",
                 "days": 30,
-                "price": 69.99,
+                "price": 89.99,
                 "fulfillment": {
-                    "catalog_key": "af-10gb-30",
-                    "provider": "telna",
-                    "provider_sku": "690b2b5f7aff111b7539f7d8",
-                    "provider_slug": "telna-africa-10gb-30d",
-                    "wholesale_cents": 5525,
+                    "catalog_key": "af-20gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PY5HHXU38",
+                    "provider_slug": "AF-21_20_30",
+                    "wholesale_cents": 6136,
                 },
             },
             "family": {
@@ -354,61 +359,54 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "caribbean": {
         "name": "Caribbean",
         "currency": "USD",
-        # Telna Connect Flex Caribbean Bundle (portal product ids).
-        # Wholesale USD from Telna price list — swap retail when margin policy changes.
+        # eSIM Access Caribbean (20+ areas) — off Telna. No Access 20GB regional.
         "plans": {
             "basic": {
                 "name": "Basic",
                 "data": "1GB",
-                "days": 5,
+                "days": 7,
                 "price": 14.99,
                 "fulfillment": {
-                    "catalog_key": "cb-1gb-5",
-                    "provider": "telna",
-                    "provider_sku": "690b2b5f7aff111b7539f7c4",
-                    "provider_slug": "telna-caribbean-1gb-5d",
-                    "wholesale_cents": 650,
+                    "catalog_key": "cb-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "P8N4TBFDC",
+                    "provider_slug": "CB_1_7",
+                    "wholesale_cents": 590,
                 },
             },
             "standard": {
                 "name": "Standard",
-                "data": "3GB",
-                "days": 7,
-                "price": 27.99,
+                "data": "5GB",
+                "days": 30,
+                "price": 49.99,
                 "popular": True,
                 "fulfillment": {
-                    "catalog_key": "cb-3gb-7",
-                    "provider": "telna",
-                    "provider_sku": "690b2b5e7aff111b7539f7bd",
-                    "provider_slug": "telna-caribbean-3gb-7d",
-                    "wholesale_cents": 1600,
+                    "catalog_key": "cb-5gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PCFAGC825",
+                    "provider_slug": "CB_5_30",
+                    "wholesale_cents": 2690,
                 },
             },
             "plus": {
                 "name": "Plus",
-                "data": "5GB",
-                "days": 15,
-                "price": 34.99,
+                "data": "10GB",
+                "days": 30,
+                "price": 74.99,
                 "fulfillment": {
-                    "catalog_key": "cb-5gb-15",
-                    "provider": "telna",
-                    "provider_sku": "690b2b5e7aff111b7539f7be",
-                    "provider_slug": "telna-caribbean-5gb-15d",
-                    "wholesale_cents": 2300,
+                    "catalog_key": "cb-10gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PDWMZ77EO",
+                    "provider_slug": "CB_10_30",
+                    "wholesale_cents": 4490,
                 },
             },
             "premium": {
                 "name": "Premium",
-                "data": "10GB",
+                "data": "20GB",
                 "days": 30,
-                "price": 54.99,
-                "fulfillment": {
-                    "catalog_key": "cb-10gb-30",
-                    "provider": "telna",
-                    "provider_sku": "690b2b5f7aff111b7539f7c3",
-                    "provider_slug": "telna-caribbean-10gb-30d",
-                    "wholesale_cents": 4000,
-                },
+                "price": 99.99,
+                "coming_soon": True,
             },
             "family": {
                 "name": "Family Bundle",
@@ -468,15 +466,15 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
             },
             "premium": {
                 "name": "Premium",
-                "data": "10GB",
+                "data": "20GB",
                 "days": 30,
-                "price": 27.99,
+                "price": 39.99,
                 "fulfillment": {
-                    "catalog_key": "na-10gb-30",
+                    "catalog_key": "na-20gb-30",
                     "provider": "zesimo",
-                    "provider_sku": "587",
-                    "provider_slug": "zesimo-na-10gb-30d",
-                    "wholesale_cents": 1403,
+                    "provider_sku": "588",
+                    "provider_slug": "zesimo-na-20gb-30",
+                    "wholesale_cents": 2476,
                 },
             },
             "family": {
@@ -618,19 +616,19 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "south-america": {
         "name": "South America",
         "currency": "USD",
-        # Zesimo Latin America ladder.
+        # Access SA-6 1GB + Zesimo Latin America ladder.
         "plans": {
             "basic": {
                 "name": "Basic",
-                "data": "3GB",
-                "days": 30,
-                "price": 16.99,
+                "data": "1GB",
+                "days": 7,
+                "price": 9.99,
                 "fulfillment": {
-                    "catalog_key": "la-3gb-30",
-                    "provider": "zesimo",
-                    "provider_sku": "12094",
-                    "provider_slug": "zesimo-la-3gb-30d",
-                    "wholesale_cents": 700,
+                    "catalog_key": "la-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "P0AU9B5BX",
+                    "provider_slug": "SA-6_1_7",
+                    "wholesale_cents": 264,
                 },
             },
             "standard": {
@@ -686,40 +684,27 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "global": {
         "name": "Global",
         "currency": "USD",
-        # Zesimo Global 193-country ladder (cheap twins only).
+        # Access Global 1GB/20GB + Zesimo mid ladder.
         "plans": {
             "basic": {
                 "name": "Basic",
                 "data": "1GB",
-                "days": 5,
-                "price": 9.99,
+                "days": 7,
+                "price": 12.99,
                 "fulfillment": {
-                    "catalog_key": "gl-1gb-5",
-                    "provider": "zesimo",
-                    "provider_sku": "11818",
-                    "provider_slug": "zesimo-global-1gb-5d",
-                    "wholesale_cents": 350,
+                    "catalog_key": "gl-1gb-7",
+                    "provider": "esimaccess",
+                    "provider_sku": "PHS30M6EZ",
+                    "provider_slug": "GL_1_7",
+                    "wholesale_cents": 460,
                 },
             },
             "standard": {
                 "name": "Standard",
-                "data": "3GB",
-                "days": 30,
-                "price": 24.99,
-                "popular": True,
-                "fulfillment": {
-                    "catalog_key": "gl-3gb-30",
-                    "provider": "zesimo",
-                    "provider_sku": "11804",
-                    "provider_slug": "zesimo-global-3gb-30d",
-                    "wholesale_cents": 938,
-                },
-            },
-            "plus": {
-                "name": "Plus",
                 "data": "5GB",
                 "days": 30,
                 "price": 34.99,
+                "popular": True,
                 "fulfillment": {
                     "catalog_key": "gl-5gb-30",
                     "provider": "zesimo",
@@ -728,8 +713,8 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                     "wholesale_cents": 1470,
                 },
             },
-            "premium": {
-                "name": "Premium",
+            "plus": {
+                "name": "Plus",
                 "data": "10GB",
                 "days": 30,
                 "price": 49.99,
@@ -739,6 +724,19 @@ REGIONAL_TEMPLATES: Dict[str, Dict[str, Any]] = {
                     "provider_sku": "11808",
                     "provider_slug": "zesimo-global-10gb-30d",
                     "wholesale_cents": 2520,
+                },
+            },
+            "premium": {
+                "name": "Premium",
+                "data": "20GB",
+                "days": 30,
+                "price": 79.99,
+                "fulfillment": {
+                    "catalog_key": "gl-20gb-30",
+                    "provider": "esimaccess",
+                    "provider_sku": "PR3JZMC20",
+                    "provider_slug": "GL_20_30",
+                    "wholesale_cents": 6000,
                 },
             },
             "family": {
@@ -1304,7 +1302,7 @@ REGIONAL_PRODUCTS: Dict[str, Dict[str, Any]] = {
         "short_name": "South America",
         "flag_emoji": "🌎",
         "template_key": "south-america",
-        "hero_tagline": "Brazil to the Andes on one eSIM — Telna Latin America coverage.",
+        "hero_tagline": "Brazil to the Andes on one eSIM — Latin America coverage.",
         "countries": [
             "Brazil",
             "Argentina",

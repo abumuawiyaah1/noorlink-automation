@@ -638,13 +638,12 @@ async def cron_run(authorization: Optional[str] = Header(None)):
     except EmailDeliveryError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    try:
-        from app.services.provider_catalog import sync_telna_catalog
-
-        catalog_sync = await sync_telna_catalog(use_builtin_on_failure=True)
-    except Exception as exc:
-        logger.warning("Provider catalog sync failed during cron: %s", exc)
-        catalog_sync = {"success": False, "error": str(exc)[:240]}
+    # Telna catalog sync retired — Access/Zesimo fulfillment maps are authoritative.
+    catalog_sync = {
+        "success": True,
+        "skipped": True,
+        "reason": "telna_catalog_sync_retired",
+    }
 
     expiry_reminders = None
     try:

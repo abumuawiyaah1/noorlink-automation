@@ -283,10 +283,10 @@ def fulfillment_mode_for_order(
     if wants_topup:
         return {
             "mode": "payg_topup",
-            "provider_preference": ["weconnect", "citrus"],
+            "provider_preference": ["citrus"],
             "policy": policy.policy,
             "country": slug,
-            "note": "Top-up / Flex PAYG — balance-based, not virtual bundle.",
+            "note": "Top-up / Flex PAYG — Citrus only (WeConnect retired).",
         }
 
     if policy.policy == "exclude":
@@ -301,38 +301,40 @@ def fulfillment_mode_for_order(
     if policy.policy == "access_fixed":
         return {
             "mode": "fixed_bundle",
-            "provider_preference": ["esimaccess"],
+            "provider_preference": ["esimaccess", "zesimo"],
             "policy": policy.policy,
             "country": slug,
             "note": policy.policy_reason,
         }
 
     if policy.policy == "telna_fixed":
+        # Legacy policy label — fulfill on Access/Zesimo (Telna retired).
         return {
             "mode": "fixed_bundle",
-            "provider_preference": ["telna", "esimaccess"],
+            "provider_preference": ["esimaccess", "zesimo"],
             "policy": policy.policy,
             "country": slug,
-            "note": policy.policy_reason,
+            "note": (policy.policy_reason or "") + " | Telna retired → Access/Zesimo",
         }
 
     if policy.policy == "weconnect_breakage" and data_gb and validity_days:
+        # Legacy breakage policy — no longer provision WeConnect for new sales.
         return {
-            "mode": "virtual_bundle",
-            "provider_preference": ["weconnect"],
+            "mode": "fixed_bundle",
+            "provider_preference": ["esimaccess", "zesimo"],
             "policy": policy.policy,
             "country": slug,
             "allowance_mb": int(round(float(data_gb) * 1024)),
             "validity_days": int(validity_days),
             "note": (
-                "Sell fixed bundle; provision WeConnect PAYG; enforce cap + expiry. "
-                "Profit on unused allowance (breakage)."
+                "WeConnect breakage retired — fulfill fixed Access/Zesimo map. "
+                + (policy.policy_reason or "")
             ),
         }
 
     return {
         "mode": "catalog_cascade",
-        "provider_preference": ["telna", "esimaccess", "citrus"],
+        "provider_preference": ["esimaccess", "zesimo", "citrus"],
         "policy": policy.policy,
         "country": slug,
         "note": policy.policy_reason,

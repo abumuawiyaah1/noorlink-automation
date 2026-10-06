@@ -75,6 +75,13 @@ def resolve_cascade(
         return None
 
     catalog = products if products is not None else fetch_catalog_products()
+    # Telna / WeConnect retired from new fulfillment — never cascade onto them.
+    catalog = [
+        p
+        for p in (catalog or [])
+        if str(getattr(p, "provider", "") or "").strip().lower()
+        not in {"telna", "weconnect"}
+    ]
     if not catalog:
         return None
 
@@ -172,6 +179,10 @@ def choose_fulfillment_target(
     """
     settings = get_settings()
     slug = normalize_country_slug(country)
+
+    # Never fulfill new sales on retired rails (even if a stale map row remains).
+    if mapped and str(mapped.provider or "").strip().lower() in {"telna", "weconnect"}:
+        mapped = None
 
     if wants_topup and (settings.citrus_api_key or "").strip():
         if not is_saudi_destination(country):
