@@ -1,7 +1,8 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-# SQLAlchemy 2.1+ no longer pulls greenlet; sqladmin imports asyncio extras at boot.
-sqlalchemy[asyncio]>=2.0.36,<2.2
+# Stay on 2.0.x: 2.1+ expects psycopg3 for postgresql:// URLs; we ship psycopg2-binary.
+# greenlet still required — sqladmin imports asyncio extras at boot.
+sqlalchemy[asyncio]>=2.0.36,<2.1
 greenlet>=3.0.0
 sqladmin==0.16.1
 psycopg2-binary>=2.9.9
