@@ -132,6 +132,7 @@ def create_ticket_from_contact(
             "ticket_id": str(ticket.id),
             "order_number": order,
             "category": category,
+            "language": lang,
             "name": name.strip(),
             "email": customer_email,
             "subject": subject_clean,

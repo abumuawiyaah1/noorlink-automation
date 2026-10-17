@@ -11,6 +11,7 @@ from app.services.admin_notifications import notifications_for_role
 from app.services.admin_report_core import (
     affiliate_liability_cents,
     analyze_orders,
+    analyze_topups_between,
     compare_periods,
     format_delta,
     format_money,
@@ -25,6 +26,7 @@ from app.services.admin_report_core import (
     refunded_count_between,
     report_already_sent,
     render_list_section,
+    render_topup_section,
 )
 from app.services.admin_report_recipients import admin_report_recipient_emails
 from app.services.email_service import EmailDeliveryError, send_email
@@ -49,6 +51,7 @@ def build_weekly_summary_html(*, now_utc: Optional[datetime] = None) -> str:
     stats = analyze_orders(orders)
     prior_stats = analyze_orders(paid_orders_between(prior.start_utc, prior.end_utc))
     deltas = compare_periods(stats, prior_stats)
+    topup_stats = analyze_topups_between(window.start_utc, window.end_utc)
     refunds = refunded_count_between(window.start_utc, window.end_utc)
     signups = newsletter_signups_between(window.start_utc, window.end_utc)
     alerts = notifications_for_role("admin")
@@ -63,12 +66,15 @@ def build_weekly_summary_html(*, now_utc: Optional[datetime] = None) -> str:
         f"<li>Paid orders: <strong>{stats.get('paid_units', 0)}</strong> ({format_delta('orders', deltas['orders_delta_pct'])})</li>",
         f"<li>Est. margin: <strong>{format_money(int(stats['margin_cents']))}</strong> ({stats.get('margin_pct', 0)}%) ({format_delta('margin', deltas['margin_delta_pct'])})</li>",
         f"<li>Average order: <strong>{format_money(int(stats.get('aov_cents') or 0))}</strong></li>",
+        f"<li>Top-ups: <strong>{int(topup_stats.get('topup_count') or 0)}</strong> · "
+        f"{format_money(int(topup_stats.get('topup_revenue_cents') or 0))} revenue</li>",
         f"<li>Refunds: <strong>{refunds}</strong></li>",
         f"<li>Repeat buyers: <strong>{stats.get('repeat_buyers', 0)}</strong></li>",
         f"<li>Insider signups: <strong>{signups}</strong></li>",
         f"<li>Affiliate liability: <strong>{format_money(affiliate_liability_cents())}</strong></li>",
         "</ul>",
     ]
+    lines.append(render_topup_section(topup_stats, period_label="this week"))
 
     package_items = [
         f"{html.escape(str(row['name']))} · {row['units']} sold · margin {format_money(int(row['margin_cents']))} ({row.get('margin_pct', 0)}%)"

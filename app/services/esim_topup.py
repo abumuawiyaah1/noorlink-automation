@@ -13,10 +13,11 @@ from app.services.esim_usage_sync import resolve_order_provider, sync_order_usag
 
 logger = logging.getLogger(__name__)
 
+# Defaults — overridden by Railway/env via get_settings()
 TOPUP_AMOUNTS_USD = [5.0, 10.0, 15.0, 20.0, 30.0]
 MIN_TOPUP_USD = 5.0
 MAX_TOPUP_USD = 100.0
-TOPUP_MARKUP = 1.35  # retail = wholesale * markup
+TOPUP_MARKUP = 1.35  # retail = wholesale * markup (legacy constant; prefer get_topup_markup())
 ACCESS_MAX_TOPUPS = 9
 BYTES_PER_GB = 1073741824
 
@@ -25,8 +26,45 @@ class TopUpError(Exception):
     """Top-up action failed."""
 
 
+def get_topup_markup() -> float:
+    """Customer retail multiplier over wallet fund USD (configurable)."""
+    try:
+        from app.core.config import get_settings
+
+        raw = getattr(get_settings(), "citrus_topup_markup", TOPUP_MARKUP)
+        markup = float(raw if raw is not None else TOPUP_MARKUP)
+    except Exception:
+        markup = TOPUP_MARKUP
+    # Keep pricing sane: at least break-even, cap extreme typos.
+    return max(1.0, min(markup, 3.0))
+
+
+def get_topup_amounts_usd() -> List[float]:
+    """Wallet fund tiers shown to customers (configurable CSV)."""
+    try:
+        from app.core.config import get_settings
+
+        raw = (getattr(get_settings(), "citrus_topup_amounts_usd", "") or "").strip()
+    except Exception:
+        raw = ""
+    if not raw:
+        return list(TOPUP_AMOUNTS_USD)
+    amounts: List[float] = []
+    for part in raw.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            value = float(part)
+        except ValueError:
+            continue
+        if MIN_TOPUP_USD <= value <= MAX_TOPUP_USD:
+            amounts.append(value)
+    return amounts or list(TOPUP_AMOUNTS_USD)
+
+
 def topup_retail_cents(wholesale_usd: float) -> int:
-    retail = round(float(wholesale_usd) * TOPUP_MARKUP, 2)
+    retail = round(float(wholesale_usd) * get_topup_markup(), 2)
     return int(round(retail * 100))
 
 
@@ -505,7 +543,7 @@ def topup_capabilities(row: Dict[str, Any]) -> Dict[str, Any]:
         "provider": provider,
         "mode": mode,
         "iccid": iccid or None,
-        "amounts_usd": TOPUP_AMOUNTS_USD if (topup_supported and mode == "wallet") else [],
+        "amounts_usd": get_topup_amounts_usd() if (topup_supported and mode == "wallet") else [],
         "amount_offers": (
             [
                 {
@@ -513,12 +551,13 @@ def topup_capabilities(row: Dict[str, Any]) -> Dict[str, Any]:
                     "retail_cents": topup_retail_cents(float(a)),
                     "retail_usd": topup_retail_cents(float(a)) / 100.0,
                 }
-                for a in TOPUP_AMOUNTS_USD
+                for a in get_topup_amounts_usd()
             ]
             if (topup_supported and mode == "wallet")
             else []
         ),
         "packages": [],
+        "markup": get_topup_markup() if (topup_supported and mode == "wallet") else None,
         "min_usd": MIN_TOPUP_USD if (topup_supported and mode == "wallet") else None,
         "max_usd": MAX_TOPUP_USD if (topup_supported and mode == "wallet") else None,
         "reason": reason,
@@ -585,6 +624,7 @@ async def fund_citrus_topup(
     source: str = "admin",
     actor: Optional[str] = None,
     stripe_session_id: Optional[str] = None,
+    retail_cents: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Move wholesale USD onto a Citrus SIM wallet."""
     order_number = str(row.get("order_number") or "")
@@ -621,11 +661,25 @@ async def fund_citrus_topup(
             except Exception:
                 pass
 
+        # Paid top-up restores full speed after a 90% soft throttle.
+        try:
+            await client.throttle_esim(iccid, "NO_LIMIT")
+        except Exception:
+            logger.warning("Could not restore full speed after top-up for %s", order_number)
+
+    paid_retail_cents = (
+        int(retail_cents)
+        if retail_cents is not None
+        else (topup_retail_cents(float(fund_usd)) if source == "stripe_checkout" else None)
+    )
     entry = {
         "at": datetime.now(timezone.utc).isoformat(),
         "provider": "citrus",
         "mode": "wallet",
         "fund_usd": float(fund_usd),
+        "wholesale_usd": float(fund_usd),
+        "retail_cents": paid_retail_cents,
+        "retail_usd": (paid_retail_cents / 100.0) if paid_retail_cents is not None else None,
         "source": source,
         "actor": actor,
         "stripe_session_id": stripe_session_id,
@@ -990,7 +1044,7 @@ async def process_topup_checkout(
         if not offer and (package_code or offer_id):
             wholesale = None
             if retail_cents:
-                wholesale = round((retail_cents / 100.0) / TOPUP_MARKUP, 4)
+                wholesale = round((retail_cents / 100.0) / get_topup_markup(), 4)
             pkg_id = None
             try:
                 pkg_id = int(package_code) if package_code else None
@@ -1026,7 +1080,7 @@ async def process_topup_checkout(
             # Webhook metadata may be enough even if live list briefly empty.
             wholesale = None
             if retail_cents:
-                wholesale = round((retail_cents / 100.0) / TOPUP_MARKUP, 4)
+                wholesale = round((retail_cents / 100.0) / get_topup_markup(), 4)
             offer = {
                 "offer_id": offer_id or package_slug,
                 "slug": package_slug,
@@ -1054,4 +1108,108 @@ async def process_topup_checkout(
         source="stripe_checkout",
         actor=buyer_email,
         stripe_session_id=stripe_session_id,
+        retail_cents=retail_cents,
     )
+
+
+def record_paid_topup_pending(
+    *,
+    order_number: str,
+    fund_usd: Optional[float],
+    retail_cents: Optional[int],
+    stripe_session_id: Optional[str],
+    buyer_email: Optional[str],
+    error: str,
+    topup_provider: Optional[str] = None,
+) -> None:
+    """Persist a Stripe-paid top-up that failed to fund so ops can retry."""
+    row = db.get_order_row_by_order_number(order_number)
+    if not row:
+        return
+    meta = _metadata(row)
+    topups = meta.get("topups") if isinstance(meta.get("topups"), dict) else {}
+    pending = topups.get("pending") if isinstance(topups.get("pending"), list) else []
+    entry = {
+        "at": datetime.now(timezone.utc).isoformat(),
+        "fund_usd": fund_usd,
+        "retail_cents": retail_cents,
+        "stripe_session_id": stripe_session_id,
+        "buyer_email": buyer_email,
+        "topup_provider": topup_provider or "citrus",
+        "error": (error or "")[:400],
+        "status": "pending_fund",
+    }
+    # De-dupe by Stripe payment ref
+    if stripe_session_id:
+        pending = [
+            p
+            for p in pending
+            if not (
+                isinstance(p, dict)
+                and str(p.get("stripe_session_id") or "") == stripe_session_id
+            )
+        ]
+    pending.append(entry)
+    db.merge_order_metadata(order_number, {"topups": {**topups, "pending": pending}})
+
+
+async def retry_pending_citrus_topups(*, limit: int = 25) -> Dict[str, Any]:
+    """Retry Stripe-paid Citrus funds that failed (e.g. low reseller balance)."""
+    client = db.get_supabase_client()
+    result = (
+        client.table("orders")
+        .select("order_number,metadata,iccid,status")
+        .eq("status", "active")
+        .order("updated_at", desc=True)
+        .limit(200)
+        .execute()
+    )
+    rows = [r for r in (result.data or []) if isinstance(r, dict)]
+    retried = 0
+    succeeded = 0
+    failed: List[Dict[str, Any]] = []
+
+    for row in rows:
+        if retried >= limit:
+            break
+        meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+        topups = meta.get("topups") if isinstance(meta.get("topups"), dict) else {}
+        pending = topups.get("pending") if isinstance(topups.get("pending"), list) else []
+        if not pending:
+            continue
+        order_number = str(row.get("order_number") or "")
+        remaining: List[Dict[str, Any]] = []
+        for item in pending:
+            if not isinstance(item, dict):
+                continue
+            if str(item.get("status") or "") not in {"pending_fund", "failed", ""}:
+                remaining.append(item)
+                continue
+            fund = item.get("fund_usd")
+            try:
+                fund_f = float(fund) if fund is not None else None
+            except (TypeError, ValueError):
+                fund_f = None
+            if not fund_f:
+                remaining.append(item)
+                continue
+            retried += 1
+            try:
+                fresh = db.get_order_row_by_order_number(order_number) or row
+                await fund_citrus_topup(
+                    fresh,
+                    fund_f,
+                    source="pending_retry",
+                    actor="system",
+                    stripe_session_id=str(item.get("stripe_session_id") or "") or None,
+                )
+                succeeded += 1
+            except TopUpError as exc:
+                remaining.append({**item, "status": "pending_fund", "error": str(exc)[:400]})
+                failed.append({"order": order_number, "error": str(exc)[:200]})
+        db.merge_order_metadata(
+            order_number,
+            {"topups": {**topups, "pending": remaining}},
+        )
+
+    return {"retried": retried, "succeeded": succeeded, "failed": failed}

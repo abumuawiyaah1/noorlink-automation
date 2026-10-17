@@ -59,14 +59,16 @@ def test_analyze_orders_groups_packages_destinations_and_sources():
     assert any(label.startswith("Promo:") for label, _ in stats["top_sources"])
 
 
+@patch("app.services.admin_daily_summary.analyze_topups_between", return_value={"topup_count": 0, "topup_revenue_cents": 0})
 @patch("app.services.admin_daily_summary.notifications_for_role", return_value=[])
-@patch("app.services.admin_daily_summary._paid_orders_between", return_value=[_order()])
-def test_build_daily_summary_html_includes_requested_sections(mock_orders, _mock_alerts):
+@patch("app.services.admin_daily_summary.paid_orders_between", return_value=[_order()])
+def test_build_daily_summary_html_includes_requested_sections(mock_orders, _mock_alerts, _topups):
     ny_six = datetime(2026, 9, 2, 10, 0, tzinfo=timezone.utc)
     html = build_daily_summary_html(now_utc=ny_six)
     assert "Yesterday" in html
     assert "Top packages" in html
     assert "Top destinations" in html
+    assert "Top-ups" in html
     assert "Traffic source" in html
     assert "Needs attention" in html
     assert "Today's focus" in html

@@ -415,6 +415,7 @@ class CronRunResponse(BaseModel):
     log_retention: Optional[dict] = Field(None, serialization_alias="logRetention")
     auto_refunds: Optional[dict] = Field(None, serialization_alias="autoRefunds")
     affiliate_payouts: Optional[dict] = Field(None, serialization_alias="affiliatePayouts")
+    pending_topups: Optional[dict] = Field(None, serialization_alias="pendingTopups")
     message: Optional[str] = None
 
     model_config = {"populate_by_name": True}

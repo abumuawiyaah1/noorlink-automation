@@ -2,7 +2,13 @@
 
 from types import SimpleNamespace
 
-from app.services.admin_report_core import analyze_orders, compare_periods, traffic_label
+from app.services.admin_report_core import (
+    _topup_money_cents,
+    analyze_orders,
+    compare_periods,
+    render_topup_section,
+    traffic_label,
+)
 from app.services.order_attribution import clean_attribution_payload, stripe_checkout_customer_patch
 
 
@@ -60,3 +66,29 @@ def test_stripe_checkout_customer_patch_reads_billing_country():
     patch = stripe_checkout_customer_patch(session)
     assert patch["customer"]["billing_country"] == "US"
     assert patch["customer"]["payment_method_types"] == ["card", "apple_pay"]
+
+
+def test_topup_money_estimates_retail_for_paid_citrus_wallet():
+    retail, wholesale = _topup_money_cents(
+        {"fund_usd": 20.0, "source": "stripe_checkout", "provider": "citrus"}
+    )
+    assert wholesale == 2000
+    assert retail == 2700  # 1.35 markup default
+
+
+def test_render_topup_section_includes_counts():
+    html = render_topup_section(
+        {
+            "topup_count": 1,
+            "customer_topup_count": 1,
+            "admin_topup_count": 0,
+            "topup_revenue_cents": 2700,
+            "topup_margin_cents": 700,
+            "topup_margin_pct": 25.9,
+            "by_provider": [{"provider": "citrus", "count": 1, "revenue_cents": 2700}],
+        },
+        period_label="yesterday",
+    )
+    assert "Top-ups" in html
+    assert "$27.00" in html
+    assert "citrus" in html

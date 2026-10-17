@@ -426,14 +426,36 @@ def process_esim_expiry_reminders(*, limit: int = 100) -> Dict[str, Any]:
                     app_url=app_url,
                     tier="90",
                 )
+                reminder_patch: Dict[str, Any] = {
+                    **reminders,
+                    "low_data_90_sent_at": now.isoformat(),
+                }
+                # Soft speed step: after the 90% email, slow Citrus PAYG to 500 Kbps.
+                try:
+                    from app.services.esim_usage_sync import resolve_order_provider
+                    from app.services.citrus_throttle import (
+                        throttle_citrus_esim_blocking,
+                    )
+
+                    if resolve_order_provider(row) == "citrus":
+                        throttle_citrus_esim_blocking(
+                            row,
+                            speed="SPEED_500_KBPS",
+                            reason="low_data_90_email",
+                        )
+                        reminder_patch["citrus_throttled_500_at"] = now.isoformat()
+                        reminder_patch["citrus_throttle_speed"] = "SPEED_500_KBPS"
+                except Exception as throttle_exc:
+                    logger.warning(
+                        "Citrus 500 Kbps throttle after 90%% email failed for %s: %s",
+                        order_number,
+                        throttle_exc,
+                    )
+                    errors.append(f"{order_number}: citrus_throttle:{throttle_exc}")
+
                 db.merge_order_metadata(
                     order_number,
-                    {
-                        "reminders": {
-                            **reminders,
-                            "low_data_90_sent_at": now.isoformat(),
-                        }
-                    },
+                    {"reminders": reminder_patch},
                 )
                 low_data_90_sent += 1
             except EmailDeliveryError as exc:

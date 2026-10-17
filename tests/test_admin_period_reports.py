@@ -7,6 +7,7 @@ from app.services.admin_monthly_summary import build_monthly_summary_html, shoul
 from app.services.admin_weekly_summary import build_weekly_summary_html, should_send_weekly_report
 
 
+@patch("app.services.admin_weekly_summary.analyze_topups_between", return_value={"topup_count": 0, "topup_revenue_cents": 0})
 @patch("app.services.admin_weekly_summary.paid_orders_between", return_value=[])
 @patch("app.services.admin_weekly_summary.notifications_for_role", return_value=[])
 @patch("app.services.admin_weekly_summary.newsletter_signups_between", return_value=2)
@@ -18,10 +19,12 @@ def test_weekly_html_has_scorecard_sections(*_mocks):
     assert "weekly scorecard" in html.lower()
     assert "Week at a glance" in html
     assert "Top packages" in html
+    assert "Top-ups" in html
     assert "Channel mix" in html
     assert "Margin watchlist" in html
 
 
+@patch("app.services.admin_monthly_summary.analyze_topups_between", return_value={"topup_count": 2, "customer_topup_count": 2, "admin_topup_count": 0, "topup_revenue_cents": 2700, "topup_margin_cents": 700, "topup_margin_pct": 25.9, "by_provider": [{"provider": "citrus", "count": 2, "revenue_cents": 2700}]})
 @patch("app.services.admin_monthly_summary.paid_orders_between", return_value=[])
 @patch("app.services.admin_monthly_summary.notifications_for_role", return_value=[])
 @patch("app.services.admin_monthly_summary.newsletter_signups_between", return_value=5)
@@ -33,6 +36,8 @@ def test_monthly_html_has_strategy_sections(*_mocks):
     assert "monthly review" in html.lower()
     assert "Strategic focus" in html
     assert "Acquisition channels" in html
+    assert "Top-ups" in html
+    assert "$27.00" in html
 
 
 def test_weekly_schedule_is_monday_after_six_or_tuesday_catchup():

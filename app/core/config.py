@@ -65,6 +65,10 @@ class Settings(BaseSettings):
     citrus_api_base_url: str = "https://citrusmobile.com/api/v2/reseller"
     # HMAC signing secret from POST /webhooks (whsec_...) — verify X-Citrus-Signature
     citrus_webhook_secret: str = ""
+    # Customer pays fund_usd × markup (e.g. 1.35 → $20 wallet = $27 retail)
+    citrus_topup_markup: float = 1.35
+    # Comma-separated wallet fund amounts shown in My eSIMs (USD)
+    citrus_topup_amounts_usd: str = "5,10,15,20,30"
     # mock | citrus | esimaccess | telna | zesimo | simbase  (default when no map hit)
     esim_provider: str = "mock"
 

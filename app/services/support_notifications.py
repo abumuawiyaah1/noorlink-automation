@@ -38,15 +38,27 @@ def send_customer_ticket_received(
     message: str,
     order_number: Optional[str] = None,
     category: Optional[str] = None,
+    locale: Optional[str] = None,
 ) -> str:
     """Branded confirmation when a customer submits a support ticket."""
+    from app.services.i18n_messages import t_email
+
     settings = get_settings()
     slug = category or normalize_support_category(subject)
     config = get_category_config(slug)
-    safe_name = html.escape(name.strip() or "there")
     safe_ticket = html.escape(ticket_id)
     safe_subject = html.escape((subject or config["label"]).strip())
     safe_message = html.escape(message.strip()).replace("\n", "<br/>")
+    hi = html.escape(t_email(locale, "supportConfirmHi", name=name.strip() or "there"))
+    # Prefer localized generic body; fall back to category intro for English only.
+    intro = (
+        t_email(locale, "supportConfirmBody")
+        if (locale or "en") != "en"
+        else config["received_intro"]
+    )
+    ticket_label = html.escape(t_email(locale, "supportConfirmTicket"))
+    subject_label = html.escape(t_email(locale, "supportConfirmSubjectLabel"))
+    your_message = html.escape(t_email(locale, "supportConfirmYourMessage"))
     order_block = ""
     if order_number:
         order_block = (
@@ -55,31 +67,49 @@ def send_customer_ticket_received(
         )
 
     body = f"""
-      <p style="margin:0 0 16px;">Hi {safe_name},</p>
-      <p style="margin:0 0 16px;">{html.escape(config["received_intro"])}</p>
-      <p style="margin:0 0 8px;"><strong style="color:#0F3D3E;">Ticket:</strong> {safe_ticket}</p>
-      <p style="margin:0 0 8px;"><strong style="color:#0F3D3E;">Topic:</strong> {safe_subject}</p>
+      <p style="margin:0 0 16px;">{hi}</p>
+      <p style="margin:0 0 16px;">{html.escape(intro)}</p>
+      <p style="margin:0 0 8px;"><strong style="color:#0F3D3E;">{ticket_label}</strong> {safe_ticket}</p>
+      <p style="margin:0 0 8px;"><strong style="color:#0F3D3E;">{subject_label}</strong> {safe_subject}</p>
       {order_block}
       <div style="margin:0 0 8px;padding:16px;background:#F3F7F7;border-radius:10px;border:1px solid #E5E7EB;">
-        <p style="margin:0 0 8px;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Your message</p>
+        <p style="margin:0 0 8px;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">{your_message}</p>
         <p style="margin:0;color:#111827;">{safe_message}</p>
       </div>
       <p style="margin:16px 0 0;color:#334155;font-size:14px;line-height:1.55;">
-        Reply to this email to add details — keep <strong>[{safe_ticket}]</strong> in the subject
-        so your message stays on this thread. You may also get a quick automatic reply with
-        order status and self-serve links.
+        {html.escape(t_email(locale, "supportConfirmTip"))}
       </p>
     """
+    title = (
+        t_email(locale, "supportConfirmTitle")
+        if (locale or "en") != "en"
+        else config["received_title"]
+    )
+    tip = (
+        t_email(locale, "supportConfirmTip")
+        if (locale or "en") != "en"
+        else config["received_tip"]
+    )
     html_body = wrap_branded_email(
-        eyebrow="Support",
-        title=config["received_title"],
+        eyebrow=t_email(locale, "supportConfirmEyebrow"),
+        title=title,
         body_html=body,
         app_url=settings.app_url,
-        tip=config["received_tip"],
+        tip=tip,
     )
-    email_subject = f"[{ticket_id}] {subject or config['label']}"
+    email_subject = t_email(
+        locale,
+        "supportConfirmSubject",
+        ticketId=ticket_id,
+        subject=subject or config["label"],
+    )
     if len(email_subject) > 240:
-        email_subject = f"[{ticket_id}] {config['label']} — NoorLink"
+        email_subject = t_email(
+            locale,
+            "supportConfirmSubject",
+            ticketId=ticket_id,
+            subject=config["label"],
+        )
     return send_email(
         to_email=to_email,
         subject=email_subject,
@@ -260,6 +290,7 @@ def dispatch_ticket_created_notifications(
     message: str,
     order_number: Optional[str] = None,
     category: Optional[str] = None,
+    language: Optional[str] = None,
     run_auto_reply: bool = True,
 ) -> str:
     """Customer confirmation + optional auto-reply + staff alert. Returns Resend id for customer email."""
@@ -272,6 +303,7 @@ def dispatch_ticket_created_notifications(
         message=message,
         order_number=order_number,
         category=slug,
+        locale=language,
     )
 
     auto_result: Optional[Dict[str, Any]] = None

@@ -292,6 +292,26 @@ class CitrusClient:
         payload = await self._request("POST", f"/esim/{iccid}/enable")
         return payload if isinstance(payload, dict) else {"data": payload}
 
+    async def throttle_esim(self, iccid: str, speed: str) -> Dict[str, Any]:
+        """
+        POST /esim/{iccid}/throttle
+
+        speed examples: NO_LIMIT, SPEED_500_KBPS, SPEED_1000_KBPS,
+        SPEED_2000_KBPS, SPEED_3000_KBPS.
+        """
+        iccid = (iccid or "").strip()
+        if not iccid:
+            raise ValueError("iccid is required")
+        speed_value = (speed or "").strip().upper()
+        if not speed_value:
+            raise ValueError("speed is required")
+        payload = await self._request(
+            "POST",
+            f"/esim/{iccid}/throttle",
+            json={"speed": speed_value},
+        )
+        return payload if isinstance(payload, dict) else {"data": payload}
+
     async def list_webhooks(self) -> Dict[str, Any]:
         """GET /webhooks"""
         payload = await self._request("GET", "/webhooks")

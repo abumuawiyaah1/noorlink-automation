@@ -10,12 +10,14 @@ from typing import Any, Dict, List, Optional
 from app.services.admin_notifications import notifications_for_role
 from app.services.admin_report_core import (
     analyze_orders,
+    analyze_topups_between,
     format_money,
     is_report_send_hour,
     mark_report_sent,
     ny_now,
     paid_orders_between,
     report_already_sent,
+    render_topup_section,
     yesterday_window,
 )
 from app.services.admin_report_recipients import admin_report_recipient_emails
@@ -65,6 +67,7 @@ def _build_insight(stats: Dict[str, Any]) -> str:
 def build_daily_summary_html(*, now_utc: Optional[Any] = None) -> str:
     window = yesterday_window(now_utc)
     stats = analyze_orders(paid_orders_between(window.start_utc, window.end_utc))
+    topup_stats = analyze_topups_between(window.start_utc, window.end_utc)
     alerts = notifications_for_role("admin")
 
     lines = [
@@ -75,8 +78,11 @@ def build_daily_summary_html(*, now_utc: Optional[Any] = None) -> str:
         f"<li>Revenue: <strong>{format_money(int(stats['revenue_cents']))}</strong></li>",
         f"<li>Orders: <strong>{stats.get('paid_units', 0)}</strong></li>",
         f"<li>Est. margin: <strong>{format_money(int(stats['margin_cents']))}</strong> ({stats.get('margin_pct', 0)}%)</li>",
+        f"<li>Top-ups: <strong>{int(topup_stats.get('topup_count') or 0)}</strong> · "
+        f"{format_money(int(topup_stats.get('topup_revenue_cents') or 0))} revenue</li>",
         "</ul>",
     ]
+    lines.append(render_topup_section(topup_stats, period_label="yesterday"))
 
     packages = stats.get("top_packages") or []
     lines.append("<h3>Top packages</h3>")

@@ -180,6 +180,157 @@ def affiliate_liability_cents() -> int:
         )
 
 
+def _parse_iso_utc(value: Any) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        text = str(value).strip().replace("Z", "+00:00")
+        moment = datetime.fromisoformat(text)
+    except Exception:
+        return None
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return moment.astimezone(timezone.utc)
+
+
+def _topup_history_from_meta(meta: Any) -> List[Dict[str, Any]]:
+    if not isinstance(meta, dict):
+        return []
+    topups = meta.get("topups")
+    if isinstance(topups, dict) and isinstance(topups.get("history"), list):
+        return [h for h in topups["history"] if isinstance(h, dict)]
+    if isinstance(topups, list):
+        return [h for h in topups if isinstance(h, dict)]
+    return []
+
+
+def _topup_money_cents(entry: Dict[str, Any]) -> Tuple[int, int]:
+    """Return (retail_cents, wholesale_cents) for a top-up history entry."""
+    retail_cents = 0
+    if entry.get("retail_cents") is not None:
+        try:
+            retail_cents = max(0, int(entry.get("retail_cents") or 0))
+        except (TypeError, ValueError):
+            retail_cents = 0
+    elif entry.get("retail_usd") is not None:
+        try:
+            retail_cents = max(0, int(round(float(entry.get("retail_usd") or 0) * 100)))
+        except (TypeError, ValueError):
+            retail_cents = 0
+
+    wholesale_cents = 0
+    for key in ("wholesale_usd", "fund_usd"):
+        if entry.get(key) is None:
+            continue
+        try:
+            wholesale_cents = max(0, int(round(float(entry.get(key) or 0) * 100)))
+            break
+        except (TypeError, ValueError):
+            continue
+
+    # Paid Citrus wallet tops may only store fund_usd — estimate retail from markup.
+    if retail_cents <= 0 and wholesale_cents > 0:
+        source = str(entry.get("source") or "").strip().lower()
+        if source in {"stripe_checkout", "paypal_checkout", "customer"} or entry.get(
+            "stripe_session_id"
+        ):
+            try:
+                from app.services.esim_topup import get_topup_markup
+
+                retail_cents = int(round(wholesale_cents * get_topup_markup()))
+            except Exception:
+                retail_cents = int(round(wholesale_cents * 1.35))
+
+    return retail_cents, wholesale_cents
+
+
+def analyze_topups_between(start_utc: datetime, end_utc: datetime) -> Dict[str, Any]:
+    """Aggregate eSIM top-ups whose history `at` falls in [start_utc, end_utc)."""
+    empty = {
+        "topup_count": 0,
+        "customer_topup_count": 0,
+        "admin_topup_count": 0,
+        "topup_revenue_cents": 0,
+        "topup_wholesale_cents": 0,
+        "topup_margin_cents": 0,
+        "topup_margin_pct": 0.0,
+        "by_provider": [],
+    }
+    factory = get_session_factory()
+    if factory is None:
+        return empty
+
+    # Top-ups live on order metadata; scan recently touched paid orders and filter by entry time.
+    lookback_start = start_utc - timedelta(days=14)
+    look_end = end_utc + timedelta(days=2)
+    with factory() as session:
+        candidates = list(
+            session.scalars(
+                select(Order)
+                .where(Order.updated_at >= lookback_start)
+                .where(Order.updated_at < look_end)
+                .where(Order.status.in_(PAID_STATUSES))
+            ).all()
+        )
+
+    count = 0
+    customer_count = 0
+    admin_count = 0
+    revenue_cents = 0
+    customer_wholesale_cents = 0
+    admin_wholesale_cents = 0
+    by_provider: Dict[str, Dict[str, Any]] = {}
+
+    for order in candidates:
+        history = _topup_history_from_meta(order.metadata_)
+        for entry in history:
+            at = _parse_iso_utc(entry.get("at"))
+            if at is None or at < start_utc or at >= end_utc:
+                continue
+            retail, wholesale = _topup_money_cents(entry)
+            source = str(entry.get("source") or "").strip().lower()
+            is_customer = source in {
+                "stripe_checkout",
+                "paypal_checkout",
+                "customer",
+            } or bool(entry.get("stripe_session_id"))
+            count += 1
+            if is_customer:
+                customer_count += 1
+                revenue_cents += retail
+                customer_wholesale_cents += wholesale
+            else:
+                admin_count += 1
+                admin_wholesale_cents += wholesale
+
+            provider = str(entry.get("provider") or "unknown").strip().lower() or "unknown"
+            bucket = by_provider.setdefault(
+                provider,
+                {"provider": provider, "count": 0, "revenue_cents": 0, "wholesale_cents": 0},
+            )
+            bucket["count"] += 1
+            if is_customer:
+                bucket["revenue_cents"] += retail
+            bucket["wholesale_cents"] += wholesale
+
+    margin_cents = max(0, revenue_cents - customer_wholesale_cents)
+    margin_pct = round(margin_cents / revenue_cents * 100, 1) if revenue_cents else 0.0
+
+    return {
+        "topup_count": count,
+        "customer_topup_count": customer_count,
+        "admin_topup_count": admin_count,
+        "topup_revenue_cents": revenue_cents,
+        "topup_wholesale_cents": customer_wholesale_cents + admin_wholesale_cents,
+        "topup_margin_cents": margin_cents,
+        "topup_margin_pct": margin_pct,
+        "by_provider": sorted(
+            by_provider.values(),
+            key=lambda row: (-int(row["revenue_cents"]), -int(row["count"]), row["provider"]),
+        ),
+    }
+
+
 def newsletter_signups_between(start_utc: datetime, end_utc: datetime) -> int:
     try:
         client = db.get_supabase_client()
@@ -397,4 +548,41 @@ def render_list_section(title: str, items: List[str], *, empty: str) -> str:
         lines.append("</ul>")
     else:
         lines.append(f"<p>{html.escape(empty)}</p>")
+    return "\n".join(lines)
+
+
+def render_topup_section(stats: Dict[str, Any], *, period_label: str = "this period") -> str:
+    """HTML block for top-up volume in admin reports."""
+    count = int(stats.get("topup_count") or 0)
+    customer = int(stats.get("customer_topup_count") or 0)
+    admin = int(stats.get("admin_topup_count") or 0)
+    revenue = int(stats.get("topup_revenue_cents") or 0)
+    margin = int(stats.get("topup_margin_cents") or 0)
+    margin_pct = stats.get("topup_margin_pct") or 0
+
+    lines = ["<h3>Top-ups</h3>"]
+    if count <= 0:
+        lines.append(f"<p>No eSIM top-ups {html.escape(period_label)}.</p>")
+        return "\n".join(lines)
+
+    lines.append("<ul>")
+    lines.append(
+        f"<li>Top-ups: <strong>{count}</strong> "
+        f"({customer} customer · {admin} admin/ops)</li>"
+    )
+    lines.append(
+        f"<li>Top-up revenue: <strong>{format_money(revenue)}</strong></li>"
+    )
+    if revenue > 0:
+        lines.append(
+            f"<li>Top-up margin: <strong>{format_money(margin)}</strong> ({margin_pct}%)</li>"
+        )
+    providers = stats.get("by_provider") or []
+    if providers:
+        mix = ", ".join(
+            f"{html.escape(str(row.get('provider') or 'unknown'))} {int(row.get('count') or 0)}"
+            for row in providers[:4]
+        )
+        lines.append(f"<li>By provider: {mix}</li>")
+    lines.append("</ul>")
     return "\n".join(lines)

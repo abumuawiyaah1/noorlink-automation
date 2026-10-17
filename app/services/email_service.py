@@ -458,30 +458,38 @@ def build_support_ticket_email_html(
     subject: Optional[str],
     message: str,
     app_url: str,
+    locale: Optional[str] = None,
 ) -> str:
+    from app.services.i18n_messages import t_email
+
     safe_name = html.escape(name.strip() or "there")
     safe_ticket = html.escape(ticket_id)
     safe_subject = html.escape((subject or "Support request").strip())
     safe_message = html.escape(message.strip()).replace("\n", "<br/>")
+    hi = html.escape(t_email(locale, "supportConfirmHi", name=name.strip() or "there"))
+    body_text = html.escape(t_email(locale, "supportConfirmBody"))
+    ticket_label = html.escape(t_email(locale, "supportConfirmTicket"))
+    subject_label = html.escape(t_email(locale, "supportConfirmSubjectLabel"))
+    your_message = html.escape(t_email(locale, "supportConfirmYourMessage"))
 
     body = f"""
-      <p style="margin:0 0 16px;">Hi {safe_name},</p>
+      <p style="margin:0 0 16px;">{hi}</p>
       <p style="margin:0 0 16px;">
-        Your support ticket has been created. Our team typically replies within 24 hours.
+        {body_text}
       </p>
-      <p style="margin:0 0 8px;"><strong style="color:{PRIMARY};">Ticket ID:</strong> {safe_ticket}</p>
-      <p style="margin:0 0 16px;"><strong style="color:{PRIMARY};">Subject:</strong> {safe_subject}</p>
+      <p style="margin:0 0 8px;"><strong style="color:{PRIMARY};">{ticket_label}</strong> {safe_ticket}</p>
+      <p style="margin:0 0 16px;"><strong style="color:{PRIMARY};">{subject_label}</strong> {safe_subject}</p>
       <div style="margin:0 0 8px;padding:16px;background:{BG};border-radius:10px;border:1px solid #E5E7EB;">
-        <p style="margin:0 0 8px;font-size:11px;color:{MUTED};text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Your message</p>
+        <p style="margin:0 0 8px;font-size:11px;color:{MUTED};text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">{your_message}</p>
         <p style="margin:0;">{safe_message}</p>
       </div>
     """
     return wrap_branded_email(
-        eyebrow="Support",
-        title="We received your message",
+        eyebrow=t_email(locale, "supportConfirmEyebrow"),
+        title=t_email(locale, "supportConfirmTitle"),
         body_html=body,
         app_url=app_url,
-        tip="Include your ticket ID in any follow-up — it helps us find your case faster.",
+        tip=t_email(locale, "supportConfirmTip"),
     )
 
 
@@ -492,18 +500,32 @@ def send_support_ticket_confirmation(
     ticket_id: str,
     subject: Optional[str],
     message: str,
+    locale: Optional[str] = None,
 ) -> str:
+    from app.services.i18n_messages import t_email
+
     settings = get_settings()
     safe_subject = (subject or "Support request").strip()
-    email_subject = f"[{ticket_id}] {safe_subject}"
+    email_subject = t_email(
+        locale,
+        "supportConfirmSubject",
+        ticketId=ticket_id,
+        subject=safe_subject,
+    )
     if len(email_subject) > 240:
-        email_subject = f"[{ticket_id}] Support request — NoorLink"
+        email_subject = t_email(
+            locale,
+            "supportConfirmSubject",
+            ticketId=ticket_id,
+            subject="NoorLink",
+        )
     html_body = build_support_ticket_email_html(
         name=name,
         ticket_id=ticket_id,
         subject=subject,
         message=message,
         app_url=settings.app_url,
+        locale=locale,
     )
     return send_email(to_email=to_email, subject=email_subject, html_body=html_body)
 
@@ -1030,7 +1052,11 @@ def build_esim_low_data_email_html(
         ),
         body_html=body,
         app_url=app_url,
-        tip="Top up before you hit 100% so maps, rides, and messages stay online.",
+        tip=(
+            "Speed may slow to help stretch the last bit of data — top up anytime for full speed again."
+            if nearly_empty
+            else "Top up before you hit 100% so maps, rides, and messages stay online."
+        ),
     )
 
 

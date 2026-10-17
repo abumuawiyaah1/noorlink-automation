@@ -413,6 +413,38 @@ async def _fulfill_paid_topup_from_stripe_meta(meta: dict) -> JSONResponse:
         )
     except TopUpError as exc:
         logger.error("Top-up fulfillment failed for %s: %s", order_number, exc)
+        from app.services.critical_ops import report_critical_event
+        from app.services.esim_topup import record_paid_topup_pending
+
+        if order_number:
+            try:
+                record_paid_topup_pending(
+                    order_number=str(order_number),
+                    fund_usd=fund_usd,
+                    retail_cents=retail_cents or expected_cents,
+                    stripe_session_id=payment_ref or None,
+                    buyer_email=meta.get("customer_email"),
+                    error=str(exc),
+                    topup_provider=topup_provider or "citrus",
+                )
+            except Exception:
+                logger.exception("Could not persist pending top-up for %s", order_number)
+        report_critical_event(
+            event_type="topup_checkout_failed",
+            source="api.stripe_topup_fulfill",
+            message=(
+                f"Customer paid top-up but wallet fund failed for {order_number}: {exc}. "
+                "Top up Citrus reseller balance and retry pending."
+            ),
+            order_number=str(order_number) if order_number else None,
+            details={
+                "fund_usd": fund_usd,
+                "retail_cents": retail_cents or expected_cents,
+                "payment_ref": payment_ref,
+                "error": str(exc)[:200],
+            },
+            title="Paid top-up not funded",
+        )
         return JSONResponse(
             {
                 "received": True,
@@ -420,6 +452,7 @@ async def _fulfill_paid_topup_from_stripe_meta(meta: dict) -> JSONResponse:
                 "topup": "failed",
                 "order_number": order_number,
                 "error": str(exc)[:200],
+                "pending_recorded": True,
             }
         )
 
@@ -712,6 +745,16 @@ async def cron_run(authorization: Optional[str] = Header(None)):
         logger.warning("Affiliate payout auto-approve cron failed: %s", exc)
         affiliate_payouts = {"success": False, "error": str(exc)[:240]}
 
+    pending_topups = None
+    try:
+        from app.services.esim_topup import retry_pending_citrus_topups
+
+        pending_topups = await retry_pending_citrus_topups()
+        pending_topups = {"success": True, **pending_topups}
+    except Exception as exc:
+        logger.warning("Pending top-up retry cron failed: %s", exc)
+        pending_topups = {"success": False, "error": str(exc)[:240]}
+
     return CronRunResponse(
         success=True,
         expired_promos=expired,
@@ -724,6 +767,7 @@ async def cron_run(authorization: Optional[str] = Header(None)):
         log_retention=log_retention,
         auto_refunds=auto_refunds,
         affiliate_payouts=affiliate_payouts,
+        pending_topups=pending_topups,
         message="Cron tasks completed.",
     )
 
@@ -922,6 +966,7 @@ async def contact_submit(body: ContactFormRequest):
             create_ticket_from_contact,
         )
 
+        ticket_language = body.language
         if get_engine() is not None:
             created = create_ticket_from_contact(
                 name=body.name,
@@ -933,6 +978,7 @@ async def contact_submit(body: ContactFormRequest):
             )
             ticket_id = created["ticket_number"]
             ticket_category = created.get("category")
+            ticket_language = created.get("language") or body.language
         else:
             ticket_category = normalize_support_category(body.subject)
             ticket_id = db.create_support_ticket(
@@ -957,6 +1003,7 @@ async def contact_submit(body: ContactFormRequest):
             message=body.message,
             order_number=order_number,
             category=ticket_category,
+            language=ticket_language,
         )
     except EmailDeliveryError as exc:
         logger.error(
