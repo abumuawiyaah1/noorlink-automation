@@ -61,19 +61,28 @@ async def fetch_provider_balances() -> List[Dict[str, Any]]:
     settings = get_settings()
     rows.append(
         {
-            "provider": "telna",
-            "configured": bool((settings.telna_api_token or "").strip()),
-            "ok": None,
-            "detail": "Telna Flex — check balance in Telna portal",
-            "portal_url": "https://portal.telna.com/",
-        }
-    )
-    rows.append(
-        {
             "provider": "esimaccess",
             "configured": bool((settings.esim_access_access_code or "").strip()),
             "ok": None,
             "detail": "Check eSIM Access partner portal for prepaid balance",
+        }
+    )
+    rows.append(
+        {
+            "provider": "zesimo",
+            "configured": bool((settings.zesimo_api_key or "").strip()),
+            "ok": None,
+            "detail": "Check Zesimo partner portal for prepaid balance",
+        }
+    )
+    rows.append(
+        {
+            "provider": "telna",
+            "configured": bool((settings.telna_api_token or "").strip()),
+            "ok": None,
+            "detail": "Retired for new sales — legacy portal only",
+            "portal_url": "https://portal.telna.com/",
+            "status": "retired",
         }
     )
     return rows

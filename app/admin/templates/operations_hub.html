@@ -43,7 +43,7 @@
     <div class="col-lg-6">
       <div class="nl-wizard-panel">
         <h2 class="h5">Run background tasks</h2>
-        <p class="text-muted small">Full cron: promos, Insider send, Telna sync, reminders, usage.</p>
+        <p class="text-muted small">Full cron: promos, Insider send, reminders, usage (Telna catalog sync retired).</p>
         {% if can_run_cron %}
         <form method="post" action="{{ url_for('admin:operations-hub') }}" class="mb-3">
           <input type="hidden" name="action" value="run_cron" />

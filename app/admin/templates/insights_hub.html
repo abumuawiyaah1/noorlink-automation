@@ -76,7 +76,7 @@
       <div class="nl-wizard-panel mb-3">
         <h2 class="h6">Provider health</h2>
         <ul class="small">{% for p in providers %}<li><strong>{{ p.provider }}</strong> — {{ p.status }} {% if p.configured %}✓{% else %}✗{% endif %}<br /><span class="text-muted">{{ p.detail }}</span></li>{% endfor %}</ul>
-        <form method="post"><input type="hidden" name="action" value="probe_providers" /><button class="btn btn-sm btn-outline-primary">Run Telna probe</button></form>
+        <form method="post"><input type="hidden" name="action" value="probe_providers" /><button class="btn btn-sm btn-outline-primary">Refresh provider health</button></form>
         {% if probe_result %}<pre class="nl-json mt-2 small">{{ probe_result | tojson(indent=2) }}</pre>{% endif %}
       </div>
       <div class="nl-wizard-panel">

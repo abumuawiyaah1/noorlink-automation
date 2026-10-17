@@ -1,14 +1,20 @@
 """Tests for catalog admin approval helpers."""
 
+import pytest
+
 from app.services.admin_catalog import (
+    ACTIVE_NEW_SALES_PROVIDERS,
+    AdminCatalogError,
     apply_fulfillment_approval_rules,
     apply_package_approval_rules,
     fulfillment_map_requires_approval,
     is_known_provider,
+    list_fulfillment_provider_options,
     package_sale_status,
     parse_custom_plan_wizard_form,
     price_change_requires_approval,
     suggest_plan_slug,
+    validate_fulfillment_map_payload,
 )
 
 
@@ -78,3 +84,102 @@ def test_parse_wizard_form_auto_fields():
     assert parsed["name"] == "Turkey 10GB"
     assert parsed["catalog_key"] == "turkey-10gb-15d-citrus"
     assert parsed["provider"] == "citrus"
+
+
+def test_wizard_providers_exclude_retired_rails():
+    options = list_fulfillment_provider_options()
+    assert "telna" not in options
+    assert "weconnect" not in options
+    assert set(options) == ACTIVE_NEW_SALES_PROVIDERS
+    assert "citrus" in options
+    assert "esimaccess" in options
+    assert "zesimo" in options
+
+
+def test_reject_telna_on_new_fulfillment_map():
+    with pytest.raises(AdminCatalogError, match="Telna/WeConnect retired"):
+        validate_fulfillment_map_payload(
+            {
+                "catalog_key": "turkey-10gb-30-telna",
+                "provider": "telna",
+                "provider_sku": "OLD-SKU",
+                "is_active": True,
+            },
+            is_create=True,
+        )
+
+
+def test_reject_weconnect_on_new_fulfillment_map():
+    with pytest.raises(AdminCatalogError, match="Telna/WeConnect retired"):
+        validate_fulfillment_map_payload(
+            {
+                "catalog_key": "flex-payg-weconnect",
+                "provider": "weconnect",
+                "provider_sku": "WC-1",
+            },
+            is_create=True,
+        )
+
+
+def test_ghana_requires_esimaccess():
+    with pytest.raises(AdminCatalogError, match="Ghana routes must use esimaccess"):
+        validate_fulfillment_map_payload(
+            {
+                "catalog_key": "ghana-10gb-30",
+                "country_slug": "ghana",
+                "country_code": "GH",
+                "provider": "citrus",
+                "provider_sku": "CIT-GH",
+            },
+            is_create=True,
+        )
+
+    ok = validate_fulfillment_map_payload(
+        {
+            "catalog_key": "ghana-10gb-30",
+            "country_slug": "ghana",
+            "country_code": "GH",
+            "provider": "esimaccess",
+            "provider_sku": "MB040",
+        },
+        is_create=True,
+    )
+    assert ok["provider"] == "esimaccess"
+
+
+def test_inactive_historical_telna_row_notes_edit_allowed():
+    """Existing inactive Telna rows stay readable/editable without re-activating."""
+
+    class Existing:
+        provider = "telna"
+
+    cleaned = validate_fulfillment_map_payload(
+        {
+            "catalog_key": "legacy-telna-row",
+            "provider": "telna",
+            "provider_sku": "OLD",
+            "is_active": False,
+            "notes": "legacy only",
+        },
+        is_create=False,
+        existing=Existing(),
+    )
+    assert cleaned["provider"] == "telna"
+    assert cleaned["is_active"] is False
+
+
+def test_reactivating_historical_telna_row_blocked():
+    class Existing:
+        provider = "telna"
+
+    with pytest.raises(AdminCatalogError, match="Telna/WeConnect retired"):
+        validate_fulfillment_map_payload(
+            {
+                "catalog_key": "legacy-telna-row",
+                "provider": "telna",
+                "provider_sku": "OLD",
+                "is_active": True,
+            },
+            is_create=False,
+            existing=Existing(),
+        )

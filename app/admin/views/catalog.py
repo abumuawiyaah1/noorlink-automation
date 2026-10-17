@@ -328,7 +328,7 @@ class PlanFulfillmentMapAdmin(AuditedModelView, model=PlanFulfillmentMap):
     form_widget_args = {
         "notes": {"rows": 3},
         "provider": {
-            "placeholder": "citrus, esimaccess, telna, simbase — new routes need admin approval",
+            "placeholder": "citrus, esimaccess, zesimo — Telna/WeConnect retired; new routes need admin approval",
         },
     }
 
@@ -347,7 +347,11 @@ class PlanFulfillmentMapAdmin(AuditedModelView, model=PlanFulfillmentMap):
         if not has_role(request, CATALOG_MANAGER_ROLES):
             raise ValueError("You do not have permission to edit provider routes.")
         try:
-            validated = validate_fulfillment_map_payload(data, is_create=is_created)
+            validated = validate_fulfillment_map_payload(
+                data,
+                is_create=is_created,
+                existing=None if is_created else model,
+            )
             apply_fulfillment_approval_rules(
                 validated,
                 is_create=is_created,

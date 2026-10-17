@@ -65,7 +65,7 @@ Gift details, usage, breakage allowance, reminder history — one screen.
 Campaign discounts. Codes **above 20%** need admin approval before checkout works.
 
 ### Add travel plan
-New checkout SKU linked to Citrus, eSIM Access, or Telna provider SKU.
+New checkout SKU linked to **Citrus**, **eSIM Access**, or **Zesimo**. Telna and WeConnect are retired for new sales. **Ghana** routes must use eSIM Access.
 
 ### Send Insider newsletter
 Write issue → test email to yourself → schedule send date. Cron sends on that day.
@@ -124,8 +124,8 @@ Check daily. Urgent items:
 
 - **Stats:** suspended, pending fulfillment, newsletter count, Insider due, catalog SKUs
 - **Tool cards:** links to all wizards and ops tools
-- **Run background tasks:** full cron (admin) — promos, Insider, Telna sync, reminders, usage
-- **Admin scripts:** health check, email probe, Telna probe, expire promos, sync catalog
+- **Run background tasks:** full cron (admin) — promos, Insider, reminders, usage (Telna catalog sync retired)
+- **Admin scripts:** health check, email probe, expire promos; Telna probe/sync marked retired
 - **Security panel:** env checklist, staff logins, external threats (24h), audit snippet
 
 ---
@@ -166,7 +166,7 @@ Reply to customers with branded email. Inbound email via Resend webhook creates/
 - Refunds over usage policy  
 - GDPR export/delete  
 - Catalog or promo approval  
-- Provider API failures after Telna probe  
+- Provider API failures (Access / Zesimo / Citrus health) 
 - Repeated security alerts  
 
 ---

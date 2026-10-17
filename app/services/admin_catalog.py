@@ -23,6 +23,21 @@ KNOWN_FULFILLMENT_PROVIDERS: Set[str] = {
     "mock",
 }
 
+# Providers offered for new sales / wizard / map creates.
+ACTIVE_NEW_SALES_PROVIDERS: Set[str] = {
+    "citrus",
+    "esimaccess",
+    "zesimo",
+    "simbase",
+    "mock",
+}
+
+# Kept in KNOWN_* for historical SQLAdmin rows; blocked on new/active writes.
+RETIRED_FULFILLMENT_PROVIDERS: Set[str] = {
+    "telna",
+    "weconnect",
+}
+
 PRICE_CHANGE_APPROVAL_THRESHOLD_PCT = 10
 
 
@@ -40,6 +55,51 @@ def normalize_provider(value: Optional[str]) -> str:
 
 def is_known_provider(provider: Optional[str]) -> bool:
     return normalize_provider(provider) in KNOWN_FULFILLMENT_PROVIDERS
+
+
+def is_active_new_sales_provider(provider: Optional[str]) -> bool:
+    return normalize_provider(provider) in ACTIVE_NEW_SALES_PROVIDERS
+
+
+def is_retired_fulfillment_provider(provider: Optional[str]) -> bool:
+    return normalize_provider(provider) in RETIRED_FULFILLMENT_PROVIDERS
+
+
+def _is_ghana_fulfillment_route(data: Dict[str, Any]) -> bool:
+    slug = str(data.get("country_slug") or "").strip().lower().replace("_", "-")
+    key = str(data.get("catalog_key") or "").strip().lower()
+    code = str(data.get("country_code") or "").strip().upper()
+    return slug == "ghana" or key.startswith("ghana-") or code == "GH"
+
+
+def assert_provider_allowed_for_map_write(
+    provider: str,
+    *,
+    is_create: bool,
+    is_active: bool,
+    existing_provider: Optional[str] = None,
+) -> None:
+    """Block Telna/WeConnect on creates and on any write that keeps/activates them."""
+    retired = is_retired_fulfillment_provider(provider)
+    if not retired:
+        return
+    existing = normalize_provider(existing_provider)
+    provider_changed = bool(existing) and existing != provider
+    if is_create or is_active or provider_changed or not existing:
+        raise AdminCatalogError(
+            "Telna/WeConnect retired — use citrus, esimaccess, or zesimo."
+        )
+
+
+def assert_ghana_access_map(data: Dict[str, Any], provider: str) -> None:
+    """Ghana storefront routes must fulfill on eSIM Access only."""
+    if not _is_ghana_fulfillment_route(data):
+        return
+    if provider != "esimaccess":
+        raise AdminCatalogError(
+            "Ghana routes must use esimaccess (Access). "
+            f"Got provider={provider}."
+        )
 
 
 def price_change_requires_approval(old_cents: int, new_cents: int) -> bool:
@@ -172,7 +232,12 @@ def apply_package_approval_rules(
     return validated
 
 
-def validate_fulfillment_map_payload(data: Dict[str, Any], *, is_create: bool) -> Dict[str, Any]:
+def validate_fulfillment_map_payload(
+    data: Dict[str, Any],
+    *,
+    is_create: bool,
+    existing: Optional[Any] = None,
+) -> Dict[str, Any]:
     cleaned = dict(data)
 
     catalog_key = str(cleaned.get("catalog_key") or "").strip()
@@ -192,6 +257,18 @@ def validate_fulfillment_map_payload(data: Dict[str, Any], *, is_create: bool) -
 
     if is_create:
         cleaned.setdefault("is_active", True)
+
+    is_active = bool(cleaned.get("is_active", True))
+    existing_provider = (
+        None if existing is None else getattr(existing, "provider", None)
+    )
+    assert_provider_allowed_for_map_write(
+        provider,
+        is_create=is_create,
+        is_active=is_active,
+        existing_provider=existing_provider,
+    )
+    assert_ghana_access_map(cleaned, provider)
 
     return cleaned
 
@@ -266,7 +343,8 @@ def approve_fulfillment_map(row: Any, *, admin_username: str) -> None:
 
 
 def list_fulfillment_provider_options() -> List[str]:
-    return sorted(KNOWN_FULFILLMENT_PROVIDERS)
+    """Providers shown in the custom-plan wizard (active new-sales rails only)."""
+    return sorted(ACTIVE_NEW_SALES_PROVIDERS)
 
 
 def slugify_plan_part(value: str) -> str:

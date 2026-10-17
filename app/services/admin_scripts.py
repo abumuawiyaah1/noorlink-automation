@@ -49,10 +49,10 @@ ADMIN_SCRIPTS: tuple[AdminScript, ...] = (
     ),
     AdminScript(
         key="telna_probe",
-        title="Telna connectivity probe",
-        summary="Read-only check that Telna Ordering API responds (needs User-Agent).",
+        title="Telna connectivity probe (Retired)",
+        summary="Legacy read-only Telna Ordering API check. New sales use Access / Zesimo / Citrus.",
         category="test",
-        confirmation="Ping Telna API (read-only)?",
+        confirmation="Ping Telna API (read-only, retired rail)?",
     ),
     AdminScript(
         key="expire_promos",
@@ -63,15 +63,15 @@ ADMIN_SCRIPTS: tuple[AdminScript, ...] = (
     ),
     AdminScript(
         key="sync_telna_catalog",
-        title="Sync Telna catalog",
-        summary="Refresh provider_catalog_products from Telna.",
+        title="Sync Telna catalog (Retired)",
+        summary="Legacy Telna catalog sync — retired; Access/Zesimo maps are authoritative.",
         category="maintenance",
-        confirmation="Sync Telna provider SKUs into the warehouse?",
+        confirmation="Sync Telna provider SKUs (retired — prefer Access/Zesimo maps)?",
     ),
     AdminScript(
         key="run_cron_subset",
         title="Run maintenance batch",
-        summary="Expire promos + sync catalog + usage sync (no Insider send).",
+        summary="Expire promos + usage sync (no Insider send; Telna catalog sync skips as retired).",
         category="maintenance",
         confirmation="Run maintenance tasks (excludes Insider mass send)?",
     ),

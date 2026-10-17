@@ -55,7 +55,7 @@ STAFF_WIZARDS: Tuple[StaffWizard, ...] = (
     StaffWizard(
         key="new-custom-plan",
         title="Add a new travel plan",
-        summary="Create what customers see on the site and connect it to Citrus, eSIM Access, or Telna.",
+        summary="Create what customers see on the site and connect it to Citrus, eSIM Access, or Zesimo.",
         steps=("Plan details", "Provider SKU", "Publish"),
         icon="fa-solid fa-sim-card",
         endpoint="admin:new-custom-plan",

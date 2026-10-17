@@ -111,7 +111,7 @@ ADMIN_TOOLS: Tuple[AdminTool, ...] = (
     AdminTool(
         key="provider-catalog",
         title="Provider SKU browser",
-        summary="Search Telna and other provider SKUs when building a new plan.",
+        summary="Search Citrus, eSIM Access, and Zesimo SKUs when building a new plan.",
         icon="fa-solid fa-warehouse",
         endpoint="admin:provider-catalog",
         roles=CATALOG_MANAGER_ROLES,
