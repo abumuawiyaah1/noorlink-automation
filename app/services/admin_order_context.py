@@ -33,6 +33,12 @@ def build_order_context(*, order_number: str) -> Dict[str, Any]:
     reminders = metadata.get("reminders") if isinstance(metadata.get("reminders"), dict) else {}
     simbase = metadata.get("simbase") if isinstance(metadata.get("simbase"), dict) else {}
     complimentary = metadata.get("complimentary") if isinstance(metadata.get("complimentary"), dict) else {}
+    stripe_payment = (
+        metadata.get("stripe_payment")
+        if isinstance(metadata.get("stripe_payment"), dict)
+        else {}
+    )
+    paypal = metadata.get("paypal") if isinstance(metadata.get("paypal"), dict) else {}
     topups = metadata.get("topups") if isinstance(metadata.get("topups"), list) else []
 
     breakage = None
@@ -74,6 +80,9 @@ def build_order_context(*, order_number: str) -> Dict[str, Any]:
         "country": row.get("country"),
         "package_name": row.get("package_name"),
         "amount_cents": row.get("amount_cents"),
+        "currency": row.get("currency") or "USD",
+        "stripe_checkout_session_id": row.get("stripe_checkout_session_id"),
+        "stripe_payment_intent_id": row.get("stripe_payment_intent_id"),
         "iccid": row.get("iccid"),
         "data_used_gb": row.get("data_used_gb"),
         "data_total_gb": row.get("data_total_gb"),
@@ -92,4 +101,21 @@ def build_order_context(*, order_number: str) -> Dict[str, Any]:
         "complimentary_reason": complimentary.get("reason"),
         "topup_count": len(topups),
         "breakage": breakage,
+        "stripe_payment": stripe_payment or None,
+        "paypal": paypal or None,
+        "customer_paid_currency": (
+            stripe_payment.get("presentment_currency")
+            or stripe_payment.get("session_currency")
+            or paypal.get("captured_currency")
+            or paypal.get("presentment_currency")
+        ),
+        "customer_paid_amount_cents": (
+            stripe_payment.get("presentment_amount_cents")
+            if stripe_payment.get("presentment_amount_cents") is not None
+            else stripe_payment.get("session_amount_total_cents")
+            if stripe_payment.get("session_amount_total_cents") is not None
+            else paypal.get("captured_amount_cents")
+            if paypal.get("captured_amount_cents") is not None
+            else paypal.get("presentment_amount_cents")
+        ),
     }

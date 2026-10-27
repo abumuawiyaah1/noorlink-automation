@@ -3,7 +3,7 @@ from urllib.parse import quote
 from datetime import datetime, timezone
 import logging
 import secrets
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
@@ -48,6 +48,7 @@ from .stripe_webhook import (
     extract_checkout_session_completed,
     extract_payment_intent_succeeded,
     stripe_event_amount_cents,
+    verify_stripe_paid_amount_for_order,
 )
 from .schemas import (
     ApiTestResponse,
@@ -303,19 +304,22 @@ def _build_gift_metadata(body: CheckoutSessionRequest) -> Optional[dict]:
 
 
 def _verify_stripe_paid_amount(order_row: dict, event) -> bool:
-    expected = int(order_row.get("amount_cents") or 0)
-    received = stripe_event_amount_cents(event)
-    if not expected or not received:
-        return True
-    if expected != received:
-        logger.error(
-            "Stripe amount mismatch for order %s: expected %s got %s",
-            order_row.get("order_number"),
-            expected,
-            received,
+    """Delegate to Adaptive Pricing-aware verifier (settlement USD vs local presentment)."""
+    return verify_stripe_paid_amount_for_order(order_row, event)
+
+
+def _persist_stripe_payment_metadata(order_number: Optional[str], payment_meta: Any) -> None:
+    """Save session id / amount / currency / presentment so support sees what customer paid."""
+    if not order_number or not isinstance(payment_meta, dict) or not payment_meta:
+        return
+    try:
+        db.merge_order_metadata(str(order_number), {"stripe_payment": payment_meta})
+    except db.SupabaseRepositoryError as exc:
+        logger.warning(
+            "Stripe payment metadata merge failed for %s: %s",
+            order_number,
+            exc,
         )
-        return False
-    return True
 
 
 async def _fulfill_paid_topup_from_stripe_meta(meta: dict) -> JSONResponse:
@@ -1335,12 +1339,13 @@ async def orders_topup_paypal_create(body: TopUpSessionRequest):
     cancel_url = f"{settings.app_url.rstrip('/')}/dashboard"
 
     try:
-        paypal_order_id = create_paypal_order(
+        paypal_order_id, paypal_charge = create_paypal_order(
             order_number=f"TOPUP:{order_number}",
             amount_usd=retail_usd,
             description=str(quote["display_name"]),
             return_url=success_url,
             cancel_url=cancel_url,
+            currency="USD",
         )
     except PayPalCheckoutError as exc:
         logger.error("PayPal top-up create failed for %s: %s", order_number, exc)
@@ -1363,6 +1368,8 @@ async def orders_topup_paypal_create(body: TopUpSessionRequest):
             "period_num": quote.get("period_num"),
             "wholesale_usd": quote.get("wholesale_usd"),
             "iccid": quote.get("iccid"),
+            "presentment_currency": paypal_charge.get("presentment_currency"),
+            "presentment_amount": paypal_charge.get("presentment_amount"),
         }
     }
     try:
@@ -1890,6 +1897,7 @@ async def paypal_create_order(body: CheckoutSessionRequest):
             affiliate_metadata=affiliate_meta,
             attribution_metadata=attribution_meta,
             wants_topup=bool(body.wants_topup),
+            locale=body.language,
         )
     except db.ManagedPackagePriceMismatchError as exc:
         raise HTTPException(
@@ -1918,12 +1926,13 @@ async def paypal_create_order(body: CheckoutSessionRequest):
     cancel_url = f"{settings.app_url.rstrip('/')}/checkout?canceled=1"
 
     try:
-        paypal_order_id = create_paypal_order(
+        paypal_order_id, paypal_charge = create_paypal_order(
             order_number=order.order_number,
             amount_usd=float(order.price),
             description=order.package_name or f"{order.country} eSIM",
             return_url=return_url,
             cancel_url=cancel_url,
+            currency=body.currency,
         )
         db.merge_order_metadata(
             order.order_number,
@@ -1931,6 +1940,17 @@ async def paypal_create_order(body: CheckoutSessionRequest):
                 "paypal": {
                     "order_id": paypal_order_id,
                     "mode": (settings.paypal_mode or "sandbox").strip().lower(),
+                    "settlement_currency": paypal_charge.get("settlement_currency"),
+                    "settlement_amount": paypal_charge.get("settlement_amount"),
+                    "settlement_amount_cents": paypal_charge.get(
+                        "settlement_amount_cents"
+                    ),
+                    "presentment_currency": paypal_charge.get("presentment_currency"),
+                    "presentment_amount": paypal_charge.get("presentment_amount"),
+                    "presentment_amount_cents": paypal_charge.get(
+                        "presentment_amount_cents"
+                    ),
+                    "preferred_currency": paypal_charge.get("preferred_currency"),
                 }
             },
         )
@@ -1952,7 +1972,12 @@ async def paypal_create_order(body: CheckoutSessionRequest):
 @app.post("/api/checkout/paypal/capture", response_model=PayPalCaptureResponse)
 async def paypal_capture(body: PayPalCaptureRequest):
     """Capture an approved PayPal order and fulfill the eSIM."""
-    from app.api.paypal_checkout import PayPalCheckoutError, capture_paypal_order, paypal_enabled
+    from app.api.paypal_checkout import (
+        PayPalCheckoutError,
+        capture_paypal_order,
+        paypal_enabled,
+        verify_paypal_capture_amount,
+    )
 
     if not paypal_enabled():
         raise HTTPException(status_code=503, detail="PayPal checkout is not configured yet.")
@@ -1969,9 +1994,11 @@ async def paypal_capture(body: PayPalCaptureRequest):
     meta = payload.get("_noorlink") if isinstance(payload, dict) else {}
     capture_id = None
     amount_value = None
+    amount_currency = None
     if isinstance(meta, dict):
         capture_id = meta.get("capture_id")
         amount_value = meta.get("amount_value")
+        amount_currency = meta.get("amount_currency")
 
     try:
         row = db.get_order_row_by_order_number(order_number)
@@ -1980,20 +2007,22 @@ async def paypal_capture(body: PayPalCaptureRequest):
     if not row:
         raise HTTPException(status_code=404, detail="Order not found for this PayPal payment.")
 
-    expected_cents = int(row.get("amount_cents") or round(float(row.get("price") or 0) * 100))
-    if amount_value is not None:
-        try:
-            received_cents = int(round(float(amount_value) * 100))
-        except (TypeError, ValueError):
-            received_cents = 0
-        if expected_cents and received_cents and expected_cents != received_cents:
-            logger.error(
-                "PayPal amount mismatch for %s: expected %s got %s",
-                order_number,
-                expected_cents,
-                received_cents,
-            )
-            raise HTTPException(status_code=400, detail="PayPal amount does not match this order.")
+    row_meta = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    paypal_meta = row_meta.get("paypal") if isinstance(row_meta.get("paypal"), dict) else {}
+    settlement_usd = float(
+        paypal_meta.get("settlement_amount")
+        or row.get("price")
+        or ((row.get("amount_cents") or 0) / 100.0)
+        or 0
+    )
+    if not verify_paypal_capture_amount(
+        expected_presentment_amount=paypal_meta.get("presentment_amount"),
+        expected_presentment_currency=paypal_meta.get("presentment_currency"),
+        received_value=amount_value,
+        received_currency=amount_currency,
+        settlement_amount_usd=settlement_usd,
+    ):
+        raise HTTPException(status_code=400, detail="PayPal amount does not match this order.")
 
     if payer_email and "@" in payer_email:
         try:
@@ -2002,6 +2031,12 @@ async def paypal_capture(body: PayPalCaptureRequest):
             logger.warning("PayPal email patch failed for %s: %s", order_number, exc)
 
     try:
+        received_cents = None
+        if amount_value is not None:
+            try:
+                received_cents = int(round(float(amount_value) * 100))
+            except (TypeError, ValueError):
+                received_cents = None
         db.merge_order_metadata(
             order_number,
             {
@@ -2009,6 +2044,9 @@ async def paypal_capture(body: PayPalCaptureRequest):
                     "order_id": body.paypal_order_id,
                     "capture_id": capture_id,
                     "status": "COMPLETED",
+                    "captured_currency": amount_currency,
+                    "captured_amount": amount_value,
+                    "captured_amount_cents": received_cents,
                 }
             },
         )
@@ -2084,6 +2122,7 @@ async def checkout_payment_intent(body: CheckoutSessionRequest):
             affiliate_metadata=affiliate_meta,
             attribution_metadata=attribution_meta,
             wants_topup=bool(body.wants_topup),
+            locale=body.language,
         )
     except db.ManagedPackagePriceMismatchError as exc:
         raise HTTPException(
@@ -2186,6 +2225,7 @@ async def checkout_session(body: CheckoutSessionRequest):
             attribution_metadata=attribution_meta,
             gift_metadata=gift_meta,
             wants_topup=bool(body.wants_topup),
+            locale=body.language,
         )
     except db.ManagedPackagePriceMismatchError as exc:
         raise HTTPException(
@@ -2399,6 +2439,11 @@ async def stripe_webhook(
                 }
             )
 
+        _persist_stripe_payment_metadata(
+            str(order_number) if order_number else None,
+            intent_data.get("stripe_payment"),
+        )
+
         paid_email = str(intent_data.get("customer_email") or "").strip().lower()
         if order_number and paid_email and "@" in paid_email:
             try:
@@ -2519,6 +2564,10 @@ async def stripe_webhook(
         )
 
     resolved_order_number = str(order_number or (row or {}).get("order_number") or "")
+    _persist_stripe_payment_metadata(
+        resolved_order_number or None,
+        session_data.get("stripe_payment"),
+    )
     customer_patch = session_data.get("customer_patch") if isinstance(session_data, dict) else None
     if resolved_order_number and isinstance(customer_patch, dict) and customer_patch:
         try:

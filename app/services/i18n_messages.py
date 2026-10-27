@@ -1,6 +1,6 @@
 """Customer-facing locale strings for emails (and shared with site drafts).
 
-Decisions: en (source) · es LatAm · ar MSA. Draft for owner review.
+Decisions: en (source) · es LatAm · ar MSA. Self-reviewed; owner eye on REVIEW.md flags.
 Keep keys aligned with noorlink-next `messages/*/emails`.
 """
 
@@ -11,7 +11,7 @@ from typing import Any, Dict, Mapping, Optional
 SUPPORTED_LOCALES = ("en", "es", "ar")
 DEFAULT_LOCALE = "en"
 
-# Draft — review via site content/i18n/REVIEW.md
+# Keep in sync with noorlink-next messages/*/emails + content/i18n/REVIEW.md
 _EMAILS: Dict[str, Dict[str, str]] = {
     "en": {
         "supportConfirmSubject": "[{ticketId}] {subject}",
@@ -46,24 +46,24 @@ _EMAILS: Dict[str, Dict[str, str]] = {
         "supportConfirmTitle": "Recibimos tu mensaje",
         "supportConfirmHi": "Hola {name},",
         "supportConfirmBody": (
-            "Tu ticket de soporte ya está creado. El equipo suele responder en 24 horas."
+            "Tu caso de soporte ya está creado. Nuestro equipo suele responder en 24 horas."
         ),
-        "supportConfirmTicket": "ID del ticket:",
+        "supportConfirmTicket": "ID del caso:",
         "supportConfirmSubjectLabel": "Asunto:",
         "supportConfirmYourMessage": "Tu mensaje",
         "supportConfirmTip": (
-            "Incluye el ID del ticket en cualquier seguimiento — así encontramos tu caso más rápido."
+            "Incluye el ID del caso en cualquier seguimiento — así encontramos tu solicitud más rápido."
         ),
         "installHelpSubject": "Buenas noticias — tu eSIM está lista (y estamos para ayudarte)",
         "installHelpEyebrow": "Ayuda para instalar",
-        "installHelpTitle": "Tu eSIM está lista — aquí estamos si necesitas una mano",
+        "installHelpTitle": "Tu eSIM está lista — aquí estamos si necesitas ayuda",
         "installCongratsSubject": "Ya está instalada — conéctate al aterrizar",
         "installCongratsEyebrow": "Ya está instalada",
-        "installCongratsTitle": "Muy bien — así te conectas al llegar",
-        "myEsimsSubject": "Tu enlace a Mis eSIM — NoorLink",
+        "installCongratsTitle": "Listo — así te conectas al llegar",
+        "myEsimsSubject": "Tu enlace a Mis eSIMs — NoorLink",
         "fulfillmentReadySubject": "Tu eSIM NoorLink está lista — {country}",
         "beforeFlyTip": (
-            "Instálala con Wi‑Fi antes de salir. Mantén tu número principal para llamadas/WhatsApp; "
+            "Instálala con Wi‑Fi antes de salir. Mantén tu número principal para llamadas y WhatsApp; "
             "usa la eSIM de viaje para datos en el extranjero."
         ),
     },
@@ -84,13 +84,13 @@ _EMAILS: Dict[str, Dict[str, str]] = {
         "installHelpSubject": "خبر سار — شريحة eSIM جاهزة (ونحن هنا للمساعدة)",
         "installHelpEyebrow": "مساعدة التثبيت",
         "installHelpTitle": "شريحة eSIM جاهزة — نحن هنا إن احتجت مساعدة",
-        "installCongratsSubject": "تم التثبيت — اتصل تلقائيًا عند الهبوط",
+        "installCongratsSubject": "تم التثبيت — ستتصل بالشبكة تلقائيًا عند الهبوط",
         "installCongratsEyebrow": "تم التثبيت",
-        "installCongratsTitle": "أحسنت — هكذا تتصل عند الوصول",
+        "installCongratsTitle": "تم بنجاح — إليك كيفية الاتصال عند الوصول",
         "myEsimsSubject": "رابط شرائح eSIM الخاصة بك — NoorLink",
         "fulfillmentReadySubject": "شريحة NoorLink eSIM جاهزة — {country}",
         "beforeFlyTip": (
-            "ثبّتها عبر Wi‑Fi قبل المغادرة. أبقِ رقمك الأساسي للمكالمات/واتساب؛ "
+            "ثبّتها عبر Wi‑Fi قبل المغادرة. أبقِ رقمك الأساسي للمكالمات وواتساب؛ "
             "واستخدم eSIM السفر للبيانات في الخارج."
         ),
     },

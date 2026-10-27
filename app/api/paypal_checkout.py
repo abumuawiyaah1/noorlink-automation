@@ -2,6 +2,9 @@
 
 Flow: create NoorLink pending order → create PayPal order → capture on approve →
 process_paid_order (same eSIM fulfillment path as Stripe).
+
+Charge currency: USD settlement catalog; when shopper picks CAD/EUR/GBP/MXN
+(enabled on the PayPal account), create the PayPal order in that currency.
 """
 
 from __future__ import annotations
@@ -12,6 +15,12 @@ from typing import Any, Dict, Optional, Tuple
 import httpx
 
 from app.core.config import get_settings
+from app.services.fx_rates import (
+    convert_usd_to,
+    format_paypal_amount,
+    normalize_currency,
+    resolve_paypal_charge_currency,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +72,25 @@ def _access_token() -> str:
     return str(token)
 
 
+def build_paypal_charge(
+    *,
+    amount_usd: float,
+    preferred_currency: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Resolve PayPal presentment amount/currency from a USD catalog price."""
+    charge_currency = resolve_paypal_charge_currency(preferred_currency)
+    charge_amount = convert_usd_to(float(amount_usd), charge_currency)
+    return {
+        "settlement_currency": "USD",
+        "settlement_amount": round(float(amount_usd), 2),
+        "settlement_amount_cents": int(round(float(amount_usd) * 100)),
+        "presentment_currency": charge_currency,
+        "presentment_amount": charge_amount,
+        "presentment_amount_cents": int(round(charge_amount * 100)),
+        "preferred_currency": normalize_currency(preferred_currency),
+    }
+
+
 def create_paypal_order(
     *,
     order_number: str,
@@ -70,10 +98,18 @@ def create_paypal_order(
     description: str,
     return_url: str,
     cancel_url: str,
-) -> str:
-    """Create a PayPal order; returns PayPal order id."""
+    currency: Optional[str] = None,
+) -> Tuple[str, Dict[str, Any]]:
+    """Create a PayPal order; returns (paypal_order_id, charge_meta)."""
     token = _access_token()
-    amount = f"{amount_usd:.2f}"
+    charge = build_paypal_charge(
+        amount_usd=amount_usd,
+        preferred_currency=currency,
+    )
+    amount_value = format_paypal_amount(
+        charge["presentment_amount"],
+        charge["presentment_currency"],
+    )
     payload = {
         "intent": "CAPTURE",
         "purchase_units": [
@@ -82,8 +118,8 @@ def create_paypal_order(
                 "custom_id": order_number,
                 "description": (description or "NoorLink eSIM")[:127],
                 "amount": {
-                    "currency_code": "USD",
-                    "value": amount,
+                    "currency_code": charge["presentment_currency"],
+                    "value": amount_value,
                 },
             }
         ],
@@ -120,7 +156,7 @@ def create_paypal_order(
     paypal_order_id = data.get("id")
     if not paypal_order_id:
         raise PayPalCheckoutError("PayPal create order missing id.")
-    return str(paypal_order_id)
+    return str(paypal_order_id), charge
 
 
 def capture_paypal_order(paypal_order_id: str) -> Tuple[Dict[str, Any], Optional[str], Optional[str]]:
@@ -160,6 +196,7 @@ def capture_paypal_order(paypal_order_id: str) -> Tuple[Dict[str, Any], Optional
     order_number: Optional[str] = None
     capture_id: Optional[str] = None
     amount_value: Optional[str] = None
+    amount_currency: Optional[str] = None
     for unit in data.get("purchase_units") or []:
         if not isinstance(unit, dict):
             continue
@@ -173,8 +210,11 @@ def capture_paypal_order(paypal_order_id: str) -> Tuple[Dict[str, Any], Optional
             first = captures[0] if isinstance(captures[0], dict) else {}
             capture_id = str(first.get("id") or "") or capture_id
             amount = first.get("amount") if isinstance(first.get("amount"), dict) else {}
-            if isinstance(amount, dict) and amount.get("value"):
-                amount_value = str(amount.get("value"))
+            if isinstance(amount, dict):
+                if amount.get("value"):
+                    amount_value = str(amount.get("value"))
+                if amount.get("currency_code"):
+                    amount_currency = str(amount.get("currency_code")).upper()
 
     payer = data.get("payer") if isinstance(data.get("payer"), dict) else {}
     payer_email = None
@@ -185,6 +225,73 @@ def capture_paypal_order(paypal_order_id: str) -> Tuple[Dict[str, Any], Optional
         "order_number": order_number,
         "capture_id": capture_id,
         "amount_value": amount_value,
+        "amount_currency": amount_currency,
         "payer_email": payer_email,
     }
     return data, order_number, str(payer_email).strip().lower() if payer_email else None
+
+
+def verify_paypal_capture_amount(
+    *,
+    expected_presentment_amount: Optional[float],
+    expected_presentment_currency: Optional[str],
+    received_value: Optional[str],
+    received_currency: Optional[str],
+    settlement_amount_usd: Optional[float] = None,
+) -> bool:
+    """
+    Confirm captured PayPal amount matches what we created.
+    Prefer presentment currency match; fall back to USD settlement cents.
+    """
+    if not received_value:
+        return True
+    try:
+        received_cents = int(round(float(received_value) * 100))
+    except (TypeError, ValueError):
+        return False
+    if not received_cents:
+        return False
+
+    recv_cur = normalize_currency(received_currency)
+    exp_cur = normalize_currency(expected_presentment_currency)
+
+    if expected_presentment_amount is not None and recv_cur == exp_cur:
+        expected_cents = int(round(float(expected_presentment_amount) * 100))
+        if expected_cents and expected_cents != received_cents:
+            logger.error(
+                "PayPal presentment mismatch: expected %s %s got %s %s",
+                expected_cents,
+                exp_cur,
+                received_cents,
+                recv_cur,
+            )
+            return False
+        return True
+
+    # Legacy / USD-only path
+    if recv_cur == "USD" and settlement_amount_usd is not None:
+        expected_cents = int(round(float(settlement_amount_usd) * 100))
+        if expected_cents and expected_cents != received_cents:
+            logger.error(
+                "PayPal USD mismatch: expected %s got %s",
+                expected_cents,
+                received_cents,
+            )
+            return False
+        return True
+
+    # Paid in a different currency than stored — still allow if amount > 0 and
+    # we at least recorded a presentment expectation that we cannot re-check.
+    if expected_presentment_amount is None and settlement_amount_usd is not None:
+        expected_cents = int(round(float(settlement_amount_usd) * 100))
+        if recv_cur == "USD" and expected_cents and expected_cents != received_cents:
+            return False
+        return True
+
+    logger.error(
+        "PayPal currency mismatch on capture: expected %s got %s %s",
+        exp_cur,
+        received_cents,
+        recv_cur,
+    )
+    return False

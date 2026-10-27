@@ -186,6 +186,10 @@ class CheckoutSessionRequest(BaseModel):
     wants_topup: bool = Field(False, alias="wantsTopUp")
     is_gift: bool = Field(False, alias="isGift")
     gift: Optional[GiftCheckoutDetails] = None
+    # Preferred UI language (en | es | ar) — stored on order for emails.
+    language: Optional[str] = Field(None, max_length=8)
+    # Shopper display / preferred PayPal charge currency (ISO). Catalog stays USD.
+    currency: Optional[str] = Field(None, max_length=3)
 
     model_config = {"populate_by_name": True}
 

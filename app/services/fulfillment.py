@@ -239,11 +239,24 @@ def fulfill_paid_order(order_row: Dict[str, Any]) -> Dict[str, Any]:
     if is_gift and not recipient_email:
         raise FulfillmentError(f"Gift order {order_number} missing recipient email")
 
-    subject = (
-        f"A gift for you — {country} eSIM"
-        if is_gift
-        else f"{country} eSIM delivered — {order_number}"
-    )
+    order_locale = None
+    if isinstance(metadata, dict):
+        order_locale = metadata.get("locale") or metadata.get("language")
+    if is_gift:
+        subject = f"A gift for you — {country} eSIM"
+    else:
+        try:
+            from app.services.i18n_messages import t_email
+
+            subject = t_email(
+                order_locale,
+                "fulfillmentReadySubject",
+                country=country,
+            )
+            if subject == "fulfillmentReadySubject":
+                subject = f"{country} eSIM delivered — {order_number}"
+        except Exception:
+            subject = f"{country} eSIM delivered — {order_number}"
 
     html_body = build_fulfillment_email_html(
         order_number=order_number,

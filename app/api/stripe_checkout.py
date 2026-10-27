@@ -91,6 +91,9 @@ def create_stripe_checkout_session(
         "success_url": success_url,
         "cancel_url": settings.stripe_cancel_url,
         "billing_address_collection": "auto",
+        # Local presentment when enabled in Stripe Dashboard (live/test).
+        # Catalog / settlement currency stays as `currency` (usually USD).
+        "adaptive_pricing": {"enabled": True},
         "wallet_options": {
             # Show Link when available (one-tap / autofill on mobile).
             "link": {"display": "auto"},
@@ -98,6 +101,8 @@ def create_stripe_checkout_session(
         "metadata": {
             "order_number": order_number,
             "order_id": order_id,
+            "settlement_currency": (currency or "USD").upper(),
+            "settlement_amount_cents": str(int(amount_cents)),
         },
     }
     # Prefill when we have it; otherwise Stripe Checkout asks for email.
@@ -165,6 +170,8 @@ def create_topup_checkout_session(
         "iccid": iccid,
         "topup_provider": topup_provider,
         "retail_cents": str(amount_cents),
+        "settlement_currency": "USD",
+        "settlement_amount_cents": str(amount_cents),
     }
     if fund_usd is not None:
         metadata["fund_usd"] = str(fund_usd)
@@ -194,6 +201,7 @@ def create_topup_checkout_session(
         ],
         "success_url": success_url,
         "cancel_url": f"{settings.app_url.rstrip('/')}/dashboard",
+        "adaptive_pricing": {"enabled": True},
         "metadata": metadata,
     }
 
@@ -229,6 +237,8 @@ def create_stripe_payment_intent(
         "metadata": {
             "order_number": order_number,
             "order_id": order_id,
+            "settlement_currency": (currency or "USD").upper(),
+            "settlement_amount_cents": str(int(amount_cents)),
         },
     }
     normalized_email = (email or "").strip().lower()

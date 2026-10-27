@@ -688,6 +688,7 @@ def create_order(
     attribution_metadata: Optional[Dict[str, Any]] = None,
     gift_metadata: Optional[Dict[str, Any]] = None,
     wants_topup: bool = False,
+    locale: Optional[str] = None,
 ) -> CreatedOrder:
     client = get_supabase_client()
     price_cents = int(round(price * 100))
@@ -799,6 +800,9 @@ def create_order(
 
     if gift_metadata:
         metadata["gift"] = gift_metadata
+    locale_code = (locale or "").strip().lower().split("-")[0][:8]
+    if locale_code in {"en", "es", "ar"}:
+        metadata["locale"] = locale_code
 
     applied_discount = int(total_discount_cents or 0)
     if applied_discount <= 0 and promo_code and promo_discount_cents is not None:
@@ -934,6 +938,18 @@ def merge_order_metadata(order_number: str, patch: Dict[str, Any]) -> Dict[str, 
     if isinstance(patch.get("attribution"), dict):
         existing = metadata.get("attribution") if isinstance(metadata.get("attribution"), dict) else {}
         merged["attribution"] = {**existing, **patch["attribution"]}
+
+    if isinstance(patch.get("stripe_payment"), dict):
+        existing = (
+            metadata.get("stripe_payment")
+            if isinstance(metadata.get("stripe_payment"), dict)
+            else {}
+        )
+        merged["stripe_payment"] = {**existing, **patch["stripe_payment"]}
+
+    if isinstance(patch.get("paypal"), dict):
+        existing = metadata.get("paypal") if isinstance(metadata.get("paypal"), dict) else {}
+        merged["paypal"] = {**existing, **patch["paypal"]}
 
     try:
         client.table("orders").update({"metadata": merged}).eq(

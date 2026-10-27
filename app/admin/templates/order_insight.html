@@ -18,7 +18,52 @@
   {% if context %}
   <div class="nl-wizard-panel">
     <h2 class="h5">{{ context.order_number }} <span class="badge bg-secondary">{{ context.status }}</span></h2>
-    <p class="mb-3">{{ context.email }} · {{ context.country }} · {{ context.package_name }} · ${{ (context.amount_cents or 0) / 100 }}</p>
+    <p class="mb-2">{{ context.email }} · {{ context.country }} · {{ context.package_name }}</p>
+    <p class="mb-3">
+      Order (settlement): {{ context.currency or 'USD' }} {{ '%.2f'|format((context.amount_cents or 0) / 100) }}
+      {% if context.customer_paid_amount_cents is not none and context.customer_paid_currency %}
+        · <strong>Customer paid:</strong> {{ context.customer_paid_currency }} {{ '%.2f'|format(context.customer_paid_amount_cents / 100) }}
+      {% endif %}
+    </p>
+    {% if context.paypal %}
+    <div class="mb-3 p-3 small" style="background:#F3F7F7;border-radius:10px;">
+      <strong>PayPal payment</strong><br />
+      Order: {{ context.paypal.order_id or '—' }}
+      {% if context.paypal.capture_id %}<br />Capture: {{ context.paypal.capture_id }}{% endif %}
+      {% if context.paypal.presentment_currency and context.paypal.presentment_amount is not none %}
+        <br />Presentment: {{ context.paypal.presentment_currency }} {{ '%.2f'|format(context.paypal.presentment_amount) }}
+      {% endif %}
+      {% if context.paypal.captured_currency and context.paypal.captured_amount %}
+        <br />Captured: {{ context.paypal.captured_currency }} {{ context.paypal.captured_amount }}
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if context.stripe_payment or context.stripe_checkout_session_id %}
+    <div class="mb-3 p-3 small" style="background:#F3F7F7;border-radius:10px;">
+      <strong>Stripe payment</strong><br />
+      Session:
+      {% if context.stripe_checkout_session_id %}
+        {{ context.stripe_checkout_session_id }}
+      {% elif context.stripe_payment and context.stripe_payment.stripe_session_id %}
+        {{ context.stripe_payment.stripe_session_id }}
+      {% else %}—{% endif %}<br />
+      {% if context.stripe_payment_intent_id %}
+        PaymentIntent: {{ context.stripe_payment_intent_id }}<br />
+      {% elif context.stripe_payment and context.stripe_payment.payment_intent_id %}
+        PaymentIntent: {{ context.stripe_payment.payment_intent_id }}<br />
+      {% endif %}
+      {% if context.stripe_payment %}
+        Session total: {{ context.stripe_payment.session_currency or '—' }}
+        {% if context.stripe_payment.session_amount_total_cents is not none %}
+          {{ '%.2f'|format(context.stripe_payment.session_amount_total_cents / 100) }}
+        {% else %}—{% endif %}
+        {% if context.stripe_payment.settlement_currency and context.stripe_payment.settlement_amount_cents is not none %}
+          · Settlement: {{ context.stripe_payment.settlement_currency }} {{ '%.2f'|format(context.stripe_payment.settlement_amount_cents / 100) }}
+        {% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
 
     {% if context.is_gift %}
     <div class="mb-3 p-3" style="background:#F3F7F7;border-radius:10px;">
